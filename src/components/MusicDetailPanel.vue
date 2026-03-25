@@ -152,8 +152,8 @@ onMounted(() => {
         </div>
 
         <div class="detail-copy">
-          <h3>{{ currentTrack?.title || "还没有播放歌曲" }}</h3>
-          <p>{{ currentTrack ? `${currentTrack.artist} · ${currentTrack.album}` : "导入本地音乐后即可播放" }}</p>
+          <h3>{{ currentTrack?.title || "请选择一首歌曲" }}</h3>
+          <p>{{ currentTrack ? `${currentTrack.artist} · ${currentTrack.album}` : "点击歌曲后播放" }}</p>
         </div>
 
         <div class="detail-controls">

@@ -72,9 +72,11 @@ const selectedAlbumName = ref("");
 const playbackScope = ref<PlaybackScope>({ type: "all" });
 const likedTrackIds = ref<string[]>(loadLikedTrackIds());
 const isPlaylistScrolling = ref(false);
+const launchedFilePlaybackActive = ref(false);
 let lastManualTrackChangeAt = 0;
 let libraryBuildToken = 0;
 let playlistScrollHideTimer: ReturnType<typeof setTimeout> | null = null;
+let restoreLibraryTimer: ReturnType<typeof setTimeout> | null = null;
 
 const currentTrack = computed(() => tracks.value[currentTrackIndex.value] || null);
 const albums = computed(() => {
@@ -343,12 +345,13 @@ async function openFolder() {
         name: handle.name,
         persistent: true,
         available: true,
+        kind: "directory",
         handle,
       };
       musicSources.value = dedupeSources([...musicSources.value, nextSource]);
       await persistHandleSources();
       saveLastFolderName(nextSource.name);
-      await rebuildLibrary();
+      await rebuildLibrary({ preserveVisibleTracks: true });
       return;
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -386,11 +389,12 @@ async function handleFolderInput(event: Event) {
     name: nextFolderName,
     persistent: false,
     available: true,
+    kind: "directory",
     entries,
   };
   musicSources.value = dedupeSources([...musicSources.value, nextSource]);
   saveLastFolderName(nextFolderName);
-  await rebuildLibrary();
+  await rebuildLibrary({ preserveVisibleTracks: true });
   setStatus(`已添加临时音乐源“${nextFolderName}”；关闭后需要重新导入该来源。`);
 }
 
@@ -448,10 +452,6 @@ async function loadLibrary(
 
     if (!preserveVisibleTracks) {
       tracks.value = [...parsedTracks];
-      if (currentTrackIndex.value === -1) {
-        currentTrackIndex.value = 0;
-        activeTrackPath.value = parsedTracks[0]?.relativePath || "";
-      }
     }
 
     loadingDone.value = index + 1;
@@ -482,12 +482,12 @@ async function loadLibrary(
       if (preservedIndex !== -1) {
         currentTrackIndex.value = preservedIndex;
         activeTrackPath.value = tracks.value[preservedIndex]?.relativePath || "";
-      } else if (currentTrackIndex.value === -1) {
-        currentTrackIndex.value = 0;
-        activeTrackPath.value = tracks.value[0]?.relativePath || "";
       } else if (currentTrackIndex.value >= tracks.value.length) {
         currentTrackIndex.value = tracks.value.length - 1;
         activeTrackPath.value = tracks.value[currentTrackIndex.value]?.relativePath || "";
+      } else if (currentTrackIndex.value !== -1) {
+        currentTrackIndex.value = -1;
+        activeTrackPath.value = "";
       }
     }
   }
@@ -495,9 +495,6 @@ async function loadLibrary(
   if (!tracks.value.length) {
     currentTrackIndex.value = -1;
     activeTrackPath.value = "";
-  } else if (currentTrackIndex.value === -1) {
-    currentTrackIndex.value = 0;
-    activeTrackPath.value = tracks.value[0]?.relativePath || "";
   } else if (currentTrackIndex.value >= tracks.value.length) {
     currentTrackIndex.value = tracks.value.length - 1;
     activeTrackPath.value = tracks.value[currentTrackIndex.value]?.relativePath || "";
@@ -523,10 +520,13 @@ async function rebuildLibrary(options?: { preserveVisibleTracks?: boolean }) {
   const allEntries: FileEntry[] = [];
   const activeSourceNames: string[] = [];
   const activePersistentSourceNames: string[] = [];
+  const sourcesToBuild = musicSources.value.some((source) => source.kind === "file-launch")
+    ? musicSources.value.filter((source) => source.kind === "file-launch")
+    : musicSources.value;
 
   setStatus("正在刷新音乐源...");
 
-  for (const source of musicSources.value) {
+  for (const source of sourcesToBuild) {
     let sourceEntries = source.entries || [];
     if (source.handle && source.available) {
       sourceEntries = await collectDirectoryFiles(source.handle);
@@ -564,8 +564,8 @@ async function rebuildLibrary(options?: { preserveVisibleTracks?: boolean }) {
       const preservedIndex = previousTrackPath
         ? hydratedTracks.findIndex((track) => track.relativePath === previousTrackPath)
         : -1;
-      currentTrackIndex.value = preservedIndex !== -1 ? preservedIndex : hydratedTracks.length ? 0 : -1;
-      activeTrackPath.value = currentTrackIndex.value !== -1 ? hydratedTracks[currentTrackIndex.value]?.relativePath || "" : "";
+      currentTrackIndex.value = preservedIndex !== -1 ? preservedIndex : -1;
+      activeTrackPath.value = preservedIndex !== -1 ? hydratedTracks[preservedIndex]?.relativePath || "" : "";
       setStatus(`已恢复可播放曲库，后台正在刷新 ${hydratedTracks.length} 首歌曲...`);
     }
   }
@@ -593,11 +593,64 @@ async function rebuildLibrary(options?: { preserveVisibleTracks?: boolean }) {
 function dedupeSources(sources: RuntimeMusicSource[]) {
   const lookup = new Map<string, RuntimeMusicSource>();
   for (const source of sources) {
-    const key = `${source.name}:${source.persistent ? "persistent" : "temp"}`;
+    const key = `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}`;
     lookup.set(key, source);
   }
 
   return [...lookup.values()];
+}
+
+async function handleLaunchedMusicFiles(fileHandles: FileSystemFileHandle[]) {
+  const entries: FileEntry[] = [];
+
+  for (const handle of fileHandles) {
+    try {
+      const file = await handle.getFile();
+      entries.push({
+        file,
+        relativePath: file.name,
+      });
+    } catch {
+      // Ignore unreadable files and keep loading the rest.
+    }
+  }
+
+  if (!entries.length) {
+    return;
+  }
+
+  const audioEntries = entries.filter(({ file }) => isAudioFile(file.name, file.type));
+  if (!audioEntries.length) {
+    setStatus("没有检测到可播放的音频文件。");
+    return;
+  }
+
+  launchedFilePlaybackActive.value = true;
+  if (restoreLibraryTimer) {
+    clearTimeout(restoreLibraryTimer);
+    restoreLibraryTimer = null;
+  }
+  const launchSource: RuntimeMusicSource = {
+    id: crypto.randomUUID(),
+    name: audioEntries.length === 1 ? audioEntries[0].file.name : `打开的文件 (${audioEntries.length})`,
+    persistent: false,
+    available: true,
+    kind: "file-launch",
+    entries,
+  };
+
+  musicSources.value = [
+    ...musicSources.value.filter((source) => source.persistent),
+    launchSource,
+  ];
+  playbackScope.value = { type: "all" };
+  searchQuery.value = "";
+  selectedAlbumName.value = "";
+  await rebuildLibrary();
+  playTrack(0, true);
+  activeSection.value = "playlist";
+  currentView.value = "library";
+  setStatus(`已从系统打开 ${audioEntries.length} 个音频文件`);
 }
 
 async function persistHandleSources() {
@@ -1015,10 +1068,14 @@ async function clearCachedSource() {
 async function removeSource(sourceId: string) {
   musicSources.value = musicSources.value.filter((source) => source.id !== sourceId);
   await persistHandleSources();
-  await rebuildLibrary();
+  await rebuildLibrary({ preserveVisibleTracks: true });
 }
 
 async function restoreCachedLibrary() {
+  if (launchedFilePlaybackActive.value) {
+    return;
+  }
+
   if (!supportsDirectoryPicker()) {
     const lastFolderName = loadLastFolderName();
     if (lastFolderName) {
@@ -1047,8 +1104,8 @@ async function restoreCachedLibrary() {
     if (cachedTrackPayload?.sourceKey === cacheKey && cachedTrackPayload.tracks.length) {
       revokeTrackResources(tracks.value);
       tracks.value = cachedTrackPayload.tracks.map(createCachedTrack);
-      currentTrackIndex.value = tracks.value.length ? 0 : -1;
-      activeTrackPath.value = tracks.value[0]?.relativePath || "";
+      currentTrackIndex.value = -1;
+      activeTrackPath.value = "";
       setStatus(`已载入缓存曲库，后台正在刷新 ${tracks.value.length} 首歌曲...`);
     }
 
@@ -1066,11 +1123,18 @@ async function restoreCachedLibrary() {
         name: source.name,
         persistent: true,
         available: permission === "granted",
+        kind: "directory",
         handle: source.handle,
       });
     }
 
-    musicSources.value = restoredSources;
+    const existingFileLaunchSources = musicSources.value.filter((source) => source.kind === "file-launch");
+    musicSources.value = [...restoredSources, ...existingFileLaunchSources];
+    if (launchedFilePlaybackActive.value) {
+      setStatus("已恢复音乐源信息；当前保持系统打开文件的独立播放。");
+      return;
+    }
+
     if (restoredSources.some((source) => source.available)) {
       await rebuildLibrary({ preserveVisibleTracks: tracks.value.some((track) => !track.isPlayable) });
       setStatus(`已恢复 ${restoredSources.filter((source) => source.available).length} 个音乐源`);
@@ -1095,12 +1159,27 @@ onBeforeUnmount(() => {
   if (playlistScrollHideTimer) {
     clearTimeout(playlistScrollHideTimer);
   }
+  if (restoreLibraryTimer) {
+    clearTimeout(restoreLibraryTimer);
+  }
 });
 
 onMounted(() => {
-  void restoreCachedLibrary();
   window.addEventListener("contextmenu", handleContextMenuBlock);
   window.addEventListener("resize", handleWindowResize);
+
+  if (typeof window.launchQueue !== "undefined" && typeof window.launchQueue.setConsumer === "function") {
+    window.launchQueue.setConsumer((params: { files: FileSystemFileHandle[] }) => {
+      void handleLaunchedMusicFiles(params.files || []);
+    });
+  }
+
+  restoreLibraryTimer = setTimeout(() => {
+    restoreLibraryTimer = null;
+    if (!launchedFilePlaybackActive.value) {
+      void restoreCachedLibrary();
+    }
+  }, 500);
 });
 
 window.addEventListener("keydown", handleEscapeClose);

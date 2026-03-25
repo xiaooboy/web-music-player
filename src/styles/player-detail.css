@@ -296,7 +296,7 @@ input[type="range"]::-webkit-slider-thumb {
   position: relative;
   z-index: 1;
   align-items: center;
-  padding: 18px 24px 8px;
+  padding: calc(18px + var(--window-safe-top)) 24px 8px;
 }
 
 .detail-body {
