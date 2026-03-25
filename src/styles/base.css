@@ -24,6 +24,8 @@
   box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: rgba(30, 215, 96, 0.72) transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 html,
@@ -75,6 +77,12 @@ body {
 button,
 input {
   font: inherit;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 button {

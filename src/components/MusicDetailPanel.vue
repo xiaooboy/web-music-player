@@ -170,7 +170,7 @@ onMounted(() => {
               :style="sliderStyle(volumePercent)"
               @input="emit('setVolume', Number(($event.target as HTMLInputElement).value))"
             />
-            <span class="detail-volume-spacer" aria-hidden="true"></span>
+            <span class="detail-volume-end" aria-hidden="true"></span>
           </label>
 
           <div class="detail-progress">

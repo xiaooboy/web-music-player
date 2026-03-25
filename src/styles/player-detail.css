@@ -11,6 +11,11 @@
   align-items: center;
   gap: 14px;
   backdrop-filter: blur(18px);
+  box-shadow:
+    0 26px 52px rgba(0, 0, 0, 0.44),
+    0 10px 24px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 28px rgba(30, 215, 96, 0.08);
 }
 
 .dock-track {
@@ -377,15 +382,20 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .detail-progress {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
   align-items: center;
   gap: 10px;
+  width: 100%;
 }
 
 .detail-progress span {
+  width: 42px;
   min-width: 42px;
   color: var(--muted);
   font-size: 0.84rem;
   font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .detail-transport {
@@ -419,14 +429,17 @@ input[type="range"]::-webkit-slider-thumb {
 .detail-volume .volume-label {
   justify-content: center;
   width: 42px;
+  min-width: 42px;
   overflow: hidden;
 }
 
+.detail-progress .progress-slider,
 .detail-volume-slider {
   width: 100%;
+  min-width: 0;
 }
 
-.detail-volume-spacer {
+.detail-volume-end {
   width: 42px;
   min-width: 42px;
 }
