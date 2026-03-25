@@ -9,3 +9,8 @@ script = ""
 name = "运行"
 icon = "run"
 command = "npm run dev"
+
+[[actions]]
+name = "lan run"
+icon = "tool"
+command = "npm run dev:lan"
