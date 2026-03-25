@@ -1,7 +1,9 @@
 .album-browser {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 18px;
   min-height: 100%;
+  align-content: start;
 }
 
 .album-browser-body {
@@ -9,6 +11,8 @@
   grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
   gap: 18px;
   min-height: 0;
+  align-items: start;
+  align-content: start;
 }
 
 .album-list,
@@ -24,6 +28,7 @@
 .album-list {
   align-content: start;
   padding-right: 6px;
+  align-self: start;
 }
 
 .album-item,
@@ -109,6 +114,8 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
+  align-self: start;
+  align-content: start;
 }
 
 .album-detail-head {

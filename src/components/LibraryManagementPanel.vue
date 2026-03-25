@@ -41,7 +41,7 @@ defineEmits<{
       <div v-for="source in sources" :key="source.id" class="source-item">
         <div class="source-copy">
           <strong>{{ source.name }}</strong>
-          <span>{{ source.persistent ? (source.available ? "已缓存" : "待恢复授权") : "临时来源" }}</span>
+          <span>{{ source.kind === "file-launch" ? "系统打开文件" : source.persistent ? (source.available ? "已缓存" : "待恢复授权") : "临时来源" }}</span>
         </div>
         <button class="source-remove" type="button" @click="$emit('removeSource', source.id)">
           <Trash2 :size="16" />

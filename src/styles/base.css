@@ -18,6 +18,13 @@
   --cover-radius-lg: 24px;
   --font-display: "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body: "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --window-safe-top: 0px;
+}
+
+@supports (top: env(titlebar-area-height)) {
+  :root {
+    --window-safe-top: max(env(safe-area-inset-top, 0px), env(titlebar-area-height, 0px));
+  }
 }
 
 * {

@@ -3,7 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LocalMusic 本地音乐播放器</title>
+    <meta name="theme-color" content="transparent" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <style>
+      html {
+        background: #0b0f0c;
+        color-scheme: dark;
+      }
+
+      body,
+      #app {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(30, 215, 96, 0.12), transparent 22%),
+          radial-gradient(circle at top right, rgba(255, 255, 255, 0.04), transparent 18%),
+          linear-gradient(180deg, #1a1a1a 0%, #0b0b0b 32%);
+      }
+    </style>
+    <title>LocalMusic</title>
   </head>
   <body>
     <div id="app"></div>

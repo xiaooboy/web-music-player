@@ -22,7 +22,7 @@
     grid-template-columns: 1fr;
     height: auto;
     overflow: visible;
-    padding: 18px 18px 180px;
+    padding: calc(18px + var(--window-safe-top)) 18px 180px;
   }
 
   .sidebar {
@@ -118,7 +118,7 @@
 
 @media (max-width: 640px) {
   .app-shell {
-    padding: 14px 14px 188px;
+    padding: calc(14px + var(--window-safe-top)) 14px 188px;
   }
 
   .sidebar,
