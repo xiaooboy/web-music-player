@@ -1,0 +1,88 @@
+.sidebar,
+.hero-card,
+.library-panel,
+.player-dock {
+  box-shadow: var(--shadow);
+}
+
+.sidebar {
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 138px);
+  background:
+    radial-gradient(circle at top, rgba(30, 215, 96, 0.18), transparent 24%),
+    linear-gradient(180deg, var(--sidebar-soft) 0%, var(--sidebar) 100%);
+  color: var(--text);
+  border-radius: var(--radius-xl);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-copy strong {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+}
+
+.brand-copy span,
+.muted-copy,
+.nav-item small {
+  color: rgba(245, 247, 251, 0.66);
+}
+
+.nav-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: inherit;
+  text-align: left;
+}
+
+.nav-item.is-active {
+  background: linear-gradient(135deg, rgba(30, 215, 96, 0.16), rgba(255, 255, 255, 0.06));
+  border-color: rgba(30, 215, 96, 0.24);
+}
+
+.nav-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
