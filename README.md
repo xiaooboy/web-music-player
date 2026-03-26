@@ -26,14 +26,6 @@ npm install
 npm run dev
 ```
 
-局域网访问：
-
-```bash
-npm run dev:lan
-```
-
-启动后可通过本机局域网 IP 访问，例如 `http://192.168.1.10:5173`。
-
 ## 构建
 
 ```bash
