@@ -13,6 +13,7 @@ defineProps<{
   playbackMode: "off" | "one" | "shuffle";
   playbackModeLabel: string;
   isCurrentTrackLiked: boolean;
+  enableCoverTransition?: boolean;
 }>();
 
 defineEmits<{
@@ -30,7 +31,10 @@ defineEmits<{
 <template>
   <footer class="player-dock">
     <button class="dock-track detail-trigger" type="button" @click="$emit('openDetail')">
-      <div class="cover-art dock-cover">
+      <div
+        class="cover-art dock-cover"
+        :style="currentTrack && enableCoverTransition ? { viewTransitionName: 'active-cover-art' } : undefined"
+      >
         <img v-if="currentTrack?.coverUrl" :src="currentTrack.coverUrl" alt="底部播放器封面" />
         <span v-else aria-hidden="true">LM</span>
       </div>

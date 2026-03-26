@@ -17,6 +17,7 @@ const props = defineProps<{
   lyricsLines: LyricsLine[];
   activeLyricsIndex: number;
   hasTimedLyrics: boolean;
+  enableCoverTransition?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -146,7 +147,10 @@ onMounted(() => {
 
     <div class="detail-body">
       <div class="detail-meta">
-        <div class="cover-art detail-cover">
+        <div
+          class="cover-art detail-cover"
+          :style="currentTrack && props.enableCoverTransition ? { viewTransitionName: 'active-cover-art' } : undefined"
+        >
           <img v-if="currentTrack?.coverUrl" :src="currentTrack.coverUrl" alt="歌曲封面" />
           <span v-else>CB</span>
         </div>
