@@ -7,6 +7,7 @@
 - Vite
 - Vue 3
 - TypeScript
+- PWA (`vite-plugin-pwa`)
 - 原生 File System Access API + `webkitdirectory` 回退
 
 ## 功能
@@ -39,6 +40,12 @@ npm run dev:lan
 npm run build
 npm run preview
 ```
+
+## PWA
+
+- 已支持 `PWA` 安装，浏览器满足条件时可直接“安装到桌面”。
+- `localhost` 或 `HTTPS` 环境下可注册 `service worker` 并启用离线静态资源缓存。
+- `PWA` 不会改变浏览器本地文件访问权限模型；通过局域网 IP 的普通 `http` 访问时，仍然只能走手动文件夹导入。
 
 ## 浏览器说明
 

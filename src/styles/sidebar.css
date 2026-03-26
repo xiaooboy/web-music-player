@@ -7,8 +7,8 @@
 
 .sidebar {
   position: sticky;
-  top: 16px;
-  height: calc(100vh - 138px);
+  top: calc(16px + var(--window-safe-top));
+  height: calc(100vh - 138px - var(--window-safe-top));
   background:
     radial-gradient(circle at top, rgba(30, 215, 96, 0.18), transparent 24%),
     linear-gradient(180deg, var(--sidebar-soft) 0%, var(--sidebar) 100%);

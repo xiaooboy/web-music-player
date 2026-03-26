@@ -36,8 +36,8 @@ defineEmits<{
       </div>
 
       <div class="dock-copy">
-        <strong>{{ currentTrack?.title || '还没有播放歌曲' }}</strong>
-        <span>{{ currentTrack ? `${currentTrack.artist} · ${currentTrack.album}` : '导入本地音乐后即可播放' }}</span>
+        <strong>{{ currentTrack?.title || '请选择一首歌曲' }}</strong>
+        <span>{{ currentTrack ? `${currentTrack.artist} · ${currentTrack.album}` : '点击歌曲后播放' }}</span>
       </div>
     </button>
 

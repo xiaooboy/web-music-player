@@ -4,7 +4,7 @@
   gap: 18px;
   min-height: 100vh;
   height: 100vh;
-  padding: 16px 16px 122px;
+  padding: calc(16px + var(--window-safe-top)) 16px 122px;
   overflow: hidden;
 }
 
