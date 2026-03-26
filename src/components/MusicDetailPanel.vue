@@ -188,6 +188,11 @@ onMounted(() => {
           </div>
 
           <div class="detail-transport">
+            <button class="mode-button mode-button--icon is-active" type="button" :aria-label="playbackModeLabel" :title="playbackModeLabel" @click="emit('cyclePlaybackMode')">
+              <Shuffle v-if="playbackMode === 'shuffle'" :size="18" />
+              <Repeat1 v-else-if="playbackMode === 'one'" :size="18" />
+              <Repeat v-else :size="18" />
+            </button>
             <button class="icon-button detail-control-button" type="button" aria-label="上一首" @click="emit('prev')">
               <ChevronLeft :size="20" />
             </button>
@@ -206,11 +211,6 @@ onMounted(() => {
               @click="emit('toggleFavorite')"
             >
               <Heart :size="18" :fill="isCurrentTrackLiked ? 'currentColor' : 'none'" />
-            </button>
-            <button class="mode-button mode-button--icon is-active" type="button" :aria-label="playbackModeLabel" :title="playbackModeLabel" @click="emit('cyclePlaybackMode')">
-              <Shuffle v-if="playbackMode === 'shuffle'" :size="18" />
-              <Repeat1 v-else-if="playbackMode === 'one'" :size="18" />
-              <Repeat v-else :size="18" />
             </button>
           </div>
         </div>

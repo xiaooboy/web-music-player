@@ -2,8 +2,10 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 18px;
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
   align-content: start;
+  overflow: hidden;
 }
 
 .album-browser-body {
@@ -11,8 +13,10 @@
   grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
   gap: 18px;
   min-height: 0;
+  height: 100%;
   align-items: start;
   align-content: start;
+  overflow: hidden;
 }
 
 .album-list,
@@ -20,6 +24,7 @@
   display: grid;
   gap: 10px;
   min-height: 0;
+  height: 100%;
   overflow: auto;
   align-content: start;
   justify-items: stretch;
@@ -111,11 +116,13 @@
   width: 100%;
   justify-self: stretch;
   min-height: 0;
+  height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
   align-self: start;
   align-content: start;
+  overflow: hidden;
 }
 
 .album-detail-head {
