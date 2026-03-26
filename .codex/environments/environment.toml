@@ -14,3 +14,8 @@ command = "npm run dev"
 name = "lan run"
 icon = "tool"
 command = "npm run dev:lan"
+
+[[actions]]
+name = "终端"
+icon = "tool"
+command = "cmd"
