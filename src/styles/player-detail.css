@@ -320,8 +320,18 @@ input[type="range"]::-webkit-slider-thumb {
   justify-content: center;
   align-items: center;
   gap: 16px;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
   overflow: auto;
+  position: relative;
+}
+
+.detail-meta::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  right: 0;
+  bottom: 28px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .detail-lyrics {
