@@ -777,6 +777,19 @@ function setCurrentView(nextView: "library" | "detail") {
     return;
   }
 
+  const transitionDocument = document as Document & {
+    startViewTransition?: (callback: () => void) => {
+      finished: Promise<void>;
+    };
+  };
+
+  if (typeof transitionDocument.startViewTransition === "function") {
+    transitionDocument.startViewTransition(() => {
+      currentView.value = nextView;
+    });
+    return;
+  }
+
   currentView.value = nextView;
 }
 
@@ -1345,6 +1358,7 @@ function toggleCurrentTrackFavorite() {
       :playback-mode="playbackMode"
       :playback-mode-label="playbackModeLabel"
       :is-current-track-liked="isCurrentTrackLiked"
+      :enable-cover-transition="currentView !== 'detail'"
       @open-detail="openDetail"
       @prev="handlePreviousControl"
       @next="handleNextControl"
@@ -1355,36 +1369,34 @@ function toggleCurrentTrackFavorite() {
       @toggle-favorite="toggleCurrentTrackFavorite"
     />
   </div>
-
-  <transition name="detail-overlay">
-    <div v-if="currentView === 'detail'" class="detail-shell">
-      <main class="detail-stage">
-        <MusicDetailPanel
-          :current-track="currentTrack"
-          :is-playing="isPlaying"
-          :current-time-label="currentTimeLabel"
-          :total-time-label="totalTimeLabel"
-          :progress-percent="progressPercent"
-          :volume-percent="volumePercent"
-          :playback-mode="playbackMode"
-          :playback-mode-label="playbackModeLabel"
-          :is-current-track-liked="isCurrentTrackLiked"
-          :lyrics-lines="currentLyricsLines"
-          :active-lyrics-index="activeLyricsIndex"
-          :has-timed-lyrics="hasTimedLyrics"
-          @close="closeDetail"
-          @prev="handlePreviousControl"
-          @next="handleNextControl"
-          @toggle-play="togglePlay"
-          @cycle-playback-mode="cyclePlaybackMode"
-          @seek="seekToPercent"
-          @set-volume="setVolume"
-          @toggle-favorite="toggleCurrentTrackFavorite"
-          @seek-line="seekToLyricsLine"
-        />
-      </main>
-    </div>
-  </transition>
+  <div v-if="currentView === 'detail'" class="detail-shell">
+    <main class="detail-stage">
+      <MusicDetailPanel
+        :current-track="currentTrack"
+        :is-playing="isPlaying"
+        :current-time-label="currentTimeLabel"
+        :total-time-label="totalTimeLabel"
+        :progress-percent="progressPercent"
+        :volume-percent="volumePercent"
+        :playback-mode="playbackMode"
+        :playback-mode-label="playbackModeLabel"
+        :is-current-track-liked="isCurrentTrackLiked"
+        :lyrics-lines="currentLyricsLines"
+        :active-lyrics-index="activeLyricsIndex"
+        :has-timed-lyrics="hasTimedLyrics"
+        :enable-cover-transition="currentView === 'detail'"
+        @close="closeDetail"
+        @prev="handlePreviousControl"
+        @next="handleNextControl"
+        @toggle-play="togglePlay"
+        @cycle-playback-mode="cyclePlaybackMode"
+        @seek="seekToPercent"
+        @set-volume="setVolume"
+        @toggle-favorite="toggleCurrentTrackFavorite"
+        @seek-line="seekToLyricsLine"
+      />
+    </main>
+  </div>
 
   <input
     ref="folderInputRef"
@@ -1407,4 +1419,8 @@ function toggleCurrentTrackFavorite() {
     @ended="handleAudioEnded"
   ></audio>
 </template>
+
+
+
+
 

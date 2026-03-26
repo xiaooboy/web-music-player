@@ -51,10 +51,36 @@
   flex-shrink: 0;
 }
 
+.dock-cover::before {
+  content: none;
+}
+
 .dock-copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  max-width: min(100%, 240px);
+}
+
+.dock-copy strong {
+  display: block;
+  width: 100%;
+  line-height: 1.1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dock-copy span {
+  display: block;
+  width: 100%;
+  font-size: 0.92rem;
+  line-height: 1.1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .dock-center {
@@ -348,7 +374,7 @@ input[type="range"]::-webkit-slider-thumb {
   aspect-ratio: 1;
   border-radius: var(--cover-radius-lg);
   background: transparent;
-  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+  box-shadow: none;
   align-self: center;
   flex-shrink: 0;
 }
@@ -357,12 +383,16 @@ input[type="range"]::-webkit-slider-thumb {
   content: none;
 }
 
+.dock-cover img,
 .detail-cover img {
   inset: 0;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
+}
+
+.detail-cover img {
   object-fit: contain;
-  border-radius: var(--cover-radius-lg);
 }
 
 .detail-copy {
@@ -515,6 +545,56 @@ input[type="range"]::-webkit-slider-thumb {
 
 .detail-empty {
   padding-top: 120px;
+}
+
+@keyframes root-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.88;
+  }
+}
+
+@keyframes root-fade-in {
+  from {
+    opacity: 0.88;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(root) {
+  animation: root-fade-out 320ms ease;
+}
+
+::view-transition-new(root) {
+  animation: root-fade-in 380ms ease;
+}
+
+::view-transition-group(active-cover-art) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-image-pair(active-cover-art) {
+  isolation: auto;
+}
+
+::view-transition-old(active-cover-art),
+::view-transition-new(active-cover-art) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--cover-radius-md);
+  overflow: clip;
+  clip-path: inset(0 round var(--cover-radius-md));
+  box-shadow: none;
 }
 
 .detail-overlay-enter-active,
