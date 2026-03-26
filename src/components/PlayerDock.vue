@@ -41,8 +41,13 @@ defineEmits<{
       </div>
     </button>
 
-    <div class="dock-center">
+      <div class="dock-center">
       <div class="transport">
+        <button class="mode-button mode-button--icon is-active" type="button" :aria-label="playbackModeLabel" :title="playbackModeLabel" @click.stop="$emit('cyclePlaybackMode')">
+          <Shuffle v-if="playbackMode === 'shuffle'" :size="18" />
+          <Repeat1 v-else-if="playbackMode === 'one'" :size="18" />
+          <Repeat v-else :size="18" />
+        </button>
         <button class="icon-button" type="button" aria-label="上一首" @click.stop="$emit('prev')">
           <ChevronLeft :size="20" />
         </button>
@@ -61,11 +66,6 @@ defineEmits<{
           @click.stop="$emit('toggleFavorite')"
         >
           <Heart :size="18" :fill="isCurrentTrackLiked ? 'currentColor' : 'none'" />
-        </button>
-        <button class="mode-button mode-button--icon is-active" type="button" :aria-label="playbackModeLabel" :title="playbackModeLabel" @click.stop="$emit('cyclePlaybackMode')">
-          <Shuffle v-if="playbackMode === 'shuffle'" :size="18" />
-          <Repeat1 v-else-if="playbackMode === 'one'" :size="18" />
-          <Repeat v-else :size="18" />
         </button>
       </div>
 
