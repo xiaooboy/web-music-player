@@ -439,6 +439,7 @@ async function loadLibrary(
   const parsedTracks: Track[] = [];
   for (let index = 0; index < sortedEntries.length; index += 1) {
     if (buildToken !== libraryBuildToken) {
+      disposeAbandonedTracks(parsedTracks);
       return;
     }
 
@@ -448,6 +449,12 @@ async function loadLibrary(
       nextFolderName,
       lyricsLookup.get(getLyricsLookupKey(sortedEntries[index].relativePath)) || "",
     );
+
+    if (buildToken !== libraryBuildToken) {
+      disposeAbandonedTracks(parsedTracks, track);
+      return;
+    }
+
     parsedTracks.push(track);
 
     if (!preserveVisibleTracks) {
@@ -459,6 +466,7 @@ async function loadLibrary(
   }
 
   if (buildToken !== libraryBuildToken) {
+    disposeAbandonedTracks(parsedTracks);
     return;
   }
 
@@ -598,6 +606,16 @@ function dedupeSources(sources: RuntimeMusicSource[]) {
   }
 
   return [...lookup.values()];
+}
+
+function disposeAbandonedTracks(parsedTracks: Track[], extraTrack?: Track) {
+  if (parsedTracks.length) {
+    revokeTrackResources(parsedTracks);
+  }
+
+  if (extraTrack?.coverUrl?.startsWith("blob:")) {
+    URL.revokeObjectURL(extraTrack.coverUrl);
+  }
 }
 
 async function handleLaunchedMusicFiles(fileHandles: FileSystemFileHandle[]) {
@@ -1169,6 +1187,9 @@ onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleEscapeClose);
   window.removeEventListener("contextmenu", handleContextMenuBlock);
   window.removeEventListener("resize", handleWindowResize);
+  if (typeof window.launchQueue !== "undefined" && typeof window.launchQueue.setConsumer === "function") {
+    window.launchQueue.setConsumer(() => {});
+  }
   if (playlistScrollHideTimer) {
     clearTimeout(playlistScrollHideTimer);
   }
@@ -1178,6 +1199,7 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
+  window.addEventListener("keydown", handleEscapeClose);
   window.addEventListener("contextmenu", handleContextMenuBlock);
   window.addEventListener("resize", handleWindowResize);
 
@@ -1194,8 +1216,6 @@ onMounted(() => {
     }
   }, 500);
 });
-
-window.addEventListener("keydown", handleEscapeClose);
 
 function handleEscapeClose(event: KeyboardEvent) {
   if (event.key === "Escape" && currentView.value === "detail") {
