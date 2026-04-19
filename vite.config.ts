@@ -4,9 +4,18 @@ import vue from "@vitejs/plugin-vue";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 
+// Determine base for GitHub Pages project site builds.
+// When DEPLOY_TO_GH_PAGES=true in CI and GITHUB_REPOSITORY is available,
+// set base to /<repo>/ so built assets reference the correct path.
+const repo = process.env.GITHUB_REPOSITORY?.split("/")[1];
+const isProjectPage = process.env.DEPLOY_TO_GH_PAGES === "true" && !!repo;
+const base = isProjectPage ? `/${repo}/` : "/";
+
 export default defineConfig({
+  base,
   plugins: [
-    vue(), cloudflare(),
+    vue(),
+    cloudflare(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
@@ -21,17 +30,18 @@ export default defineConfig({
         "icons/icon-512.png",
       ],
       manifest: {
-        id: "/",
+        id: base,
         name: "LocalMusic",
         short_name: "LocalMusic",
-        description: "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",
+        description:
+          "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",
         theme_color: "transparent",
         background_color: "#0b0f0c",
         display_override: ["window-controls-overlay", "standalone"],
         display: "standalone",
         orientation: "portrait-primary",
-        start_url: "/",
-        scope: "/",
+        start_url: base,
+        scope: base,
         lang: "zh-CN",
         icons: [
           {
@@ -53,7 +63,7 @@ export default defineConfig({
         ],
         file_handlers: [
           {
-            action: "/",
+            action: base,
             accept: {
               "audio/*": [
                 ".mp3",
@@ -71,7 +81,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        navigateFallbackDenylist: [/^\/__/, /\/.*\.(?:mp3|wav|flac|m4a|aac|ogg|opus|webm)$/],
+        navigateFallbackDenylist: [
+          /^\/__/,
+          /\/.*\.(?:mp3|wav|flac|m4a|aac|ogg|opus|webm)$/,
+        ],
       },
       devOptions: {
         enabled: true,
