@@ -6,7 +6,9 @@ defineProps<{
 }>();
 
 defineEmits<{
-  switchSection: [section: "playlist" | "favorites" | "albums" | "library-management"];
+  switchSection: [
+    section: "playlist" | "favorites" | "albums" | "library-management",
+  ];
 }>();
 </script>
 
@@ -14,57 +16,46 @@ defineEmits<{
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-mark" aria-hidden="true">
-        <Music3 :size="24" />
-      </div>
-      <div class="brand-copy">
-        <strong>LocalMusic</strong>
+        <Music3 :size="32" />
       </div>
     </div>
 
     <div class="nav-panel">
       <button
         class="nav-item"
+        title="播放列表"
         :class="{ 'is-active': activeSection === 'playlist' }"
         type="button"
         @click="$emit('switchSection', 'playlist')"
       >
-        <span class="nav-icon"><ListMusic :size="18" /></span>
-        <div>
-          <strong>播放列表</strong>
-        </div>
+        <span class="nav-icon"><ListMusic :size="26" /></span>
       </button>
       <button
         class="nav-item"
+        title="收藏"
         :class="{ 'is-active': activeSection === 'favorites' }"
         type="button"
         @click="$emit('switchSection', 'favorites')"
       >
-        <span class="nav-icon"><Heart :size="18" /></span>
-        <div>
-          <strong>喜欢</strong>
-        </div>
+        <span class="nav-icon"><Heart :size="26" /></span>
       </button>
       <button
         class="nav-item"
+        title="专辑"
         :class="{ 'is-active': activeSection === 'albums' }"
         type="button"
         @click="$emit('switchSection', 'albums')"
       >
-        <span class="nav-icon"><Disc3 :size="18" /></span>
-        <div>
-          <strong>专辑</strong>
-        </div>
+        <span class="nav-icon"><Disc3 :size="26" /></span>
       </button>
       <button
         class="nav-item"
+        title="音乐库管理"
         :class="{ 'is-active': activeSection === 'library-management' }"
         type="button"
         @click="$emit('switchSection', 'library-management')"
       >
-        <span class="nav-icon"><Library :size="18" /></span>
-        <div>
-          <strong>音乐库管理</strong>
-        </div>
+        <span class="nav-icon"><Library :size="26" /></span>
       </button>
     </div>
   </aside>

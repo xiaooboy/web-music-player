@@ -1,4 +1,3 @@
-.sidebar,
 .hero-card,
 .library-panel,
 .player-dock {
@@ -7,29 +6,25 @@
 
 .sidebar {
   position: sticky;
-  top: calc(16px + var(--window-safe-top));
-  height: calc(100vh - 138px - var(--window-safe-top));
-  background:
-    radial-gradient(circle at top, rgba(30, 215, 96, 0.18), transparent 24%),
-    linear-gradient(180deg, var(--sidebar-soft) 0%, var(--sidebar) 100%);
+  top: 0;
+  height: 100%;
   color: var(--text);
-  border-radius: var(--radius-xl);
-  padding: 24px 20px;
+  padding-block: 2px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 26px;
   overflow: auto;
+  /*border-right: 1px solid rgba(255, 255, 255, 0.06);*/
 }
 
 .brand {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  justify-content: flex-start;
 }
 
 .brand-mark {
-  width: 24px;
-  height: 24px;
+  /*width: 24px;
+  height: 24px;*/
   display: grid;
   place-items: center;
   color: var(--accent);
@@ -55,34 +50,26 @@
 }
 
 .nav-panel {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  color: inherit;
-  text-align: left;
+  background: transparent;
 }
 
-.nav-item.is-active {
-  background: linear-gradient(135deg, rgba(30, 215, 96, 0.16), rgba(255, 255, 255, 0.06));
-  border-color: rgba(30, 215, 96, 0.24);
+.nav-item.is-active .nav-icon {
+  color: var(--accent-deep);
+  transition: color 0.5s ease;
+  /*background: linear-gradient(
+    135deg,
+    rgba(30, 215, 96, 0.16),
+    rgba(255, 255, 255, 0.06)
+  );*/
 }
 
 .nav-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: white;
 }

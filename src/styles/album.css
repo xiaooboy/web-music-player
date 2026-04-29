@@ -5,7 +5,6 @@
   min-height: 0;
   height: 100%;
   align-content: start;
-  overflow: hidden;
 }
 
 .album-browser-body {
@@ -33,6 +32,7 @@
 .album-list {
   align-content: start;
   padding-right: 6px;
+  padding-bottom: var(--dock-height);
   align-self: start;
 }
 
@@ -57,7 +57,11 @@
 }
 
 .album-item.is-active {
-  background: linear-gradient(135deg, rgba(30, 215, 96, 0.14), rgba(255, 255, 255, 0.04));
+  background: linear-gradient(
+    135deg,
+    rgba(30, 215, 96, 0.14),
+    rgba(255, 255, 255, 0.04)
+  );
   border-color: rgba(30, 215, 96, 0.24);
 }
 
@@ -132,7 +136,11 @@
   align-items: center;
   padding: 18px;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(30, 215, 96, 0.1), rgba(255, 255, 255, 0.04));
+  background: linear-gradient(
+    135deg,
+    rgba(30, 215, 96, 0.1),
+    rgba(255, 255, 255, 0.04)
+  );
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -165,6 +173,7 @@
   width: 100%;
   justify-self: stretch;
   padding-right: 0;
+  padding-bottom: var(--dock-height);
   grid-auto-rows: max-content;
   justify-items: stretch;
 }
@@ -181,8 +190,6 @@
 }
 
 .album-song-row.is-active {
-  background: linear-gradient(135deg, rgba(30, 215, 96, 0.12), rgba(255, 255, 255, 0.04));
-  border-color: rgba(30, 215, 96, 0.22);
 }
 
 .album-song-main {
@@ -198,12 +205,10 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.06);
   color: var(--text);
   flex-shrink: 0;
 }
 
-.album-song-row.is-active .album-song-icon {
-  background: var(--accent);
-  color: #04110a;
+.album-song-icon.is-playing {
+  color: var(--accent);
 }

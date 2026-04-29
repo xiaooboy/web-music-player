@@ -11,27 +11,15 @@
   .player-dock {
     grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
   }
-
+  .dock-center {
+    justify-content: flex-end;
+  }
   .dock-extra {
     display: none;
   }
 }
 
 @media (max-width: 1080px) {
-  .app-shell {
-    grid-template-columns: 1fr;
-    height: auto;
-    overflow: visible;
-    padding: calc(18px + var(--window-safe-top)) 18px 180px;
-  }
-
-  .sidebar {
-    position: static;
-    top: auto;
-    height: auto;
-    overflow: visible;
-  }
-
   .topbar,
   .section-head {
     flex-direction: column;
@@ -45,12 +33,6 @@
   .search-field {
     min-width: 0;
     flex: 1;
-  }
-
-  .player-dock {
-    height: auto;
-    grid-template-columns: 1fr;
-    padding: 18px;
   }
 
   .detail-body {
@@ -88,14 +70,8 @@
   }
 
   .track-row {
-    grid-template-columns: 48px minmax(0, 1fr) 80px;
-    grid-template-areas:
-      "index song action"
-      "index album duration";
-  }
-
-  .track-index {
-    grid-area: index;
+    grid-template-columns: minmax(0, 1fr) 80px;
+    grid-template-areas: "song action";
   }
 
   .track-song {
@@ -103,12 +79,11 @@
   }
 
   .track-album {
-    grid-area: album;
+    display: none;
   }
 
   .track-duration {
-    grid-area: duration;
-    justify-self: start;
+    display: none;
   }
 
   .row-action {
@@ -117,17 +92,6 @@
 }
 
 @media (max-width: 640px) {
-  .app-shell {
-    padding: calc(14px + var(--window-safe-top)) 14px 188px;
-  }
-
-  .sidebar,
-  .hero-card,
-  .library-panel {
-    border-radius: 24px;
-    padding: 20px;
-  }
-
   .topbar-actions,
   .hero-actions {
     width: 100%;
