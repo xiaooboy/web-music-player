@@ -1,4 +1,4 @@
-const DB_NAME = "cloudbeat-player";
+const DB_NAME = "local-music";
 const DB_VERSION = 2;
 const STORE_NAME = "settings";
 const SOURCES_KEY = "music-sources";
@@ -46,11 +46,16 @@ function openDatabase() {
     });
 
     request.addEventListener("success", () => resolve(request.result));
-    request.addEventListener("error", () => reject(request.error || new Error("IndexedDB open failed")));
+    request.addEventListener("error", () =>
+      reject(request.error || new Error("IndexedDB open failed")),
+    );
   });
 }
 
-async function withStore<T>(mode: IDBTransactionMode, runner: (store: IDBObjectStore) => Promise<T>) {
+async function withStore<T>(
+  mode: IDBTransactionMode,
+  runner: (store: IDBObjectStore) => Promise<T>,
+) {
   const database = await openDatabase();
 
   try {
@@ -60,8 +65,12 @@ async function withStore<T>(mode: IDBTransactionMode, runner: (store: IDBObjectS
 
     await new Promise<void>((resolve, reject) => {
       transaction.addEventListener("complete", () => resolve());
-      transaction.addEventListener("error", () => reject(transaction.error || new Error("IndexedDB transaction failed")));
-      transaction.addEventListener("abort", () => reject(transaction.error || new Error("IndexedDB transaction aborted")));
+      transaction.addEventListener("error", () =>
+        reject(transaction.error || new Error("IndexedDB transaction failed")),
+      );
+      transaction.addEventListener("abort", () =>
+        reject(transaction.error || new Error("IndexedDB transaction aborted")),
+      );
     });
 
     return result;
@@ -73,11 +82,15 @@ async function withStore<T>(mode: IDBTransactionMode, runner: (store: IDBObjectS
 function requestToPromise<T = unknown>(request: IDBRequest<T>) {
   return new Promise<T>((resolve, reject) => {
     request.addEventListener("success", () => resolve(request.result));
-    request.addEventListener("error", () => reject(request.error || new Error("IndexedDB request failed")));
+    request.addEventListener("error", () =>
+      reject(request.error || new Error("IndexedDB request failed")),
+    );
   });
 }
 
-export async function savePersistedMusicSources(sources: PersistedMusicSource[]) {
+export async function savePersistedMusicSources(
+  sources: PersistedMusicSource[],
+) {
   await withStore("readwrite", async (store) => {
     await requestToPromise(store.put(sources, SOURCES_KEY));
   });
@@ -85,20 +98,28 @@ export async function savePersistedMusicSources(sources: PersistedMusicSource[])
 
 export async function loadPersistedMusicSources() {
   const record = await withStore("readonly", async (store) => {
-    const multi = await requestToPromise<PersistedMusicSource[] | undefined>(store.get(SOURCES_KEY));
+    const multi = await requestToPromise<PersistedMusicSource[] | undefined>(
+      store.get(SOURCES_KEY),
+    );
     if (multi?.length) {
       return multi;
     }
 
-    const legacy = await requestToPromise<LegacyPersistedMusicSource | undefined>(store.get("music-source"));
+    const legacy = await requestToPromise<
+      LegacyPersistedMusicSource | undefined
+    >(store.get("music-source"));
     if (!legacy?.handle || !legacy?.name) {
       return [];
     }
 
-    return [{ id: crypto.randomUUID(), handle: legacy.handle, name: legacy.name }] satisfies PersistedMusicSource[];
+    return [
+      { id: crypto.randomUUID(), handle: legacy.handle, name: legacy.name },
+    ] satisfies PersistedMusicSource[];
   });
 
-  return (record || []).filter((source) => source?.handle && source?.name && source?.id);
+  return (record || []).filter(
+    (source) => source?.handle && source?.name && source?.id,
+  );
 }
 
 export async function clearPersistedMusicSources() {
@@ -116,7 +137,9 @@ export async function saveTrackCache(cache: PersistedTrackCache) {
 
 export async function loadTrackCache() {
   return withStore("readonly", async (store) =>
-    requestToPromise<PersistedTrackCache | undefined>(store.get(TRACK_CACHE_KEY)),
+    requestToPromise<PersistedTrackCache | undefined>(
+      store.get(TRACK_CACHE_KEY),
+    ),
   );
 }
 
@@ -146,7 +169,9 @@ export function loadLikedTrackIds() {
     }
 
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : [];
   } catch {
     return [];
   }
