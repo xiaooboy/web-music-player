@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed, onMounted, ref, watch } from "vue";
 import { Heart, Pause, Play } from "lucide-vue-next";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 
-defineProps<{
+const props = defineProps<{
   tracks: Array<{ track: Track; index: number }>;
   hasTracks: boolean;
   loading: boolean;
@@ -12,7 +13,7 @@ defineProps<{
   currentTrackIndex: number;
   isPlaying: boolean;
   status: string;
-  likedTrackIds: string[];
+  likedTrackIdSet: Set<string>;
   title?: string;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -22,6 +23,38 @@ defineEmits<{
   play: [index: number];
   toggleFavorite: [index: number];
 }>();
+
+// ─── 渐进渲染 ────────────────────────────────────────────────────────────────
+// 挂载时先渲染前 INITIAL_RENDER_COUNT 行，其余在下一帧补全，
+// 确保切换面板时第一帧立即出现内容，不阻塞浏览器绘制。
+const INITIAL_RENDER_COUNT = 80;
+const renderCount = ref(INITIAL_RENDER_COUNT);
+
+const displayedTracks = computed(() =>
+  props.tracks.length <= renderCount.value
+    ? props.tracks
+    : props.tracks.slice(0, renderCount.value),
+);
+
+onMounted(() => {
+  if (props.tracks.length > INITIAL_RENDER_COUNT) {
+    requestAnimationFrame(() => {
+      renderCount.value = props.tracks.length;
+    });
+  }
+});
+
+// 加载过程中 tracks 持续增长时，同步扩展渲染窗口
+watch(
+  () => props.tracks.length,
+  (length) => {
+    if (length > renderCount.value) {
+      requestAnimationFrame(() => {
+        renderCount.value = length;
+      });
+    }
+  },
+);
 </script>
 
 <template>
@@ -43,8 +76,13 @@ defineEmits<{
     <div class="track-list" :class="{ 'track-list--empty': !tracks.length }">
       <template v-if="tracks.length">
         <div
-          v-for="{ track, index } in tracks"
+          v-for="{ track, index } in displayedTracks"
           :key="track.id"
+          v-memo="[
+            index === currentTrackIndex,
+            index === currentTrackIndex && isPlaying,
+            likedTrackIdSet.has(track.id),
+          ]"
           class="track-row"
           :class="{ 'is-active': index === currentTrackIndex }"
           @click="$emit('play', index)"
@@ -70,18 +108,16 @@ defineEmits<{
           <div class="row-action">
             <button
               class="row-like"
-              :class="{ 'is-active': likedTrackIds.includes(track.id) }"
+              :class="{ 'is-active': likedTrackIdSet.has(track.id) }"
               type="button"
               :aria-label="
-                likedTrackIds.includes(track.id) ? '取消喜欢' : '标记喜欢'
+                likedTrackIdSet.has(track.id) ? '取消喜欢' : '标记喜欢'
               "
               @click.stop="$emit('toggleFavorite', index)"
             >
               <Heart
                 :size="16"
-                :fill="
-                  likedTrackIds.includes(track.id) ? 'currentColor' : 'none'
-                "
+                :fill="likedTrackIdSet.has(track.id) ? 'currentColor' : 'none'"
               />
             </button>
             <button

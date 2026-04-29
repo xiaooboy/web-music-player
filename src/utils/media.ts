@@ -13,7 +13,9 @@ const AUDIO_EXTENSIONS = new Set([
 
 type WindowWithDirectoryPicker = Window &
   typeof globalThis & {
-    showDirectoryPicker?: (options?: { mode?: "read" | "readwrite" }) => Promise<FileSystemDirectoryHandle>;
+    showDirectoryPicker?: (options?: {
+      mode?: "read" | "readwrite";
+    }) => Promise<FileSystemDirectoryHandle>;
   };
 
 type IterableDirectoryHandle = FileSystemDirectoryHandle & {
@@ -25,8 +27,12 @@ type DirectoryPermissionDescriptor = {
 };
 
 type PermissionAwareDirectoryHandle = FileSystemDirectoryHandle & {
-  queryPermission?: (descriptor?: DirectoryPermissionDescriptor) => Promise<PermissionState>;
-  requestPermission?: (descriptor?: DirectoryPermissionDescriptor) => Promise<PermissionState>;
+  queryPermission?: (
+    descriptor?: DirectoryPermissionDescriptor,
+  ) => Promise<PermissionState>;
+  requestPermission?: (
+    descriptor?: DirectoryPermissionDescriptor,
+  ) => Promise<PermissionState>;
 };
 
 export function supportsDirectoryPicker() {
@@ -43,7 +49,10 @@ export async function pickDirectory() {
   return pickerWindow.showDirectoryPicker({ mode: "read" });
 }
 
-export async function ensureDirectoryPermission(handle: FileSystemDirectoryHandle, requestIfNeeded = false) {
+export async function ensureDirectoryPermission(
+  handle: FileSystemDirectoryHandle,
+  requestIfNeeded = false,
+) {
   const permissionHandle = handle as PermissionAwareDirectoryHandle;
   const options = { mode: "read" as const };
 
@@ -61,31 +70,44 @@ export async function ensureDirectoryPermission(handle: FileSystemDirectoryHandl
   return "prompt" as PermissionState;
 }
 
-export async function collectAudioFiles(handle: FileSystemDirectoryHandle, parentPath = ""): Promise<FileEntry[]> {
+export async function collectAudioFiles(
+  handle: FileSystemDirectoryHandle,
+  parentPath = "",
+): Promise<FileEntry[]> {
   return collectDirectoryFiles(handle, parentPath).then((entries) =>
     entries.filter(({ file }) => isAudioFile(file.name, file.type)),
   );
 }
 
-export async function collectDirectoryFiles(handle: FileSystemDirectoryHandle, parentPath = ""): Promise<FileEntry[]> {
-  const files: FileEntry[] = [];
+export async function collectDirectoryFiles(
+  handle: FileSystemDirectoryHandle,
+  parentPath = "",
+): Promise<FileEntry[]> {
   const directory = handle as IterableDirectoryHandle;
+  const filePromises: Promise<FileEntry>[] = [];
+  const dirPromises: Promise<FileEntry[]>[] = [];
 
   for await (const [, entry] of directory.entries()) {
     const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
     if (entry.kind === "directory") {
-      files.push(...(await collectDirectoryFiles(entry as FileSystemDirectoryHandle, currentPath)));
-      continue;
+      dirPromises.push(
+        collectDirectoryFiles(entry as FileSystemDirectoryHandle, currentPath),
+      );
+    } else {
+      filePromises.push(
+        (entry as FileSystemFileHandle)
+          .getFile()
+          .then((file) => ({ file, relativePath: currentPath })),
+      );
     }
-
-    const file = await (entry as FileSystemFileHandle).getFile();
-    files.push({
-      file,
-      relativePath: currentPath,
-    });
   }
 
-  return files;
+  const [fileEntries, ...dirEntries] = await Promise.all([
+    Promise.all(filePromises),
+    ...dirPromises,
+  ]);
+
+  return [...fileEntries, ...dirEntries.flat()];
 }
 
 export function entriesFromInput(files: FileList | null) {
@@ -95,26 +117,33 @@ export function entriesFromInput(files: FileList | null) {
   }));
 }
 
-export async function buildTrack(entry: FileEntry, index: number, folderName: string, externalLyricsText = "") {
+export async function buildTrack(
+  entry: FileEntry,
+  index: number,
+  folderName: string,
+  externalLyricsText = "",
+) {
   const { file, relativePath } = entry;
   const fallback = inferTrackInfoFromFile(file.name, relativePath, folderName);
   const extension = getFileExtension(file.name);
   const format = extension.toUpperCase() || "AUDIO";
 
-  let metadata: Partial<Track> = {};
-  try {
-    if (extension === "mp3") {
-      metadata = await parseId3Tags(file);
-    } else if (extension === "flac") {
-      metadata = await parseFlacMetadata(file);
-    } else if (extension === "m4a" || extension === "mp4") {
-      metadata = await parseMp4Metadata(file);
+  const metadataPromise = (async (): Promise<Partial<Track>> => {
+    try {
+      if (extension === "mp3") return await parseId3Tags(file);
+      if (extension === "flac") return await parseFlacMetadata(file);
+      if (extension === "m4a" || extension === "mp4")
+        return await parseMp4Metadata(file);
+      return {};
+    } catch {
+      return {};
     }
-  } catch {
-    metadata = {};
-  }
+  })();
 
-  const duration = await probeDuration(file);
+  const [metadata, duration] = await Promise.all([
+    metadataPromise,
+    probeDuration(file),
+  ]);
 
   return {
     id: `${normalizeSlashes(relativePath).toLowerCase()}-${index}`,
@@ -209,8 +238,12 @@ export async function coverUrlToDataUrl(coverUrl: string) {
     const blob = await response.blob();
     return await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.addEventListener("load", () => resolve(typeof reader.result === "string" ? reader.result : ""));
-      reader.addEventListener("error", () => reject(reader.error || new Error("cover read failed")));
+      reader.addEventListener("load", () =>
+        resolve(typeof reader.result === "string" ? reader.result : ""),
+      );
+      reader.addEventListener("error", () =>
+        reject(reader.error || new Error("cover read failed")),
+      );
       reader.readAsDataURL(blob);
     });
   } catch {
@@ -221,24 +254,26 @@ export async function coverUrlToDataUrl(coverUrl: string) {
 export async function buildLyricsLookup(entries: FileEntry[]) {
   const lookup = new Map<string, string>();
 
-  for (const entry of entries) {
-    if (!isLyricsFile(entry.file.name)) {
-      continue;
-    }
-
-    const stem = getLyricsLookupKey(entry.relativePath);
-    try {
-      lookup.set(stem, await entry.file.text());
-    } catch {
-      lookup.set(stem, "");
-    }
-  }
+  await Promise.all(
+    entries
+      .filter((entry) => isLyricsFile(entry.file.name))
+      .map(async (entry) => {
+        const stem = getLyricsLookupKey(entry.relativePath);
+        try {
+          lookup.set(stem, await entry.file.text());
+        } catch {
+          lookup.set(stem, "");
+        }
+      }),
+  );
 
   return lookup;
 }
 
 export function getLyricsLookupKey(relativePath: string) {
-  return normalizeSlashes(relativePath).replace(/\.[^.]+$/, "").toLowerCase();
+  return normalizeSlashes(relativePath)
+    .replace(/\.[^.]+$/, "")
+    .toLowerCase();
 }
 
 export function parseLyricsText(lyricsText: string): LyricsLine[] {
@@ -255,8 +290,12 @@ export function parseLyricsText(lyricsText: string): LyricsLine[] {
   let hasTimestamp = false;
 
   for (const line of lines) {
-    const matches = [...line.matchAll(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g)];
-    const text = line.replace(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g, "").trim();
+    const matches = [
+      ...line.matchAll(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g),
+    ];
+    const text = line
+      .replace(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g, "")
+      .trim();
 
     if (!matches.length) {
       parsed.push({ time: null, text: line });
@@ -268,7 +307,10 @@ export function parseLyricsText(lyricsText: string): LyricsLine[] {
       const minutes = Number(match[1]);
       const seconds = Number(match[2]);
       const fractionRaw = match[3] || "0";
-      const fraction = fractionRaw.length >= 3 ? Number(fractionRaw) / 1000 : Number(fractionRaw) / 100;
+      const fraction =
+        fractionRaw.length >= 3
+          ? Number(fractionRaw) / 1000
+          : Number(fractionRaw) / 100;
       parsed.push({
         time: minutes * 60 + seconds + fraction,
         text: text || "…",
@@ -281,11 +323,19 @@ export function parseLyricsText(lyricsText: string): LyricsLine[] {
     : parsed.map((line) => ({ ...line, time: null }));
 }
 
-function inferTrackInfoFromFile(fileName: string, relativePath: string, folderName: string) {
+function inferTrackInfoFromFile(
+  fileName: string,
+  relativePath: string,
+  folderName: string,
+) {
   const rawName = stripExtension(fileName);
-  const nameParts = rawName.split(" - ").map((part) => part.trim()).filter(Boolean);
+  const nameParts = rawName
+    .split(" - ")
+    .map((part) => part.trim())
+    .filter(Boolean);
   const pathParts = normalizeSlashes(relativePath).split("/");
-  const albumName = pathParts.length > 1 ? pathParts[pathParts.length - 2] : folderName;
+  const albumName =
+    pathParts.length > 1 ? pathParts[pathParts.length - 2] : folderName;
 
   if (nameParts.length >= 2) {
     return {
@@ -314,14 +364,18 @@ export async function probeDuration(file: File) {
     };
 
     probe.preload = "metadata";
-    probe.addEventListener("loadedmetadata", () => finish(probe.duration), { once: true });
+    probe.addEventListener("loadedmetadata", () => finish(probe.duration), {
+      once: true,
+    });
     probe.addEventListener("error", () => finish(0), { once: true });
     probe.src = url;
   });
 }
 
 async function parseId3Tags(file: File) {
-  const headerBuffer = await file.slice(0, Math.min(file.size, 2 * 1024 * 1024)).arrayBuffer();
+  const headerBuffer = await file
+    .slice(0, Math.min(file.size, 2 * 1024 * 1024))
+    .arrayBuffer();
   let bytes = new Uint8Array(headerBuffer);
 
   if (decodeLatin1(bytes.slice(0, 3)) !== "ID3") {
@@ -338,7 +392,8 @@ async function parseId3Tags(file: File) {
   }
 
   if (flags & 0x40) {
-    const extSize = version === 4 ? readSynchsafe(bytes, offset) : readUint32(bytes, offset);
+    const extSize =
+      version === 4 ? readSynchsafe(bytes, offset) : readUint32(bytes, offset);
     offset += version === 3 ? extSize + 4 : extSize;
   }
 
@@ -347,7 +402,10 @@ async function parseId3Tags(file: File) {
 
   if (version === 2) {
     while (offset + 6 <= tagLimit) {
-      const frameId = decodeLatin1(bytes.slice(offset, offset + 3)).replace(/\0/g, "");
+      const frameId = decodeLatin1(bytes.slice(offset, offset + 3)).replace(
+        /\0/g,
+        "",
+      );
       if (!/^[A-Z0-9]{3}$/.test(frameId)) {
         break;
       }
@@ -392,12 +450,18 @@ async function parseId3Tags(file: File) {
   }
 
   while (offset + 10 <= tagLimit) {
-    const frameId = decodeLatin1(bytes.slice(offset, offset + 4)).replace(/\0/g, "");
+    const frameId = decodeLatin1(bytes.slice(offset, offset + 4)).replace(
+      /\0/g,
+      "",
+    );
     if (!/^[A-Z0-9]{4}$/.test(frameId)) {
       break;
     }
 
-    const frameSize = version === 4 ? readSynchsafe(bytes, offset + 4) : readUint32(bytes, offset + 4);
+    const frameSize =
+      version === 4
+        ? readSynchsafe(bytes, offset + 4)
+        : readUint32(bytes, offset + 4);
     if (!frameSize) {
       break;
     }
@@ -437,7 +501,9 @@ async function parseId3Tags(file: File) {
 }
 
 async function parseFlacMetadata(file: File) {
-  const buffer = await file.slice(0, Math.min(file.size, 16 * 1024 * 1024)).arrayBuffer();
+  const buffer = await file
+    .slice(0, Math.min(file.size, 16 * 1024 * 1024))
+    .arrayBuffer();
   const bytes = new Uint8Array(buffer);
 
   if (decodeLatin1(bytes.slice(0, 4)) !== "fLaC") {
@@ -491,7 +557,9 @@ function decodeApicFrame(frameBytes: Uint8Array) {
     return "";
   }
 
-  const mimeType = normalizeMimeType(decodeLatin1(frameBytes.slice(offset, mimeEnd)));
+  const mimeType = normalizeMimeType(
+    decodeLatin1(frameBytes.slice(offset, mimeEnd)),
+  );
   if (mimeType === "-->") {
     return "";
   }
@@ -553,7 +621,11 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
       break;
     }
 
-    const comment = sanitizeText(new TextDecoder("utf-8").decode(blockBytes.slice(offset, offset + commentLength)));
+    const comment = sanitizeText(
+      new TextDecoder("utf-8").decode(
+        blockBytes.slice(offset, offset + commentLength),
+      ),
+    );
     offset += commentLength;
 
     const separatorIndex = comment.indexOf("=");
@@ -576,7 +648,11 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
       metadata.album = value;
     }
 
-    if ((key === "LYRICS" || key === "UNSYNCEDLYRICS") && value && !metadata.lyricsText) {
+    if (
+      (key === "LYRICS" || key === "UNSYNCEDLYRICS") &&
+      value &&
+      !metadata.lyricsText
+    ) {
       metadata.lyricsText = value;
     }
   }
@@ -597,7 +673,9 @@ function decodeFlacPictureBlock(blockBytes: Uint8Array) {
     return "";
   }
 
-  const mimeType = normalizeMimeType(decodeLatin1(blockBytes.slice(offset, offset + mimeLength)));
+  const mimeType = normalizeMimeType(
+    decodeLatin1(blockBytes.slice(offset, offset + mimeLength)),
+  );
   offset += mimeLength;
 
   const descriptionLength = readUint32(blockBytes, offset);
@@ -658,12 +736,19 @@ function walkMp4Atoms(
 
     const nextPath = [...path, atomType];
     if (isMp4ContainerAtom(atomType)) {
-      const childStart = atomType === "meta" ? offset + headerSize + 4 : offset + headerSize;
+      const childStart =
+        atomType === "meta" ? offset + headerSize + 4 : offset + headerSize;
       if (childStart <= atomEnd) {
         walkMp4Atoms(bytes, childStart, atomEnd, nextPath, metadata);
       }
     } else if (path[path.length - 1] === "ilst") {
-      parseMp4MetadataAtom(atomType, bytes, offset + headerSize, atomEnd, metadata);
+      parseMp4MetadataAtom(
+        atomType,
+        bytes,
+        offset + headerSize,
+        atomEnd,
+        metadata,
+      );
     }
 
     offset = atomEnd;
@@ -714,7 +799,10 @@ function parseMp4MetadataAtom(
         metadata.title = decodeMp4Text(payload);
       }
 
-      if ((atomType === "\u00a9ART" || atomType === "aART") && !metadata.artist) {
+      if (
+        (atomType === "\u00a9ART" || atomType === "aART") &&
+        !metadata.artist
+      ) {
         metadata.artist = decodeMp4Text(payload);
       }
 
@@ -722,7 +810,10 @@ function parseMp4MetadataAtom(
         metadata.album = decodeMp4Text(payload);
       }
 
-      if ((atomType === "\u00a9lyr" || atomType === "lyr") && !metadata.lyricsText) {
+      if (
+        (atomType === "\u00a9lyr" || atomType === "lyr") &&
+        !metadata.lyricsText
+      ) {
         metadata.lyricsText = decodeMp4Text(payload);
       }
     }
@@ -752,7 +843,11 @@ function decodeMp4Text(payload: Uint8Array) {
   }
 }
 
-function findEncodedTextEnd(bytes: Uint8Array, start: number, encoding: number) {
+function findEncodedTextEnd(
+  bytes: Uint8Array,
+  start: number,
+  encoding: number,
+) {
   if (encoding === 0 || encoding === 3) {
     const end = bytes.indexOf(0, start);
     return end === -1 ? bytes.length : end + 1;
@@ -815,7 +910,10 @@ function decodeBytes(bytes: Uint8Array, encoding: number) {
 }
 
 function sanitizeText(value: string) {
-  return value.replace(/\0/g, "").replace(/^\uFEFF/, "").trim();
+  return value
+    .replace(/\0/g, "")
+    .replace(/^\uFEFF/, "")
+    .trim();
 }
 
 function decodeLatin1(bytes: Uint8Array) {
@@ -845,7 +943,12 @@ function readUint24(bytes: Uint8Array, offset: number) {
 }
 
 function readUint32LE(bytes: Uint8Array, offset: number) {
-  return bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24);
+  return (
+    bytes[offset] |
+    (bytes[offset + 1] << 8) |
+    (bytes[offset + 2] << 16) |
+    (bytes[offset + 3] << 24)
+  );
 }
 
 function readUint64(bytes: Uint8Array, offset: number) {
@@ -887,7 +990,11 @@ function normalizeMimeType(value: string) {
     return "image/jpeg";
   }
 
-  if (normalized === "jpg" || normalized === "jpeg" || normalized === "image/jpg") {
+  if (
+    normalized === "jpg" ||
+    normalized === "jpeg" ||
+    normalized === "image/jpg"
+  ) {
     return "image/jpeg";
   }
 
@@ -903,15 +1010,35 @@ function normalizeMimeType(value: string) {
 }
 
 function isMp4ContainerAtom(atomType: string) {
-  return atomType === "moov" || atomType === "udta" || atomType === "ilst" || atomType === "trak" || atomType === "mdia" || atomType === "minf" || atomType === "stbl" || atomType === "meta";
+  return (
+    atomType === "moov" ||
+    atomType === "udta" ||
+    atomType === "ilst" ||
+    atomType === "trak" ||
+    atomType === "mdia" ||
+    atomType === "minf" ||
+    atomType === "stbl" ||
+    atomType === "meta"
+  );
 }
 
 function detectImageMimeType(bytes: Uint8Array) {
-  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
     return "image/png";
   }
 
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  ) {
     return "image/jpeg";
   }
 
