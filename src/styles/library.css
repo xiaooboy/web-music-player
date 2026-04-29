@@ -77,15 +77,15 @@
   padding-right: 0;
 }
 
-.library-management-panel > .section-head,
+/*.library-management-panel > .section-head,
 .library-management-panel > .library-management-hint,
 .library-management-panel > .library-management-actions,
 .library-management-panel > .empty-panel {
   padding-right: 24px;
-}
+}*/
 
 .library-management-hint {
-  margin: 0;
+  margin-top: 6px;
   color: var(--muted);
   line-height: 1.5;
 }
@@ -126,7 +126,7 @@
   position: relative;
   z-index: 5;
   width: 100%;
-  padding: 0 0 10px;
+  padding: 0 0 20px;
   background: transparent;
   backdrop-filter: none;
 }
@@ -137,7 +137,6 @@
   height: 100%;
   overflow: hidden;
   padding-right: 0;
-  scrollbar-gutter: stable;
 }
 
 .playlist-scroll > .library-panel {
@@ -150,12 +149,12 @@
   padding-right: 0;
 }
 
-.playlist-scroll > .library-panel > .section-head,
+/*.playlist-scroll > .library-panel > .section-head,
 .playlist-scroll > .library-panel > .track-header,
 .playlist-scroll > .library-panel > .empty-panel {
   padding-left: 24px;
   padding-right: 24px;
-}
+}*/
 
 .playlist-scroll > .library-panel .track-list {
   flex: 1;
@@ -181,7 +180,6 @@
 
 .playlist-scroll > .library-panel .track-row {
   width: auto;
-  margin-inline: 24px;
 }
 
 .playlist-scroll::-webkit-scrollbar {
@@ -215,19 +213,10 @@
   justify-self: stretch;
   align-self: start;
   padding: 10px 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
-  transition: background 160ms ease, transform 160ms ease;
-}
 
-.track-row:hover {
-  background: #222222;
-  transform: translateY(-1px);
-}
-
-.track-row.is-active {
-  background: linear-gradient(135deg, rgba(30, 215, 96, 0.12), rgba(255, 255, 255, 0.03));
-  border-color: rgba(30, 215, 96, 0.2);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .track-song {

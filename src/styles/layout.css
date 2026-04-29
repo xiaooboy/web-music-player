@@ -1,10 +1,12 @@
 .app-shell {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 50px minmax(0, 1fr);
   min-height: 100vh;
+  max-height: 100vh;
   height: 100vh;
-  padding: calc(16px + var(--window-safe-top)) 16px 122px;
+  padding: calc(16px + var(--window-safe-top)) 16px 0;
+  /*padding: calc(16px + var(--window-safe-top)) 16px var(--dock-height);*/
+  gap: 20px;
   overflow: hidden;
 }
 
@@ -29,10 +31,10 @@
   gap: 12px;
   justify-items: start;
 }
-
 .track-list {
   align-content: start;
   grid-auto-rows: max-content;
+  padding-bottom: var(--dock-height);
 }
 
 .main-stage {
@@ -40,7 +42,6 @@
   grid-template-rows: minmax(0, 1fr);
   min-height: 0;
   height: 100%;
-  padding-right: 4px;
   overflow: hidden;
   scrollbar-width: none;
   align-content: stretch;
@@ -119,10 +120,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #242424;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  padding: 14px 18px;
+  padding: 8px 10px;
 }
 
 .search-field input {
@@ -140,8 +140,7 @@
 
 .hero-card,
 .library-panel {
-  background: var(--panel);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  width: 100%;
 }
 
 .hero-card {
@@ -254,7 +253,6 @@
 
 .library-panel {
   border-radius: var(--radius-xl);
-  padding: 24px 24px 10px;
   min-height: 0;
   height: 100%;
 }

@@ -67,7 +67,9 @@ const isPlaying = ref(false);
 const progressPercent = ref(0);
 const currentTimeSeconds = ref(0);
 const currentView = ref<"library" | "detail">("library");
-const activeSection = ref<"playlist" | "favorites" | "albums" | "library-management">("playlist");
+const activeSection = ref<
+  "playlist" | "favorites" | "albums" | "library-management"
+>("playlist");
 const selectedAlbumName = ref("");
 const playbackScope = ref<PlaybackScope>({ type: "all" });
 const likedTrackIds = ref<string[]>(loadLikedTrackIds());
@@ -78,7 +80,9 @@ let libraryBuildToken = 0;
 let playlistScrollHideTimer: ReturnType<typeof setTimeout> | null = null;
 let restoreLibraryTimer: ReturnType<typeof setTimeout> | null = null;
 
-const currentTrack = computed(() => tracks.value[currentTrackIndex.value] || null);
+const currentTrack = computed(
+  () => tracks.value[currentTrackIndex.value] || null,
+);
 const albums = computed(() => {
   const albumMap = new Map<
     string,
@@ -136,8 +140,12 @@ const scopedTrackIndexes = computed(() => {
     return tracks.value.map((_, index) => index);
   }
 
-  const activeAlbum = albums.value.find((album) => album.name === scope.albumName);
-  return activeAlbum ? activeAlbum.tracks.map(({ index }) => index) : tracks.value.map((_, index) => index);
+  const activeAlbum = albums.value.find(
+    (album) => album.name === scope.albumName,
+  );
+  return activeAlbum
+    ? activeAlbum.tracks.map(({ index }) => index)
+    : tracks.value.map((_, index) => index);
 });
 const likedTrackIdSet = computed(() => new Set(likedTrackIds.value));
 const favoriteTracks = computed(() =>
@@ -152,11 +160,14 @@ const visibleFavoriteTracks = computed(() => {
 
   const needle = searchQuery.value.trim().toLowerCase();
   return favoriteTracks.value.filter(({ track }) => {
-    const haystack = `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
+    const haystack =
+      `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
     return haystack.includes(needle);
   });
 });
-const isCurrentTrackLiked = computed(() => (currentTrack.value ? likedTrackIdSet.value.has(currentTrack.value.id) : false));
+const isCurrentTrackLiked = computed(() =>
+  currentTrack.value ? likedTrackIdSet.value.has(currentTrack.value.id) : false,
+);
 const visibleTracks = computed(() => {
   if (!searchQuery.value.trim()) {
     return tracks.value.map((track, index) => ({ track, index }));
@@ -166,7 +177,8 @@ const visibleTracks = computed(() => {
   return tracks.value
     .map((track, index) => ({ track, index }))
     .filter(({ track }) => {
-      const haystack = `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
+      const haystack =
+        `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
       return haystack.includes(needle);
     });
 });
@@ -208,7 +220,9 @@ const libraryHint = computed(() =>
     : "当前环境将使用系统目录选择器导入；若要直接目录授权并自动恢复，请在 Chrome 或 Edge 的 localhost / HTTPS 环境打开。",
 );
 const sourceNamesLabel = computed(() =>
-  musicSources.value.length ? musicSources.value.map((source) => source.name).join(" · ") : "",
+  musicSources.value.length
+    ? musicSources.value.map((source) => source.name).join(" · ")
+    : "",
 );
 const currentTimeLabel = computed(() => formatTime(currentTimeSeconds.value));
 const totalTimeLabel = computed(() => {
@@ -220,8 +234,12 @@ const totalTimeLabel = computed(() => {
   return formatTime(currentTrack.value?.duration || 0);
 });
 const volumePercent = computed(() => Math.round(volume.value * 100));
-const currentLyricsLines = computed(() => parseLyricsText(currentTrack.value?.lyricsText || ""));
-const hasTimedLyrics = computed(() => currentLyricsLines.value.some((line) => line.time !== null));
+const currentLyricsLines = computed(() =>
+  parseLyricsText(currentTrack.value?.lyricsText || ""),
+);
+const hasTimedLyrics = computed(() =>
+  currentLyricsLines.value.some((line) => line.time !== null),
+);
 const activeLyricsIndex = computed(() => {
   if (!currentLyricsLines.value.length || !hasTimedLyrics.value) {
     return -1;
@@ -245,12 +263,17 @@ watchEffect(() => {
     return;
   }
 
-  if (selectedAlbumName.value && availableAlbums.some((album) => album.name === selectedAlbumName.value)) {
+  if (
+    selectedAlbumName.value &&
+    availableAlbums.some((album) => album.name === selectedAlbumName.value)
+  ) {
     return;
   }
 
   const currentAlbumName = currentTrack.value?.album.trim() || "未知专辑";
-  selectedAlbumName.value = availableAlbums.some((album) => album.name === currentAlbumName)
+  selectedAlbumName.value = availableAlbums.some(
+    (album) => album.name === currentAlbumName,
+  )
     ? currentAlbumName
     : availableAlbums[0].name;
 });
@@ -274,7 +297,10 @@ watchEffect(() => {
 });
 
 function buildSourceCacheKey(sourceNames: string[]) {
-  return [...sourceNames].sort((left, right) => left.localeCompare(right, "zh-Hans-CN")).join("::").toLowerCase();
+  return [...sourceNames]
+    .sort((left, right) => left.localeCompare(right, "zh-Hans-CN"))
+    .join("::")
+    .toLowerCase();
 }
 
 function createCachedTrack(record: CachedTrackRecord): Track {
@@ -302,7 +328,10 @@ async function serializeTrackCache(records: Track[]) {
   );
 }
 
-function hydrateCachedTracks(entries: FileEntry[], records: CachedTrackRecord[]): Track[] {
+function hydrateCachedTracks(
+  entries: FileEntry[],
+  records: CachedTrackRecord[],
+): Track[] {
   const entryMap = new Map(
     entries
       .filter(({ file }) => isAudioFile(file.name, file.type))
@@ -316,11 +345,11 @@ function hydrateCachedTracks(entries: FileEntry[], records: CachedTrackRecord[])
     }
 
     result.push({
-        ...record,
-        file: entry.file,
-        coverUrl: record.coverUrl || "",
-        isPlayable: true,
-      });
+      ...record,
+      file: entry.file,
+      coverUrl: record.coverUrl || "",
+      isPlayable: true,
+    });
 
     return result;
   }, []);
@@ -415,7 +444,9 @@ async function loadLibrary(
     disposeLibrary();
   }
 
-  const audioEntries = entries.filter(({ file }) => isAudioFile(file.name, file.type));
+  const audioEntries = entries.filter(({ file }) =>
+    isAudioFile(file.name, file.type),
+  );
   if (!audioEntries.length) {
     if (buildToken === libraryBuildToken) {
       setStatus("没有检测到可播放的音频文件。");
@@ -431,7 +462,9 @@ async function loadLibrary(
 
   const lyricsLookup = await buildLyricsLookup(entries);
   const sortedEntries = [...audioEntries].sort((a, b) =>
-    a.relativePath.localeCompare(b.relativePath, "zh-Hans-CN", { numeric: true }),
+    a.relativePath.localeCompare(b.relativePath, "zh-Hans-CN", {
+      numeric: true,
+    }),
   );
 
   setStatus(`正在扫描 ${sortedEntries.length} 首歌曲...`);
@@ -447,7 +480,8 @@ async function loadLibrary(
       sortedEntries[index],
       index,
       nextFolderName,
-      lyricsLookup.get(getLyricsLookupKey(sortedEntries[index].relativePath)) || "",
+      lyricsLookup.get(getLyricsLookupKey(sortedEntries[index].relativePath)) ||
+        "",
     );
 
     if (buildToken !== libraryBuildToken) {
@@ -462,7 +496,9 @@ async function loadLibrary(
     }
 
     loadingDone.value = index + 1;
-    setStatus(`正在解析 ${loadingDone.value} / ${loadingTotal.value} 首歌曲...`);
+    setStatus(
+      `正在解析 ${loadingDone.value} / ${loadingTotal.value} 首歌曲...`,
+    );
   }
 
   if (buildToken !== libraryBuildToken) {
@@ -475,7 +511,8 @@ async function loadLibrary(
   loadingTotal.value = 0;
 
   if (preserveVisibleTracks) {
-    const targetTrackPath = activeTrackPath.value || currentTrack.value?.relativePath || "";
+    const targetTrackPath =
+      activeTrackPath.value || currentTrack.value?.relativePath || "";
     revokeTrackResources(previousTracks);
     tracks.value = [...parsedTracks];
 
@@ -484,15 +521,19 @@ async function loadLibrary(
       activeTrackPath.value = "";
     } else {
       const preservedIndex = targetTrackPath
-        ? tracks.value.findIndex((track) => track.relativePath === targetTrackPath)
+        ? tracks.value.findIndex(
+            (track) => track.relativePath === targetTrackPath,
+          )
         : -1;
 
       if (preservedIndex !== -1) {
         currentTrackIndex.value = preservedIndex;
-        activeTrackPath.value = tracks.value[preservedIndex]?.relativePath || "";
+        activeTrackPath.value =
+          tracks.value[preservedIndex]?.relativePath || "";
       } else if (currentTrackIndex.value >= tracks.value.length) {
         currentTrackIndex.value = tracks.value.length - 1;
-        activeTrackPath.value = tracks.value[currentTrackIndex.value]?.relativePath || "";
+        activeTrackPath.value =
+          tracks.value[currentTrackIndex.value]?.relativePath || "";
       } else if (currentTrackIndex.value !== -1) {
         currentTrackIndex.value = -1;
         activeTrackPath.value = "";
@@ -505,7 +546,8 @@ async function loadLibrary(
     activeTrackPath.value = "";
   } else if (currentTrackIndex.value >= tracks.value.length) {
     currentTrackIndex.value = tracks.value.length - 1;
-    activeTrackPath.value = tracks.value[currentTrackIndex.value]?.relativePath || "";
+    activeTrackPath.value =
+      tracks.value[currentTrackIndex.value]?.relativePath || "";
   }
 
   if (tracks.value.length) {
@@ -528,7 +570,9 @@ async function rebuildLibrary(options?: { preserveVisibleTracks?: boolean }) {
   const allEntries: FileEntry[] = [];
   const activeSourceNames: string[] = [];
   const activePersistentSourceNames: string[] = [];
-  const sourcesToBuild = musicSources.value.some((source) => source.kind === "file-launch")
+  const sourcesToBuild = musicSources.value.some(
+    (source) => source.kind === "file-launch",
+  )
     ? musicSources.value.filter((source) => source.kind === "file-launch")
     : musicSources.value;
 
@@ -561,20 +605,34 @@ async function rebuildLibrary(options?: { preserveVisibleTracks?: boolean }) {
     );
   }
 
-  if (options?.preserveVisibleTracks && tracks.value.some((track) => !track.isPlayable) && allEntries.length) {
-    const cachedVisibleTracks = tracks.value.filter((track) => !track.isPlayable) as CachedTrackRecord[];
+  if (
+    options?.preserveVisibleTracks &&
+    tracks.value.some((track) => !track.isPlayable) &&
+    allEntries.length
+  ) {
+    const cachedVisibleTracks = tracks.value.filter(
+      (track) => !track.isPlayable,
+    ) as CachedTrackRecord[];
     const hydratedTracks = hydrateCachedTracks(allEntries, cachedVisibleTracks);
 
     if (hydratedTracks.length) {
-      const previousTrackPath = activeTrackPath.value || currentTrack.value?.relativePath || "";
+      const previousTrackPath =
+        activeTrackPath.value || currentTrack.value?.relativePath || "";
       revokeTrackResources(tracks.value);
       tracks.value = hydratedTracks;
       const preservedIndex = previousTrackPath
-        ? hydratedTracks.findIndex((track) => track.relativePath === previousTrackPath)
+        ? hydratedTracks.findIndex(
+            (track) => track.relativePath === previousTrackPath,
+          )
         : -1;
       currentTrackIndex.value = preservedIndex !== -1 ? preservedIndex : -1;
-      activeTrackPath.value = preservedIndex !== -1 ? hydratedTracks[preservedIndex]?.relativePath || "" : "";
-      setStatus(`已恢复可播放曲库，后台正在刷新 ${hydratedTracks.length} 首歌曲...`);
+      activeTrackPath.value =
+        preservedIndex !== -1
+          ? hydratedTracks[preservedIndex]?.relativePath || ""
+          : "";
+      setStatus(
+        `已恢复可播放曲库，后台正在刷新 ${hydratedTracks.length} 首歌曲...`,
+      );
     }
   }
 
@@ -592,7 +650,8 @@ async function rebuildLibrary(options?: { preserveVisibleTracks?: boolean }) {
   await loadLibrary(allEntries, activeSourceNames.join(" · "), buildToken, {
     preserveVisibleTracks: options?.preserveVisibleTracks,
     cacheKey:
-      activeSourceNames.length && activeSourceNames.length === activePersistentSourceNames.length
+      activeSourceNames.length &&
+      activeSourceNames.length === activePersistentSourceNames.length
         ? buildSourceCacheKey(activePersistentSourceNames)
         : null,
   });
@@ -637,7 +696,9 @@ async function handleLaunchedMusicFiles(fileHandles: FileSystemFileHandle[]) {
     return;
   }
 
-  const audioEntries = entries.filter(({ file }) => isAudioFile(file.name, file.type));
+  const audioEntries = entries.filter(({ file }) =>
+    isAudioFile(file.name, file.type),
+  );
   if (!audioEntries.length) {
     setStatus("没有检测到可播放的音频文件。");
     return;
@@ -650,7 +711,10 @@ async function handleLaunchedMusicFiles(fileHandles: FileSystemFileHandle[]) {
   }
   const launchSource: RuntimeMusicSource = {
     id: crypto.randomUUID(),
-    name: audioEntries.length === 1 ? audioEntries[0].file.name : `打开的文件 (${audioEntries.length})`,
+    name:
+      audioEntries.length === 1
+        ? audioEntries[0].file.name
+        : `打开的文件 (${audioEntries.length})`,
     persistent: false,
     available: true,
     kind: "file-launch",
@@ -896,7 +960,9 @@ function getAdjacentIndex(step: number) {
 
   if (isShuffle.value) {
     if (trackIndexes.length === 1) {
-      return currentTrackIndex.value === -1 ? trackIndexes[0] : currentTrackIndex.value;
+      return currentTrackIndex.value === -1
+        ? trackIndexes[0]
+        : currentTrackIndex.value;
     }
 
     let nextIndex = currentTrackIndex.value;
@@ -907,8 +973,12 @@ function getAdjacentIndex(step: number) {
     return nextIndex;
   }
 
-  const currentScopedIndex = currentTrackIndex.value === -1 ? -1 : trackIndexes.indexOf(currentTrackIndex.value);
-  const baseIndex = currentScopedIndex === -1 ? (step > 0 ? -1 : 0) : currentScopedIndex;
+  const currentScopedIndex =
+    currentTrackIndex.value === -1
+      ? -1
+      : trackIndexes.indexOf(currentTrackIndex.value);
+  const baseIndex =
+    currentScopedIndex === -1 ? (step > 0 ? -1 : 0) : currentScopedIndex;
   const nextIndex = baseIndex + step;
 
   if (nextIndex >= trackIndexes.length) {
@@ -1001,13 +1071,22 @@ function syncProgress() {
   }
 
   currentTimeSeconds.value = audio.currentTime || 0;
-  const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : currentTrack.value?.duration || 0;
-  progressPercent.value = duration > 0 ? (currentTimeSeconds.value / duration) * 100 : 0;
+  const duration =
+    Number.isFinite(audio.duration) && audio.duration > 0
+      ? audio.duration
+      : currentTrack.value?.duration || 0;
+  progressPercent.value =
+    duration > 0 ? (currentTimeSeconds.value / duration) * 100 : 0;
 }
 
 function updateMediaSession() {
   const track = currentTrack.value;
-  if (!track || !audioRef.value || !("mediaSession" in navigator) || typeof MediaMetadata === "undefined") {
+  if (
+    !track ||
+    !audioRef.value ||
+    !("mediaSession" in navigator) ||
+    typeof MediaMetadata === "undefined"
+  ) {
     return;
   }
 
@@ -1015,7 +1094,9 @@ function updateMediaSession() {
     title: track.title,
     artist: track.artist,
     album: track.album,
-    artwork: track.coverUrl ? [{ src: track.coverUrl, sizes: "512x512", type: "image/jpeg" }] : [],
+    artwork: track.coverUrl
+      ? [{ src: track.coverUrl, sizes: "512x512", type: "image/jpeg" }]
+      : [],
   });
 
   navigator.mediaSession.setActionHandler("play", () => {
@@ -1087,7 +1168,9 @@ function setStatus(message: string) {
 }
 
 async function clearCachedSource() {
-  musicSources.value = musicSources.value.filter((source) => !source.persistent);
+  musicSources.value = musicSources.value.filter(
+    (source) => !source.persistent,
+  );
   try {
     await clearPersistedMusicSources();
     await clearTrackCache();
@@ -1097,7 +1180,9 @@ async function clearCachedSource() {
 }
 
 async function removeSource(sourceId: string) {
-  musicSources.value = musicSources.value.filter((source) => source.id !== sourceId);
+  musicSources.value = musicSources.value.filter(
+    (source) => source.id !== sourceId,
+  );
   await persistHandleSources();
   await rebuildLibrary({ preserveVisibleTracks: true });
 }
@@ -1121,7 +1206,9 @@ async function restoreCachedLibrary() {
     const lastFolderName = persistedSources[0]?.name || loadLastFolderName();
 
     if (lastFolderName) {
-      folderName.value = persistedSources.map((source) => source.name).join(" · ") || lastFolderName;
+      folderName.value =
+        persistedSources.map((source) => source.name).join(" · ") ||
+        lastFolderName;
     }
 
     if (!persistedSources.length) {
@@ -1132,12 +1219,17 @@ async function restoreCachedLibrary() {
     const cachedTrackPayload = await loadTrackCache();
     const cacheKey = buildSourceCacheKey(persistentSourceNames);
 
-    if (cachedTrackPayload?.sourceKey === cacheKey && cachedTrackPayload.tracks.length) {
+    if (
+      cachedTrackPayload?.sourceKey === cacheKey &&
+      cachedTrackPayload.tracks.length
+    ) {
       revokeTrackResources(tracks.value);
       tracks.value = cachedTrackPayload.tracks.map(createCachedTrack);
       currentTrackIndex.value = -1;
       activeTrackPath.value = "";
-      setStatus(`已载入缓存曲库，后台正在刷新 ${tracks.value.length} 首歌曲...`);
+      setStatus(
+        `已载入缓存曲库，后台正在刷新 ${tracks.value.length} 首歌曲...`,
+      );
     }
 
     const restoredSources: RuntimeMusicSource[] = [];
@@ -1159,7 +1251,9 @@ async function restoreCachedLibrary() {
       });
     }
 
-    const existingFileLaunchSources = musicSources.value.filter((source) => source.kind === "file-launch");
+    const existingFileLaunchSources = musicSources.value.filter(
+      (source) => source.kind === "file-launch",
+    );
     musicSources.value = [...restoredSources, ...existingFileLaunchSources];
     if (launchedFilePlaybackActive.value) {
       setStatus("已恢复音乐源信息；当前保持系统打开文件的独立播放。");
@@ -1167,8 +1261,12 @@ async function restoreCachedLibrary() {
     }
 
     if (restoredSources.some((source) => source.available)) {
-      await rebuildLibrary({ preserveVisibleTracks: tracks.value.some((track) => !track.isPlayable) });
-      setStatus(`已恢复 ${restoredSources.filter((source) => source.available).length} 个音乐源`);
+      await rebuildLibrary({
+        preserveVisibleTracks: tracks.value.some((track) => !track.isPlayable),
+      });
+      setStatus(
+        `已恢复 ${restoredSources.filter((source) => source.available).length} 个音乐源`,
+      );
       return;
     }
 
@@ -1178,7 +1276,9 @@ async function restoreCachedLibrary() {
     if (lastFolderName) {
       folderName.value = lastFolderName;
     }
-    setStatus("已检测到缓存记录，但自动恢复失败；缓存不会被清除，可重新添加同一目录恢复授权。");
+    setStatus(
+      "已检测到缓存记录，但自动恢复失败；缓存不会被清除，可重新添加同一目录恢复授权。",
+    );
   }
 }
 
@@ -1187,7 +1287,10 @@ onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleEscapeClose);
   window.removeEventListener("contextmenu", handleContextMenuBlock);
   window.removeEventListener("resize", handleWindowResize);
-  if (typeof window.launchQueue !== "undefined" && typeof window.launchQueue.setConsumer === "function") {
+  if (
+    typeof window.launchQueue !== "undefined" &&
+    typeof window.launchQueue.setConsumer === "function"
+  ) {
     window.launchQueue.setConsumer(() => {});
   }
   if (playlistScrollHideTimer) {
@@ -1203,10 +1306,15 @@ onMounted(() => {
   window.addEventListener("contextmenu", handleContextMenuBlock);
   window.addEventListener("resize", handleWindowResize);
 
-  if (typeof window.launchQueue !== "undefined" && typeof window.launchQueue.setConsumer === "function") {
-    window.launchQueue.setConsumer((params: { files: FileSystemFileHandle[] }) => {
-      void handleLaunchedMusicFiles(params.files || []);
-    });
+  if (
+    typeof window.launchQueue !== "undefined" &&
+    typeof window.launchQueue.setConsumer === "function"
+  ) {
+    window.launchQueue.setConsumer(
+      (params: { files: FileSystemFileHandle[] }) => {
+        void handleLaunchedMusicFiles(params.files || []);
+      },
+    );
   }
 
   restoreLibraryTimer = setTimeout(() => {
@@ -1234,13 +1342,15 @@ function handlePlaylistScroll() {
   }, 700);
 }
 
-function handleWindowResize() {
-}
+function handleWindowResize() {}
 
-function handleSwitchSection(section: "playlist" | "favorites" | "albums" | "library-management") {
+function handleSwitchSection(
+  section: "playlist" | "favorites" | "albums" | "library-management",
+) {
   activeSection.value = section;
   if (section === "albums" && !selectedAlbumName.value && albums.value.length) {
-    selectedAlbumName.value = currentTrack.value?.album.trim() || albums.value[0].name;
+    selectedAlbumName.value =
+      currentTrack.value?.album.trim() || albums.value[0].name;
   }
 }
 
@@ -1283,7 +1393,12 @@ function toggleCurrentTrackFavorite() {
         <header class="playlist-searchbar">
           <label class="search-field">
             <Search :size="18" aria-hidden="true" />
-            <input v-model="searchQuery" type="search" placeholder="搜索歌曲、歌手、专辑" autocomplete="off" />
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="搜索歌曲、歌手、专辑"
+              autocomplete="off"
+            />
           </label>
         </header>
 
@@ -1309,63 +1424,67 @@ function toggleCurrentTrackFavorite() {
         </div>
       </div>
 
-      <div v-else-if="activeSection === 'favorites'" class="page-content">
-        <div class="playlist-stage">
-          <header class="playlist-searchbar">
-            <label class="search-field">
-              <Search :size="18" aria-hidden="true" />
-              <input v-model="searchQuery" type="search" placeholder="搜索喜欢的歌曲、歌手、专辑" autocomplete="off" />
-            </label>
-          </header>
-
-          <div
-            ref="playlistScrollRef"
-            class="playlist-scroll"
-            :class="{ 'is-scrolling': isPlaylistScrolling }"
-            @scroll.passive="handlePlaylistScroll"
-          >
-            <LibraryPanel
-              :tracks="visibleFavoriteTracks"
-              :has-tracks="favoriteTracks.length > 0"
-              :loading="false"
-              :loading-done="0"
-              :loading-total="0"
-              :current-track-index="currentTrackIndex"
-              :is-playing="isPlaying"
-              :status="favoriteTracks.length ? `共 ${favoriteTracks.length} 首喜欢的歌曲` : '还没有喜欢的歌曲'"
-              :liked-track-ids="likedTrackIds"
-              title="喜欢的音乐"
-              empty-title="还没有喜欢的歌曲"
-              empty-description="在播放列表或播放器里点亮心形按钮，这里会自动收集你喜欢的音乐。"
-              @play="handleFavoriteTrackSelect"
-              @toggle-favorite="toggleTrackFavorite"
+      <div v-else-if="activeSection === 'favorites'" class="playlist-stage">
+        <header class="playlist-searchbar">
+          <label class="search-field">
+            <Search :size="18" aria-hidden="true" />
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="搜索喜欢的歌曲、歌手、专辑"
+              autocomplete="off"
             />
-          </div>
+          </label>
+        </header>
+
+        <div
+          ref="playlistScrollRef"
+          class="playlist-scroll"
+          :class="{ 'is-scrolling': isPlaylistScrolling }"
+          @scroll.passive="handlePlaylistScroll"
+        >
+          <LibraryPanel
+            :tracks="visibleFavoriteTracks"
+            :has-tracks="favoriteTracks.length > 0"
+            :loading="false"
+            :loading-done="0"
+            :loading-total="0"
+            :current-track-index="currentTrackIndex"
+            :is-playing="isPlaying"
+            :status="
+              favoriteTracks.length
+                ? `共 ${favoriteTracks.length} 首喜欢的歌曲`
+                : '还没有喜欢的歌曲'
+            "
+            :liked-track-ids="likedTrackIds"
+            title="喜欢的音乐"
+            empty-title="还没有喜欢的歌曲"
+            empty-description="在播放列表或播放器里点亮心形按钮，这里会自动收集你喜欢的音乐。"
+            @play="handleFavoriteTrackSelect"
+            @toggle-favorite="toggleTrackFavorite"
+          />
         </div>
       </div>
+      <AlbumPanel
+        v-else-if="activeSection === 'albums'"
+        :albums="albums"
+        :selected-album-name="selectedAlbumName"
+        :current-track-index="currentTrackIndex"
+        :is-playing="isPlaying"
+        @select-album="selectedAlbumName = $event"
+        @play-track="handleAlbumTrackSelect($event, selectedAlbumName)"
+        @play-album="handlePlayAlbum"
+      />
 
-      <div v-else-if="activeSection === 'albums'" class="page-content">
-        <AlbumPanel
-          :albums="albums"
-          :selected-album-name="selectedAlbumName"
-          :current-track-index="currentTrackIndex"
-          :is-playing="isPlaying"
-          @select-album="selectedAlbumName = $event"
-          @play-track="handleAlbumTrackSelect($event, selectedAlbumName)"
-          @play-album="handlePlayAlbum"
-        />
-      </div>
-
-      <div v-else class="page-content">
-        <LibraryManagementPanel
-          :source-names-label="sourceNamesLabel"
-          :library-hint="libraryHint"
-          :sources="musicSources"
-          @open-folder="openFolder"
-          @open-fallback="openFallbackPicker"
-          @remove-source="removeSource"
-        />
-      </div>
+      <LibraryManagementPanel
+        v-else
+        :source-names-label="sourceNamesLabel"
+        :library-hint="libraryHint"
+        :sources="musicSources"
+        @open-folder="openFolder"
+        @open-fallback="openFallbackPicker"
+        @remove-source="removeSource"
+      />
     </main>
 
     <PlayerDock
@@ -1439,8 +1558,3 @@ function toggleCurrentTrackFavorite() {
     @ended="handleAudioEnded"
   ></audio>
 </template>
-
-
-
-
-
