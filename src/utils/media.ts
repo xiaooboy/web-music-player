@@ -220,7 +220,7 @@ export function formatLongDuration(seconds: number) {
 export function sliderStyle(value: number) {
   const safeValue = Math.max(0, Math.min(100, value));
   return {
-    background: `linear-gradient(90deg, var(--accent) 0%, var(--accent) ${safeValue}%, rgba(211, 58, 49, 0.22) ${safeValue}%, rgba(211, 58, 49, 0.22) 100%)`,
+    background: `linear-gradient(90deg, var(--accent-deep) 0%, var(--accent) ${safeValue}%, rgba(211, 58, 49, 0.22) ${safeValue}%, rgba(211, 58, 49, 0.22) 100%)`,
   };
 }
 
