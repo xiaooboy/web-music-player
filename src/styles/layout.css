@@ -266,12 +266,7 @@
 }
 
 .library-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: #9bf0bd;
+  color: var(--accent-light);
   font-weight: 600;
 }
 

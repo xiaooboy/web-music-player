@@ -5,9 +5,17 @@
   --panel-2: #202020;
   --sidebar: #000000;
   --sidebar-soft: #121212;
-  --accent: #1ed760;
-  --accent-deep: #1db954;
-  --accent-soft: rgba(30, 215, 96, 0.16);
+  /* 强调色 — 实色层级 */
+  --accent-light: #9bf0bd; /* L1 最浅，辅助文字 */
+  --accent-bright: #35e576; /* L2 高亮 / hover */
+  --accent: #1ed760; /* L3 主色 */
+  --accent-deep: #1db954; /* L4 深色，active 状态 */
+  /* 强调色 — 半透明层级（不透明度由高到低） */
+  --accent-muted: rgba(30, 215, 96, 0.72); /* H1 次要图标、滚动条 */
+  --accent-border: rgba(30, 215, 96, 0.24); /* H2 选中边框 */
+  --accent-soft: rgba(30, 215, 96, 0.16); /* H3 选中背景 */
+  --accent-dim: rgba(30, 215, 96, 0.12); /* H4 装饰背景渐变 */
+  --accent-glow: rgba(30, 215, 96, 0.08); /* H5 发光阴影 */
   --text: #ffffff;
   --muted: #b3b3b3;
   --line: rgba(255, 255, 255, 0.08);
@@ -36,7 +44,8 @@
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: rgba(30, 215, 96, 0.72) transparent;
+  scrollbar-color: var(--accent-muted) transparent;
+  -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -52,11 +61,7 @@ body {
   font-family: var(--font-body);
   color: var(--text);
   background:
-    radial-gradient(
-      circle at top left,
-      rgba(30, 215, 96, 0.12),
-      transparent 22%
-    ),
+    radial-gradient(circle at top left, var(--accent-dim), transparent 22%),
     radial-gradient(
       circle at top right,
       rgba(255, 255, 255, 0.04),
@@ -78,15 +83,19 @@ body {
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    rgba(30, 215, 96, 0.9) 0%,
-    rgba(29, 185, 84, 0.72) 100%
+    var(--accent-muted) 0%,
+    var(--accent-deep) 100%
   );
   border: 2px solid rgba(15, 15, 15, 0.92);
   border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #35e576 0%, rgba(30, 215, 96, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--accent-bright) 0%,
+    var(--accent-muted) 100%
+  );
 }
 
 *::-webkit-scrollbar-button {

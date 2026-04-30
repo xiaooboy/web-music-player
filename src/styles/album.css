@@ -46,6 +46,13 @@
   justify-self: stretch;
 }
 
+/* album-item 通过 transform 虚拟定位，屏蔽位移过渡 */
+.album-item {
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
 .album-item {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto;
@@ -54,15 +61,6 @@
   padding: 12px 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.album-item.is-active {
-  background: linear-gradient(
-    135deg,
-    rgba(30, 215, 96, 0.14),
-    rgba(255, 255, 255, 0.04)
-  );
-  border-color: rgba(30, 215, 96, 0.24);
 }
 
 .album-item-cover,

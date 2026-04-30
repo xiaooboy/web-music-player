@@ -37,11 +37,18 @@
 
   .detail-body {
     flex-direction: column;
+    overflow: auto;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
   }
 
   .detail-meta,
   .detail-lyrics {
     width: 100%;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    justify-content: space-evenly;
   }
 
   .detail-meta {
@@ -121,5 +128,11 @@
 
   .lyrics-line {
     font-size: 1.08rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mode-button {
+    display: none;
   }
 }

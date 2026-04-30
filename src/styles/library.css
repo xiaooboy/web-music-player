@@ -180,6 +180,8 @@
 
 .playlist-scroll > .library-panel .track-row {
   width: auto;
+  /* 行通过 transform 绝对定位，移除 transform 过渡避免滚动抖动 */
+  transition: background 160ms ease;
 }
 
 .playlist-scroll::-webkit-scrollbar {

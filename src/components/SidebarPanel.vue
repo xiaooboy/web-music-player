@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Disc3, Heart, Library, ListMusic, Music3 } from "lucide-vue-next";
+import { Disc3, Heart, Library, ListMusic } from "lucide-vue-next";
 
 defineProps<{
   activeSection: "playlist" | "favorites" | "albums" | "library-management";
@@ -14,11 +14,7 @@ defineEmits<{
 
 <template>
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <Music3 :size="32" />
-      </div>
-    </div>
+    <div class="brand brand--placeholder" aria-hidden="true" />
 
     <div class="nav-panel">
       <button
