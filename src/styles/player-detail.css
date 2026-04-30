@@ -589,13 +589,6 @@ input[type="range"]::-webkit-slider-thumb {
 ::view-transition-new(active-cover-art) {
   animation-duration: 420ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  border-radius: var(--cover-radius-md);
-  overflow: clip;
-  clip-path: inset(0 round var(--cover-radius-md));
-  box-shadow: none;
 }
 
 .detail-overlay-enter-active,
