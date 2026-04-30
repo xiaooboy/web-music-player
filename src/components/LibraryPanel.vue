@@ -121,6 +121,25 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
             }}</span>
             <div class="row-action">
               <button
+                class="row-play"
+                :class="{
+                  'is-playing': item.index === currentTrackIndex && isPlaying,
+                }"
+                type="button"
+                :aria-label="
+                  item.index === currentTrackIndex && isPlaying
+                    ? '暂停'
+                    : '播放'
+                "
+                @click.stop="$emit('play', item.index)"
+              >
+                <Pause
+                  v-if="item.index === currentTrackIndex && isPlaying"
+                  :size="18"
+                />
+                <Play v-else :size="18" />
+              </button>
+              <button
                 class="row-like"
                 :class="{ 'is-active': likedTrackIdSet.has(item.track.id) }"
                 type="button"
@@ -135,22 +154,6 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
                     likedTrackIdSet.has(item.track.id) ? 'currentColor' : 'none'
                   "
                 />
-              </button>
-              <button
-                class="row-play"
-                type="button"
-                :aria-label="
-                  item.index === currentTrackIndex && isPlaying
-                    ? '暂停'
-                    : '播放'
-                "
-                @click.stop="$emit('play', item.index)"
-              >
-                <Pause
-                  v-if="item.index === currentTrackIndex && isPlaying"
-                  :size="18"
-                />
-                <Play v-else :size="18" />
               </button>
             </div>
           </div>

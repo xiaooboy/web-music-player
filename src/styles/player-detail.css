@@ -242,12 +242,10 @@ input[type="range"]::-webkit-slider-thumb {
   place-items: center;
 }
 
-.row-play:hover,
-.track-row.is-active .row-play,
 .primary-button:hover,
 .play-button:hover,
 .play-toggle:hover,
-.track-row.is-active .row-play,
+.row-play.is-playing,
 .row-play:hover {
   color: var(--accent-deep);
 }

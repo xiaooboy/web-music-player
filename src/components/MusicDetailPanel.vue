@@ -53,15 +53,11 @@ function getOffsetWithinContainer(
   element: HTMLElement,
   container: HTMLElement,
 ) {
-  let offset = 0;
-  let current: HTMLElement | null = element;
-
-  while (current && current !== container) {
-    offset += current.offsetTop;
-    current = current.offsetParent as HTMLElement | null;
-  }
-
-  return offset;
+  return (
+    element.getBoundingClientRect().top -
+    container.getBoundingClientRect().top +
+    container.scrollTop
+  );
 }
 
 function getLyricsStep(container: HTMLElement, index: number) {
