@@ -68,9 +68,6 @@
   overflow: hidden;
   border-radius: var(--cover-radius-md);
   background: rgba(255, 255, 255, 0.06);
-  display: grid;
-  place-items: center;
-  color: rgba(255, 255, 255, 0.72);
 }
 
 .album-item-cover {

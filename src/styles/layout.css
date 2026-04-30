@@ -169,8 +169,6 @@
   overflow: hidden;
   border-radius: var(--cover-radius-lg);
   background: linear-gradient(135deg, #2c2c2c 0%, #171717 100%);
-  display: grid;
-  place-items: center;
 }
 
 .cover-art::before {
