@@ -106,7 +106,7 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
                   :src="item.track.coverUrl"
                   :alt="`${item.track.title} 封面`"
                 />
-                <span v-else>♪</span>
+                <!-- <span v-else>♪</span> -->
               </div>
               <div class="track-copy">
                 <strong>{{ item.track.title }}</strong>
