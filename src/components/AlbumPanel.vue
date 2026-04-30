@@ -77,7 +77,7 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
         >
           <button
             v-for="{ vRow, album } in albumVirtualItems"
-            :key="vRow.index"
+            :key="album.name + album.artistLabel"
             v-memo="[album.name === selectedAlbumName]"
             class="album-item"
             :class="{ 'is-active': album.name === selectedAlbumName }"

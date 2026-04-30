@@ -82,7 +82,7 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
         >
           <div
             v-for="{ vRow, item } in virtualItems"
-            :key="vRow.index"
+            :key="item.track.id"
             v-memo="[
               item.index === currentTrackIndex,
               item.index === currentTrackIndex && isPlaying,
