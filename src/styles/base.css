@@ -37,6 +37,7 @@
   box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: rgba(30, 215, 96, 0.72) transparent;
+  -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
 }

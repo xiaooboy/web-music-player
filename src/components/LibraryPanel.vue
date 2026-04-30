@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, Pause, Play } from "lucide-vue-next";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
@@ -24,37 +25,29 @@ defineEmits<{
   toggleFavorite: [index: number];
 }>();
 
-// ─── 渐进渲染 ────────────────────────────────────────────────────────────────
-// 挂载时先渲染前 INITIAL_RENDER_COUNT 行，其余在下一帧补全，
-// 确保切换面板时第一帧立即出现内容，不阻塞浏览器绘制。
-const INITIAL_RENDER_COUNT = 80;
-const renderCount = ref(INITIAL_RENDER_COUNT);
+// ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
+// 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
+// 挂载和切换面板的耗时是 O(1) 而非 O(n)。
+const listRef = ref<HTMLElement | null>(null);
 
-const displayedTracks = computed(() =>
-  props.tracks.length <= renderCount.value
-    ? props.tracks
-    : props.tracks.slice(0, renderCount.value),
+const rowVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: props.tracks.length,
+    getScrollElement: () => listRef.value,
+    estimateSize: () => 62, // padding(10+10) + thumb(42) = 62px
+    overscan: 5,
+  })),
 );
 
-onMounted(() => {
-  if (props.tracks.length > INITIAL_RENDER_COUNT) {
-    requestAnimationFrame(() => {
-      renderCount.value = props.tracks.length;
-    });
-  }
-});
-
-// 加载过程中 tracks 持续增长时，同步扩展渲染窗口
-watch(
-  () => props.tracks.length,
-  (length) => {
-    if (length > renderCount.value) {
-      requestAnimationFrame(() => {
-        renderCount.value = length;
-      });
-    }
-  },
+// 把虚拟行与 props.tracks 合并，让模板只需一次解构
+const virtualItems = computed(() =>
+  rowVirtualizer.value.getVirtualItems().map((vRow) => ({
+    vRow,
+    item: props.tracks[vRow.index],
+  })),
 );
+
+const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 </script>
 
 <template>
@@ -73,67 +66,93 @@ watch(
       <span>操作</span>
     </div>
 
-    <div class="track-list" :class="{ 'track-list--empty': !tracks.length }">
+    <div
+      ref="listRef"
+      class="track-list"
+      :class="{ 'track-list--empty': !tracks.length }"
+    >
       <template v-if="tracks.length">
+        <!-- 撑起虚拟总高度，行用 absolute + translateY 定位 -->
         <div
-          v-for="{ track, index } in displayedTracks"
-          :key="track.id"
-          v-memo="[
-            index === currentTrackIndex,
-            index === currentTrackIndex && isPlaying,
-            likedTrackIdSet.has(track.id),
-          ]"
-          class="track-row"
-          :class="{ 'is-active': index === currentTrackIndex }"
-          @click="$emit('play', index)"
+          :style="{
+            height: `${totalSize}px`,
+            width: '100%',
+            position: 'relative',
+          }"
         >
-          <div class="track-song">
-            <div class="track-thumb">
-              <img
-                v-if="track.coverUrl"
-                :src="track.coverUrl"
-                :alt="`${track.title} 封面`"
-              />
-              <span v-else>♪</span>
+          <div
+            v-for="{ vRow, item } in virtualItems"
+            :key="vRow.index"
+            v-memo="[
+              item.index === currentTrackIndex,
+              item.index === currentTrackIndex && isPlaying,
+              likedTrackIdSet.has(item.track.id),
+            ]"
+            class="track-row"
+            :class="{ 'is-active': item.index === currentTrackIndex }"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${vRow.start}px)`,
+            }"
+            @click="$emit('play', item.index)"
+          >
+            <div class="track-song">
+              <div class="track-thumb">
+                <img
+                  v-if="item.track.coverUrl"
+                  :src="item.track.coverUrl"
+                  :alt="`${item.track.title} 封面`"
+                />
+                <span v-else>♪</span>
+              </div>
+              <div class="track-copy">
+                <strong>{{ item.track.title }}</strong>
+                <span>{{ item.track.artist }}</span>
+              </div>
             </div>
-            <div class="track-copy">
-              <strong>{{ track.title }}</strong>
-              <span>{{ track.artist }}</span>
+            <div class="track-album">
+              <strong>{{ item.track.album }}</strong>
             </div>
-          </div>
-          <div class="track-album">
-            <strong>{{ track.album }}</strong>
-          </div>
-          <span class="track-duration">{{ formatTime(track.duration) }}</span>
-          <div class="row-action">
-            <button
-              class="row-like"
-              :class="{ 'is-active': likedTrackIdSet.has(track.id) }"
-              type="button"
-              :aria-label="
-                likedTrackIdSet.has(track.id) ? '取消喜欢' : '标记喜欢'
-              "
-              @click.stop="$emit('toggleFavorite', index)"
-            >
-              <Heart
-                :size="16"
-                :fill="likedTrackIdSet.has(track.id) ? 'currentColor' : 'none'"
-              />
-            </button>
-            <button
-              class="row-play"
-              type="button"
-              :aria-label="
-                index === currentTrackIndex && isPlaying ? '暂停' : '播放'
-              "
-              @click.stop="$emit('play', index)"
-            >
-              <Pause
-                v-if="index === currentTrackIndex && isPlaying"
-                :size="18"
-              />
-              <Play v-else :size="18" />
-            </button>
+            <span class="track-duration">{{
+              formatTime(item.track.duration)
+            }}</span>
+            <div class="row-action">
+              <button
+                class="row-like"
+                :class="{ 'is-active': likedTrackIdSet.has(item.track.id) }"
+                type="button"
+                :aria-label="
+                  likedTrackIdSet.has(item.track.id) ? '取消喜欢' : '标记喜欢'
+                "
+                @click.stop="$emit('toggleFavorite', item.index)"
+              >
+                <Heart
+                  :size="16"
+                  :fill="
+                    likedTrackIdSet.has(item.track.id) ? 'currentColor' : 'none'
+                  "
+                />
+              </button>
+              <button
+                class="row-play"
+                type="button"
+                :aria-label="
+                  item.index === currentTrackIndex && isPlaying
+                    ? '暂停'
+                    : '播放'
+                "
+                @click.stop="$emit('play', item.index)"
+              >
+                <Pause
+                  v-if="item.index === currentTrackIndex && isPlaying"
+                  :size="18"
+                />
+                <Play v-else :size="18" />
+              </button>
+            </div>
           </div>
         </div>
       </template>
@@ -153,7 +172,7 @@ watch(
               : hasTracks
                 ? "换个关键词试试，或者清空搜索框查看全部曲目。"
                 : emptyDescription ||
-                  "前往“音乐库管理”添加音乐源，或导入临时文件夹开始。"
+                  '前往"音乐库管理"添加音乐源，或导入临时文件夹开始。'
           }}
         </p>
       </div>

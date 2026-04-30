@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from "vue";
+import { Music3 } from "lucide-vue-next";
 import AlbumPanel from "./components/AlbumPanel.vue";
 import FavoritesPanel from "./components/FavoritesPanel.vue";
 import PlaylistPanel from "./components/PlaylistPanel.vue";
@@ -1369,6 +1370,12 @@ function toggleCurrentTrackFavorite() {
 </script>
 
 <template>
+  <div class="brand brand--fixed" aria-hidden="true">
+    <div class="brand-mark">
+      <Music3 :size="32" />
+    </div>
+  </div>
+
   <div class="app-shell">
     <SidebarPanel
       :active-section="activeSection"

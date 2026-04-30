@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Disc3, Pause, Play } from "lucide-vue-next";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
@@ -27,10 +28,30 @@ defineEmits<{
 }>();
 
 const activeAlbum = computed(
-  () =>
-    props.albums.find((album) => album.name === props.selectedAlbumName) ||
-    null,
+  () => props.albums.find((a) => a.name === props.selectedAlbumName) ?? null,
 );
+
+// ─── 左侧：专辑列表虚拟滚动 ─────────────────────────────────────────────────
+// album-item: padding(12+12) + cover(56) = 80px; grid gap = 10px → 90px/slot
+const albumListRef = ref<HTMLElement | null>(null);
+
+const albumVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: props.albums.length,
+    getScrollElement: () => albumListRef.value,
+    estimateSize: () => 90,
+    overscan: 3,
+  })),
+);
+
+const albumVirtualItems = computed(() =>
+  albumVirtualizer.value.getVirtualItems().map((vRow) => ({
+    vRow,
+    album: props.albums[vRow.index],
+  })),
+);
+
+const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
 </script>
 
 <template>
@@ -45,31 +66,49 @@ const activeAlbum = computed(
     </div>
 
     <div v-if="albums.length" class="album-browser-body">
-      <aside class="album-list">
-        <button
-          v-for="album in albums"
-          :key="album.name"
-          class="album-item"
-          :class="{ 'is-active': album.name === selectedAlbumName }"
-          type="button"
-          @click="$emit('selectAlbum', album.name)"
+      <!-- 左侧：专辑列表 -->
+      <aside ref="albumListRef" class="album-list">
+        <div
+          :style="{
+            height: `${albumTotalSize}px`,
+            position: 'relative',
+            width: '100%',
+          }"
         >
-          <div class="album-item-cover">
-            <img
-              v-if="album.coverUrl"
-              :src="album.coverUrl"
-              :alt="`${album.name} 封面`"
-            />
-            <Disc3 v-else :size="18" />
-          </div>
-          <div class="album-item-copy">
-            <strong>{{ album.name }}</strong>
-            <span>{{ album.artistLabel }}</span>
-          </div>
-          <span class="album-item-meta">{{ album.trackCount }} 首</span>
-        </button>
+          <button
+            v-for="{ vRow, album } in albumVirtualItems"
+            :key="vRow.index"
+            v-memo="[album.name === selectedAlbumName]"
+            class="album-item"
+            :class="{ 'is-active': album.name === selectedAlbumName }"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${vRow.start}px)`,
+            }"
+            type="button"
+            @click="$emit('selectAlbum', album.name)"
+          >
+            <div class="album-item-cover">
+              <img
+                v-if="album.coverUrl"
+                :src="album.coverUrl"
+                :alt="`${album.name} 封面`"
+              />
+              <Disc3 v-else :size="18" />
+            </div>
+            <div class="album-item-copy">
+              <strong>{{ album.name }}</strong>
+              <span>{{ album.artistLabel }}</span>
+            </div>
+            <span class="album-item-meta">{{ album.trackCount }} 首</span>
+          </button>
+        </div>
       </aside>
 
+      <!-- 右侧：专辑详情 -->
       <section v-if="activeAlbum" class="album-detail">
         <div class="album-detail-head">
           <div class="album-detail-cover">
@@ -98,10 +137,15 @@ const activeAlbum = computed(
           </button>
         </div>
 
+        <!-- 右侧曲目列表（曲目数量有限，无需虚拟滚动） -->
         <div class="album-song-list">
           <button
             v-for="({ track, index }, songOrder) in activeAlbum.tracks"
             :key="track.id"
+            v-memo="[
+              index === currentTrackIndex,
+              index === currentTrackIndex && isPlaying,
+            ]"
             class="album-song-row"
             :class="{ 'is-active': index === currentTrackIndex }"
             type="button"
