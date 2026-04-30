@@ -1286,7 +1286,7 @@ async function restoreCachedLibrary() {
 
 onBeforeUnmount(() => {
   disposeLibrary();
-  window.removeEventListener("keydown", handleEscapeClose);
+  window.removeEventListener("keydown", handleKeydown);
   window.removeEventListener("contextmenu", handleContextMenuBlock);
   window.removeEventListener("resize", handleWindowResize);
   if (
@@ -1301,7 +1301,7 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
-  window.addEventListener("keydown", handleEscapeClose);
+  window.addEventListener("keydown", handleKeydown);
   window.addEventListener("contextmenu", handleContextMenuBlock);
   window.addEventListener("resize", handleWindowResize);
 
@@ -1324,9 +1324,30 @@ onMounted(() => {
   }, 500);
 });
 
-function handleEscapeClose(event: KeyboardEvent) {
-  if (event.key === "Escape" && currentView.value === "detail") {
-    closeDetail();
+function handleKeydown(event: KeyboardEvent) {
+  const target = event.target as HTMLElement;
+  if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+    return;
+  }
+
+  switch (event.key) {
+    case "Escape":
+      if (currentView.value === "detail") {
+        closeDetail();
+      }
+      break;
+    case " ":
+      event.preventDefault();
+      togglePlay();
+      break;
+    case "f":
+    case "F":
+      if (currentView.value === "detail") {
+        closeDetail();
+      } else {
+        openDetail();
+      }
+      break;
   }
 }
 
@@ -1384,7 +1405,7 @@ function toggleCurrentTrackFavorite() {
 
     <main class="main-stage">
       <PlaylistPanel
-        v-if="activeSection === 'playlist'"
+        v-show="activeSection === 'playlist'"
         :tracks="allTrackItems"
         :loading="loading"
         :loading-done="loadingDone"
@@ -1398,7 +1419,7 @@ function toggleCurrentTrackFavorite() {
       />
 
       <FavoritesPanel
-        v-else-if="activeSection === 'favorites'"
+        v-show="activeSection === 'favorites'"
         :tracks="favoriteTracks"
         :current-track-index="currentTrackIndex"
         :is-playing="isPlaying"
@@ -1407,7 +1428,7 @@ function toggleCurrentTrackFavorite() {
         @toggle-favorite="toggleTrackFavorite"
       />
       <AlbumPanel
-        v-else-if="activeSection === 'albums'"
+        v-show="activeSection === 'albums'"
         :albums="albums"
         :selected-album-name="selectedAlbumName"
         :current-track-index="currentTrackIndex"
@@ -1418,7 +1439,7 @@ function toggleCurrentTrackFavorite() {
       />
 
       <LibraryManagementPanel
-        v-else
+        v-show="activeSection === 'library-management'"
         :source-names-label="sourceNamesLabel"
         :library-hint="libraryHint"
         :sources="musicSources"
