@@ -1,8 +1,8 @@
 .app-shell {
   display: grid;
   grid-template-columns: 50px minmax(0, 1fr);
-  min-height: 100vh;
-  max-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100dvh;
   height: 100vh;
   padding: calc(16px + var(--window-safe-top)) 16px 0;
   /*padding: calc(16px + var(--window-safe-top)) 16px var(--dock-height);*/

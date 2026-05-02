@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Disc3, Heart, Library, ListMusic } from "lucide-vue-next";
+import { Disc3, Heart, Library, House } from "lucide-vue-next";
 
 defineProps<{
   activeSection: "playlist" | "favorites" | "albums" | "library-management";
@@ -24,7 +24,7 @@ defineEmits<{
         type="button"
         @click="$emit('switchSection', 'playlist')"
       >
-        <span class="nav-icon"><ListMusic :size="26" /></span>
+        <span class="nav-icon"><House :size="26" /></span>
       </button>
       <button
         class="nav-item"

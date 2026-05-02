@@ -23,6 +23,7 @@ import {
   pickDirectory,
   revokeTrackResources,
   supportsDirectoryPicker,
+  withViewTransition,
 } from "./utils/media";
 import {
   clearTrackCache,
@@ -860,20 +861,9 @@ function setCurrentView(nextView: "library" | "detail") {
     return;
   }
 
-  const transitionDocument = document as Document & {
-    startViewTransition?: (callback: () => void) => {
-      finished: Promise<void>;
-    };
-  };
-
-  if (typeof transitionDocument.startViewTransition === "function") {
-    transitionDocument.startViewTransition(() => {
-      currentView.value = nextView;
-    });
-    return;
-  }
-
-  currentView.value = nextView;
+  withViewTransition(() => {
+    currentView.value = nextView;
+  });
 }
 
 function handlePrevious() {
@@ -1356,11 +1346,13 @@ function handleWindowResize() {}
 function handleSwitchSection(
   section: "playlist" | "favorites" | "albums" | "library-management",
 ) {
-  activeSection.value = section;
-  if (section === "albums" && !selectedAlbumName.value && albums.value.length) {
-    selectedAlbumName.value =
-      currentTrack.value?.album.trim() || albums.value[0].name;
-  }
+  withViewTransition(() => {
+    activeSection.value = section;
+    if (section === "albums" && !selectedAlbumName.value && albums.value.length) {
+      selectedAlbumName.value =
+        currentTrack.value?.album.trim() || albums.value[0].name;
+    }
+  });
 }
 
 function handleContextMenuBlock(event: MouseEvent) {

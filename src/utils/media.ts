@@ -295,10 +295,13 @@ export function parseLyricsText(lyricsText: string): LyricsLine[] {
     ];
     const text = line
       .replace(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g, "")
+      .replace(/\[[a-zA-Z]+:[^\]]*\]/g, "")
       .trim();
 
     if (!matches.length) {
-      parsed.push({ time: null, text: line });
+      if (text) {
+        parsed.push({ time: null, text });
+      }
       continue;
     }
 
@@ -370,6 +373,21 @@ export async function probeDuration(file: File) {
     probe.addEventListener("error", () => finish(0), { once: true });
     probe.src = url;
   });
+}
+
+export function withViewTransition(callback: () => void) {
+  const transitionDocument = document as Document & {
+    startViewTransition?: (cb: () => void) => {
+      finished: Promise<void>;
+    };
+  };
+
+  if (typeof transitionDocument.startViewTransition === "function") {
+    transitionDocument.startViewTransition(callback);
+    return;
+  }
+
+  callback();
 }
 
 async function parseId3Tags(file: File) {
