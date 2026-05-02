@@ -517,7 +517,6 @@ input[type="range"]::-webkit-slider-thumb {
   display: block;
   padding: 14px 0;
   margin-bottom: 6px;
-  background: transparent;
   color: var(--muted);
   text-align: center;
   line-height: 1.6;
@@ -549,34 +548,6 @@ input[type="range"]::-webkit-slider-thumb {
 
 .detail-empty {
   padding-top: 120px;
-}
-
-@keyframes root-fade-out {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0.88;
-  }
-}
-
-@keyframes root-fade-in {
-  from {
-    opacity: 0.88;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-::view-transition-old(root) {
-  animation: root-fade-out 320ms ease;
-}
-
-::view-transition-new(root) {
-  animation: root-fade-in 380ms ease;
 }
 
 ::view-transition-group(active-cover-art) {
