@@ -4,7 +4,7 @@
   height: var(--dock-height);
   padding: 0 20px;
   background: rgba(24, 24, 24, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: grid;
   grid-template-columns: minmax(220px, 272px) minmax(0, 1fr) minmax(
       170px,
