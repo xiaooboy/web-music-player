@@ -11,7 +11,7 @@ import {
   Shuffle,
   Volume2,
 } from "lucide-vue-next";
-import { nextTick, onMounted, ref, watch } from "vue";
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import type { LyricsLine, Track } from "../types";
 import { sliderStyle } from "../utils/media";
 
@@ -44,6 +44,26 @@ const emit = defineEmits<{
 }>();
 
 const lyricsScrollRef = ref<HTMLElement | null>(null);
+const lyricsNotOverflowed = ref(true);
+
+function checkLyricsOverflow() {
+  const container = lyricsScrollRef.value;
+  if (!container) return;
+  lyricsNotOverflowed.value = container.scrollHeight <= container.clientHeight;
+}
+
+let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
+let lyricsObserver: ResizeObserver | null = null;
+
+function handleLyricsScroll(event: Event) {
+  if (!event.isTrusted) return;
+  if (disableFollowTimeout) {
+    clearTimeout(disableFollowTimeout);
+  }
+  disableFollowTimeout = setTimeout(() => {
+    disableFollowTimeout = null;
+  }, 5000);
+}
 
 function displayLyricsText(text: string) {
   return text.replace(/^(\[[^\]]+\]\s*)+/, "").trim() || text.trim();
@@ -94,7 +114,7 @@ function getLyricsStep(container: HTMLElement, index: number) {
 }
 
 function scheduleLyricsFollow(index: number) {
-  if (index < 0) {
+  if (index < 0 || disableFollowTimeout) {
     return;
   }
 
@@ -130,7 +150,7 @@ function scheduleLyricsFollow(index: number) {
 }
 
 function blockLyricsManualScroll(event: Event) {
-  event.preventDefault();
+  // event.preventDefault();
 }
 
 watch(
@@ -161,6 +181,26 @@ watch(
 
 onMounted(() => {
   scheduleLyricsFollow(props.activeLyricsIndex);
+  checkLyricsOverflow();
+
+  const container = lyricsScrollRef.value;
+  if (container) {
+    lyricsObserver = new ResizeObserver(() => {
+      checkLyricsOverflow();
+    });
+    lyricsObserver.observe(container);
+  }
+});
+
+onUnmounted(() => {
+  if (disableFollowTimeout) {
+    clearTimeout(disableFollowTimeout);
+    disableFollowTimeout = null;
+  }
+  if (lyricsObserver) {
+    lyricsObserver.disconnect();
+    lyricsObserver = null;
+  }
 });
 </script>
 
@@ -308,11 +348,13 @@ onMounted(() => {
       </div>
 
       <div class="detail-lyrics">
+        <!-- @wheel.prevent="blockLyricsManualScroll"
+          @touchmove.prevent="blockLyricsManualScroll" -->
         <div
           ref="lyricsScrollRef"
           class="lyrics-scroll"
-          @wheel.prevent="blockLyricsManualScroll"
-          @touchmove.prevent="blockLyricsManualScroll"
+          :class="{ 'not-overflowed': lyricsNotOverflowed }"
+          @scroll="handleLyricsScroll"
         >
           <div class="lyrics-list">
             <template v-if="lyricsLines.length">
