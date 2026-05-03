@@ -34,27 +34,8 @@
     min-width: 0;
     flex: 1;
   }
-
-  .detail-body {
-    flex-direction: column;
-    overflow: auto;
-    scrollbar-width: none;
-    scroll-behavior: smooth;
-    scroll-snap-type: y mandatory;
-  }
-
-  .detail-meta,
-  .detail-lyrics {
-    width: 100%;
-    flex: 0 0 100%;
-    scroll-snap-align: start;
-    justify-content: space-evenly;
-  }
-
-  .detail-meta {
-    border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    overflow: visible;
+  .detail-cover {
+    width: max(90%, clamp(180px, 22vw, 300px));
   }
 }
 
@@ -132,7 +113,32 @@
 }
 
 @media (max-width: 480px) {
-  .mode-button {
-    display: none;
+  .player-dock {
+    .mode-button {
+      display: none;
+    }
+    .icon-button {
+      display: none;
+    }
+  }
+  .detail-body {
+    overflow: auto;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    border-right: none;
+  }
+
+  .detail-meta,
+  .detail-lyrics {
+    width: 100%;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    justify-content: space-evenly;
+  }
+
+  .detail-meta {
+    border-right: 0;
+    overflow: visible;
   }
 }
