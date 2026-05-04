@@ -55,14 +55,13 @@ function checkLyricsOverflow() {
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
 let lyricsObserver: ResizeObserver | null = null;
 
-function handleLyricsScroll(event: Event) {
-  if (!event.isTrusted) return;
+function handleLyricsWheel(event: Event) {
   if (disableFollowTimeout) {
     clearTimeout(disableFollowTimeout);
   }
   disableFollowTimeout = setTimeout(() => {
     disableFollowTimeout = null;
-  }, 5000);
+  }, 3000);
 }
 
 function displayLyricsText(text: string) {
@@ -354,7 +353,7 @@ onUnmounted(() => {
           ref="lyricsScrollRef"
           class="lyrics-scroll"
           :class="{ 'not-overflowed': lyricsNotOverflowed }"
-          @scroll="handleLyricsScroll"
+          @wheel="handleLyricsWheel"
         >
           <div class="lyrics-list">
             <template v-if="lyricsLines.length">
