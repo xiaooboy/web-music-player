@@ -1,20 +1,31 @@
 <script setup lang="ts">
-import { Disc3, Heart, Library, House } from "lucide-vue-next";
+import { Disc3, Heart, Library, House, Menu } from "lucide-vue-next";
 
 defineProps<{
   activeSection: "playlist" | "favorites" | "albums" | "library-management";
+  collapsed: boolean;
 }>();
 
 defineEmits<{
   switchSection: [
     section: "playlist" | "favorites" | "albums" | "library-management",
   ];
+  toggleCollapse: [];
 }>();
 </script>
 
 <template>
-  <aside class="sidebar">
-    <div class="brand brand--placeholder" aria-hidden="true" />
+  <aside class="sidebar" :class="{ 'is-collapsed': collapsed }">
+    <div class="brand brand--placeholder" aria-hidden="true">
+      <button
+        class="collapse-btn"
+        :title="collapsed ? '展开' : '折叠'"
+        type="button"
+        @click="$emit('toggleCollapse')"
+      >
+        <Menu :size="26" />
+      </button>
+    </div>
 
     <div class="nav-panel">
       <button
@@ -25,6 +36,7 @@ defineEmits<{
         @click="$emit('switchSection', 'playlist')"
       >
         <span class="nav-icon"><House :size="26" /></span>
+        <span v-if="!collapsed" class="nav-label">播放列表</span>
       </button>
       <button
         class="nav-item"
@@ -34,6 +46,7 @@ defineEmits<{
         @click="$emit('switchSection', 'favorites')"
       >
         <span class="nav-icon"><Heart :size="26" /></span>
+        <span v-if="!collapsed" class="nav-label">收藏</span>
       </button>
       <button
         class="nav-item"
@@ -43,6 +56,7 @@ defineEmits<{
         @click="$emit('switchSection', 'albums')"
       >
         <span class="nav-icon"><Disc3 :size="26" /></span>
+        <span v-if="!collapsed" class="nav-label">专辑</span>
       </button>
       <button
         class="nav-item"
@@ -52,6 +66,7 @@ defineEmits<{
         @click="$emit('switchSection', 'library-management')"
       >
         <span class="nav-icon"><Library :size="26" /></span>
+        <span v-if="!collapsed" class="nav-label">音乐库</span>
       </button>
     </div>
   </aside>

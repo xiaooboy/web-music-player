@@ -21,9 +21,8 @@
   --line: rgba(255, 255, 255, 0.08);
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
   --radius-xl: 24px;
-  --cover-radius-sm: 14px;
-  --cover-radius-md: 18px;
-  --cover-radius-lg: 24px;
+  --cover-radius: 20%;
+  --cover-radius-circled: 50%;
   --font-display:
     "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body:

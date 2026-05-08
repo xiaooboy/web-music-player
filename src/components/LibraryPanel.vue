@@ -174,8 +174,7 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
               ? `已处理 ${loadingDone} / ${loadingTotal} 首歌曲，请稍候。`
               : hasTracks
                 ? "换个关键词试试，或者清空搜索框查看全部曲目。"
-                : emptyDescription ||
-                  '前往"音乐库管理"添加音乐源，或导入临时文件夹开始。'
+                : emptyDescription || '前往"音乐库"添加音乐源。'
           }}
         </p>
       </div>
