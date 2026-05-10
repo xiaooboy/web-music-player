@@ -70,6 +70,7 @@ const currentView = ref<"library" | "detail">("library");
 const activeSection = ref<
   "playlist" | "favorites" | "albums" | "library-management"
 >("playlist");
+const sidebarCollapsed = ref(false);
 const selectedAlbumName = ref("");
 const playbackScope = ref<PlaybackScope>({ type: "all" });
 const likedTrackIds = ref<string[]>(loadLikedTrackIds());
@@ -451,7 +452,7 @@ async function loadLibrary(
     }),
   );
 
-  setStatus(`正在扫描 ${sortedEntries.length} 首歌曲...`);
+  setStatus(`...`);
 
   const BATCH_SIZE = 8;
   const parsedTracks: Track[] = [];
@@ -497,9 +498,7 @@ async function loadLibrary(
     }
 
     loadingDone.value = Math.min(batchStart + BATCH_SIZE, sortedEntries.length);
-    setStatus(
-      `正在解析 ${loadingDone.value} / ${loadingTotal.value} 首歌曲...`,
-    );
+    setStatus(`...`);
   }
 
   if (buildToken !== libraryBuildToken) {
@@ -1218,9 +1217,7 @@ async function restoreCachedLibrary() {
       tracks.value = cachedTrackPayload.tracks.map(createCachedTrack);
       currentTrackIndex.value = -1;
       activeTrackPath.value = "";
-      setStatus(
-        `已载入缓存曲库，后台正在刷新 ${tracks.value.length} 首歌曲...`,
-      );
+      setStatus(`...`);
     }
 
     const restoredSources = await Promise.all(
@@ -1295,6 +1292,11 @@ onMounted(() => {
   window.addEventListener("contextmenu", handleContextMenuBlock);
   window.addEventListener("resize", handleWindowResize);
 
+  // 移动端默认显示 main-stage
+  if (window.innerWidth <= 480) {
+    document.querySelector(".app-shell")?.scrollTo(200, 0);
+  }
+
   if (
     typeof window.launchQueue !== "undefined" &&
     typeof window.launchQueue.setConsumer === "function"
@@ -1348,7 +1350,11 @@ function handleSwitchSection(
 ) {
   withViewTransition(() => {
     activeSection.value = section;
-    if (section === "albums" && !selectedAlbumName.value && albums.value.length) {
+    if (
+      section === "albums" &&
+      !selectedAlbumName.value &&
+      albums.value.length
+    ) {
       selectedAlbumName.value =
         currentTrack.value?.album.trim() || albums.value[0].name;
     }
@@ -1383,16 +1389,18 @@ function toggleCurrentTrackFavorite() {
 </script>
 
 <template>
-  <div class="brand brand--fixed" aria-hidden="true">
+  <!--  <div class="brand brand--fixed" aria-hidden="true">
     <div class="brand-mark">
       <Music3 :size="32" />
     </div>
-  </div>
+  </div> -->
 
-  <div class="app-shell">
+  <div class="app-shell" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
     <SidebarPanel
       :active-section="activeSection"
+      :collapsed="sidebarCollapsed"
       @switch-section="handleSwitchSection"
+      @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
     />
 
     <main class="main-stage">

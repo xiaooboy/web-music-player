@@ -1,6 +1,6 @@
 .app-shell {
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
+  grid-template-columns: 140px minmax(0, 1fr);
   min-height: 100dvh;
   max-height: 100dvh;
   height: 100vh;
@@ -8,6 +8,11 @@
   /*padding: calc(16px + var(--window-safe-top)) 16px var(--dock-height);*/
   gap: 20px;
   overflow: hidden;
+  transition: grid-template-columns 0.25s ease;
+}
+
+.app-shell.sidebar-collapsed {
+  grid-template-columns: 50px minmax(0, 1fr);
 }
 
 .detail-shell {
@@ -84,8 +89,9 @@
 
 .topbar,
 .section-head {
+  height: 42px;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 18px;
 }
 
@@ -167,7 +173,7 @@
 .cover-art {
   position: relative;
   overflow: hidden;
-  border-radius: var(--cover-radius-lg);
+  border-radius: var(--cover-radius);
   background: linear-gradient(135deg, #2c2c2c 0%, #171717 100%);
 }
 

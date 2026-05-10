@@ -231,7 +231,7 @@
 .track-thumb {
   width: 42px;
   aspect-ratio: 1;
-  border-radius: var(--cover-radius-sm);
+  border-radius: var(--cover-radius);
   overflow: hidden;
   background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   flex-shrink: 0;

@@ -49,7 +49,7 @@
 .dock-cover {
   width: 42px;
   height: 42px;
-  border-radius: var(--cover-radius-sm);
+  border-radius: var(--cover-radius);
   flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
@@ -360,7 +360,7 @@ input[type="range"]::-webkit-slider-thumb {
 .detail-cover {
   width: min(100%, clamp(180px, 22vw, 300px));
   aspect-ratio: 1;
-  border-radius: var(--cover-radius-lg);
+  border-radius: var(--cover-radius);
   background: transparent;
   box-shadow: none;
   align-self: center;
