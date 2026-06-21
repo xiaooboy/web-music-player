@@ -2,6 +2,8 @@
 
 基于 `Vite + Vue 3 + TypeScript` 的本地音乐播放器，支持手动打开本地音乐文件夹，界面风格参考spotify的黑绿视觉语言。
 
+**在线访问：** [github](https://xiaooboy.github.io/web-music-player/)    [cloudflare](https://web-music-player.xiaooboy.workers.dev/)
+
 <img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/f16d1e03-5073-4532-b84a-feaf279b7f95" />
 
 <img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/a247816c-5fb0-4f83-ba13-e29f973b8cc7" />
