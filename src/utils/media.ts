@@ -109,7 +109,9 @@ export async function collectDirectoryFiles(
 
   return [...fileEntries, ...dirEntries.flat()];
 }
-
+/**
+ * FileList -> FileEntry[]
+ */
 export function entriesFromInput(files: FileList | null) {
   return Array.from(files || []).map((file) => ({
     file,
@@ -119,12 +121,10 @@ export function entriesFromInput(files: FileList | null) {
 
 export async function buildTrack(
   entry: FileEntry,
-  index: number,
-  folderName: string,
   externalLyricsText = "",
-) {
+): Promise<Track> {
   const { file, relativePath } = entry;
-  const fallback = inferTrackInfoFromFile(file.name, relativePath, folderName);
+  const fallback = inferTrackInfoFromFile(file.name);
   const extension = getFileExtension(file.name);
   const format = extension.toUpperCase() || "AUDIO";
 
@@ -146,7 +146,7 @@ export async function buildTrack(
   ]);
 
   return {
-    id: `${normalizeSlashes(relativePath).toLowerCase()}-${index}`,
+    id: `${normalizeSlashes(relativePath)}`,
     file,
     relativePath,
     title: metadata.title || fallback.title,
@@ -157,7 +157,7 @@ export async function buildTrack(
     format,
     lyricsText: externalLyricsText || metadata.lyricsText || "",
     isPlayable: true,
-  } satisfies Track;
+  };
 }
 
 export function revokeTrackResources(tracks: Track[]) {
@@ -326,32 +326,25 @@ export function parseLyricsText(lyricsText: string): LyricsLine[] {
     : parsed.map((line) => ({ ...line, time: null }));
 }
 
-function inferTrackInfoFromFile(
-  fileName: string,
-  relativePath: string,
-  folderName: string,
-) {
+function inferTrackInfoFromFile(fileName: string) {
   const rawName = stripExtension(fileName);
   const nameParts = rawName
     .split(" - ")
     .map((part) => part.trim())
     .filter(Boolean);
-  const pathParts = normalizeSlashes(relativePath).split("/");
-  const albumName =
-    pathParts.length > 1 ? pathParts[pathParts.length - 2] : folderName;
 
   if (nameParts.length >= 2) {
     return {
       artist: nameParts[0],
       title: nameParts.slice(1).join(" - "),
-      album: albumName || "本地专辑",
+      album: "本地专辑",
     };
   }
 
   return {
     artist: "未知艺术家",
     title: rawName,
-    album: albumName || "本地专辑",
+    album: "本地专辑",
   };
 }
 
@@ -1073,5 +1066,27 @@ function detectImageMimeType(bytes: Uint8Array) {
 function createObjectUrlFromBytes(bytes: Uint8Array, mimeType: string) {
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
-  return URL.createObjectURL(new Blob([copy.buffer], { type: mimeType }));
+  const blob = new Blob([copy.buffer], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  urlBlobMap.set(url, blob);
+  return url;
+}
+
+/** 用于存储 URL 和对应的 Blob 的映射，用于在需要时快速获取 Blob */
+export const urlBlobMap = new Map<string, Blob>();
+
+/** 将 Blob 转换为 base64 字符串 */
+export function blobToBase64(b: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (reader.result) {
+        resolve(reader.result as string);
+      } else {
+        reject(new Error("Failed to convert blob to base64"));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(b);
+  });
 }

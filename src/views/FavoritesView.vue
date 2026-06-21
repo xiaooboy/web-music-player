@@ -1,29 +1,21 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Search } from "lucide-vue-next";
-import LibraryPanel from "./LibraryPanel.vue";
-import type { Track } from "../types";
+import LibraryPanel from "../components/LibraryPanel.vue";
+import { useFavoriteStore } from "../stores/favoriteStore";
+import { usePlayerStore } from "../stores/playerStore";
 
-const props = defineProps<{
-  tracks: Array<{ track: Track; index: number }>;
-  currentTrackIndex: number;
-  isPlaying: boolean;
-  likedTrackIdSet: Set<string>;
-}>();
-
-const emit = defineEmits<{
-  play: [index: number];
-  toggleFavorite: [index: number];
-}>();
+const favoriteStore = useFavoriteStore();
+const playerStore = usePlayerStore();
 
 const searchQuery = ref("");
 const isScrolling = ref(false);
 let scrollHideTimer: ReturnType<typeof setTimeout> | null = null;
 
 const visibleTracks = computed(() => {
-  if (!searchQuery.value.trim()) return props.tracks;
+  if (!searchQuery.value.trim()) return favoriteStore.favoriteTracks;
   const needle = searchQuery.value.trim().toLowerCase();
-  return props.tracks.filter(({ track }) => {
+  return favoriteStore.favoriteTracks.filter((track) => {
     const haystack =
       `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
     return haystack.includes(needle);
@@ -31,8 +23,8 @@ const visibleTracks = computed(() => {
 });
 
 const status = computed(() =>
-  props.tracks.length
-    ? `共 ${props.tracks.length} 首喜欢的歌曲`
+  favoriteStore.favoriteTracks.length
+    ? `共 ${favoriteStore.favoriteTracks.length} 首喜欢的歌曲`
     : "还没有喜欢的歌曲",
 );
 
@@ -42,6 +34,12 @@ function handleScroll() {
   scrollHideTimer = setTimeout(() => {
     isScrolling.value = false;
   }, 700);
+}
+
+function handleFavoriteTrackSelect(id: string) {
+  playerStore.setPlaySourceType("favorites");
+  playerStore.setPlaylist(favoriteStore.favoriteTracks);
+  playerStore.playTrackById(id, true);
 }
 </script>
 
@@ -66,19 +64,19 @@ function handleScroll() {
     >
       <LibraryPanel
         :tracks="visibleTracks"
-        :has-tracks="tracks.length > 0"
+        :has-tracks="favoriteStore.favoriteTracks.length > 0"
         :loading="false"
         :loading-done="0"
         :loading-total="0"
-        :current-track-index="currentTrackIndex"
-        :is-playing="isPlaying"
+        :current-track-id="playerStore.currentTrackId"
+        :is-playing="playerStore.isPlaying"
         :status="status"
-        :liked-track-id-set="likedTrackIdSet"
+        :liked-track-id-set="favoriteStore.likedTrackIdSet"
         title="喜欢的音乐"
         empty-title="还没有喜欢的歌曲"
         empty-description="在播放列表或播放器里点亮心形按钮，这里会自动收集你喜欢的音乐。"
-        @play="emit('play', $event)"
-        @toggle-favorite="emit('toggleFavorite', $event)"
+        @play="handleFavoriteTrackSelect"
+        @toggle-favorite="favoriteStore.toggleTrackFavorite"
       />
     </div>
   </div>

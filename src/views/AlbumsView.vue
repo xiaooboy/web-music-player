@@ -1,43 +1,27 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Disc3, Pause, Play } from "lucide-vue-next";
-import type { Track } from "../types";
 import { formatTime } from "../utils/media";
+import { useAlbumStore } from "../stores/albumStore";
+import { usePlayerStore } from "../stores/playerStore";
+import TipContent from "../components/TipContent.vue";
 
-interface AlbumGroup {
-  name: string;
-  artistLabel: string;
-  trackCount: number;
-  duration: number;
-  coverUrl: string;
-  tracks: Array<{ track: Track; index: number }>;
-}
-
-const props = defineProps<{
-  albums: AlbumGroup[];
-  selectedAlbumName: string;
-  currentTrackIndex: number;
-  isPlaying: boolean;
-}>();
-
-defineEmits<{
-  selectAlbum: [albumName: string];
-  playTrack: [trackIndex: number];
-  playAlbum: [albumName: string];
-}>();
+const albumStore = useAlbumStore();
+const playerStore = usePlayerStore();
 
 const activeAlbum = computed(
-  () => props.albums.find((a) => a.name === props.selectedAlbumName) ?? null,
+  () =>
+    albumStore.albums.find((a) => a.name === albumStore.selectedAlbumName) ??
+    null,
 );
 
 // ─── 左侧：专辑列表虚拟滚动 ─────────────────────────────────────────────────
-// album-item: padding(12+12) + cover(56) = 80px; grid gap = 10px → 90px/slot
 const albumListRef = ref<HTMLElement | null>(null);
 
 const albumVirtualizer = useVirtualizer(
   computed(() => ({
-    count: props.albums.length,
+    count: albumStore.albums.length,
     getScrollElement: () => albumListRef.value,
     estimateSize: () => 90,
     overscan: 3,
@@ -47,11 +31,33 @@ const albumVirtualizer = useVirtualizer(
 const albumVirtualItems = computed(() =>
   albumVirtualizer.value.getVirtualItems().map((vRow) => ({
     vRow,
-    album: props.albums[vRow.index],
+    album: albumStore.albums[vRow.index],
   })),
 );
 
 const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
+
+function handleAlbumTrackSelect(albumName: string, id: string) {
+  const targetAlbum = albumStore.albums.find(
+    (album) => album.name === albumName,
+  );
+  if (!targetAlbum?.tracks.length) return;
+  albumStore.selectedAlbumName = albumName;
+  playerStore.setPlaySourceType("albums");
+  playerStore.setPlaylist(targetAlbum.tracks);
+  playerStore.playTrackById(id, true);
+}
+
+function handlePlayAlbum(albumName: string) {
+  const targetAlbum = albumStore.albums.find(
+    (album) => album.name === albumName,
+  );
+  if (!targetAlbum?.tracks.length) return;
+  albumStore.selectedAlbumName = albumName;
+  playerStore.setPlaySourceType("albums");
+  playerStore.setPlaylist(targetAlbum.tracks);
+  playerStore.playTrack(0, true);
+}
 </script>
 
 <template>
@@ -61,11 +67,13 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
         <h2>专辑</h2>
       </div>
       <span class="library-status">{{
-        albums.length ? `共 ${albums.length} 张专辑` : "等待扫描"
+        albumStore.albums.length
+          ? `共 ${albumStore.albums.length} 张专辑`
+          : "等待扫描"
       }}</span>
     </div>
 
-    <div v-if="albums.length" class="album-browser-body">
+    <div v-if="albumStore.albums.length" class="album-browser-body">
       <!-- 左侧：专辑列表 -->
       <aside ref="albumListRef" class="album-list">
         <div
@@ -78,9 +86,11 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
           <button
             v-for="{ vRow, album } in albumVirtualItems"
             :key="album.name + album.artistLabel"
-            v-memo="[album.name === selectedAlbumName]"
+            v-memo="[album.name === albumStore.selectedAlbumName]"
             class="album-item"
-            :class="{ 'is-active': album.name === selectedAlbumName }"
+            :class="{
+              'is-active': album.name === albumStore.selectedAlbumName,
+            }"
             :style="{
               position: 'absolute',
               top: 0,
@@ -89,7 +99,7 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
               transform: `translateY(${vRow.start}px)`,
             }"
             type="button"
-            @click="$emit('selectAlbum', album.name)"
+            @click="albumStore.selectedAlbumName = album.name"
           >
             <div class="album-item-cover">
               <img
@@ -103,7 +113,7 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
               <strong>{{ album.name }}</strong>
               <span>{{ album.artistLabel }}</span>
             </div>
-            <span class="album-item-meta">{{ album.trackCount }} 首</span>
+            <span class="album-item-meta">{{ album.tracks.length }} 首</span>
           </button>
         </div>
       </aside>
@@ -123,43 +133,44 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
             <h3>{{ activeAlbum.name }}</h3>
             <span>{{ activeAlbum.artistLabel }}</span>
             <div class="album-detail-stats">
-              <span>{{ activeAlbum.trackCount }} 首</span>
+              <span>{{ activeAlbum.tracks.length }} 首</span>
               <span>{{ formatTime(activeAlbum.duration) }}</span>
             </div>
           </div>
           <button
             class="primary-button album-play-button"
             type="button"
-            @click="$emit('playAlbum', activeAlbum.name)"
+            @click="handlePlayAlbum(activeAlbum.name)"
           >
             <Play :size="16" />
             <span>播放专辑</span>
           </button>
         </div>
 
-        <!-- 右侧曲目列表（曲目数量有限，无需虚拟滚动） -->
+        <!-- 右侧曲目列表 -->
         <div class="album-song-list">
           <button
-            v-for="({ track, index }, songOrder) in activeAlbum.tracks"
+            v-for="(track, songOrder) in activeAlbum.tracks"
             :key="track.id"
-            v-memo="[
-              index === currentTrackIndex,
-              index === currentTrackIndex && isPlaying,
-            ]"
             class="album-song-row"
-            :class="{ 'is-active': index === currentTrackIndex }"
+            :class="{ 'is-active': track.id === playerStore.currentTrackId }"
             type="button"
-            @click="$emit('playTrack', index)"
+            @click="handleAlbumTrackSelect(activeAlbum.name, track.id)"
           >
             <div class="album-song-main">
               <div
                 class="album-song-icon"
                 :class="{
-                  'is-playing': index === currentTrackIndex && isPlaying,
+                  'is-playing':
+                    track.id === playerStore.currentTrackId &&
+                    playerStore.isPlaying,
                 }"
               >
                 <Pause
-                  v-if="index === currentTrackIndex && isPlaying"
+                  v-if="
+                    track.id === playerStore.currentTrackId &&
+                    playerStore.isPlaying
+                  "
                   :size="16"
                 />
                 <Play v-else :size="16" />
@@ -177,9 +188,11 @@ const albumTotalSize = computed(() => albumVirtualizer.value.getTotalSize());
       </section>
     </div>
 
-    <div v-else class="empty-panel empty-panel--fill">
-      <strong>还没有可展示的专辑</strong>
-      <p>导入音乐后，这里会按专辑自动整理并展示其中的歌曲。</p>
-    </div>
+    <TipContent
+      v-else
+      title="还没有可展示的专辑"
+      content="导入音乐后，这里会按专辑自动整理并展示其中的歌曲。"
+      fill
+    />
   </section>
 </template>

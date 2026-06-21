@@ -1,9 +1,12 @@
 import { createApp } from "vue";
 import { registerSW } from "virtual:pwa-register";
+import { createPinia } from "pinia";
 import App from "./App.vue";
 import "./styles.css";
 
-createApp(App).mount("#app");
+const app = createApp(App);
+app.use(createPinia());
+app.mount("#app");
 
 registerSW({
   immediate: true,

@@ -3,8 +3,8 @@ const DB_VERSION = 2;
 const STORE_NAME = "settings";
 const SOURCES_KEY = "music-sources";
 const TRACK_CACHE_KEY = "track-cache";
-const LAST_FOLDER_NAME_KEY = "cloudbeat:last-folder-name";
-const LIKED_TRACK_IDS_KEY = "cloudbeat:liked-track-ids";
+const LAST_FOLDER_NAME_KEY = "last-folder-name";
+const LIKED_TRACK_IDS_KEY = "liked-track-ids";
 
 export interface PersistedMusicSource {
   id: string;
@@ -28,11 +28,6 @@ export interface PersistedTrackCache {
   sourceKey: string;
   tracks: CachedTrackRecord[];
 }
-
-type LegacyPersistedMusicSource = {
-  handle?: FileSystemDirectoryHandle;
-  name?: string;
-};
 
 function openDatabase() {
   return new Promise<IDBDatabase>((resolve, reject) => {
@@ -101,20 +96,7 @@ export async function loadPersistedMusicSources() {
     const multi = await requestToPromise<PersistedMusicSource[] | undefined>(
       store.get(SOURCES_KEY),
     );
-    if (multi?.length) {
-      return multi;
-    }
-
-    const legacy = await requestToPromise<
-      LegacyPersistedMusicSource | undefined
-    >(store.get("music-source"));
-    if (!legacy?.handle || !legacy?.name) {
-      return [];
-    }
-
-    return [
-      { id: crypto.randomUUID(), handle: legacy.handle, name: legacy.name },
-    ] satisfies PersistedMusicSource[];
+    if (multi?.length) return multi;
   });
 
   return (record || []).filter(
@@ -125,7 +107,6 @@ export async function loadPersistedMusicSources() {
 export async function clearPersistedMusicSources() {
   await withStore("readwrite", async (store) => {
     await requestToPromise(store.delete(SOURCES_KEY));
-    await requestToPromise(store.delete("music-source"));
   });
 }
 

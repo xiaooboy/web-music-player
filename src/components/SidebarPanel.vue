@@ -1,27 +1,30 @@
 <script setup lang="ts">
 import { Disc3, Heart, Library, House, Menu } from "lucide-vue-next";
+import { useUIStore } from "../stores/uiStore";
+import type { SectionName } from "../stores/uiStore";
 
-defineProps<{
-  activeSection: "playlist" | "favorites" | "albums" | "library-management";
-  collapsed: boolean;
-}>();
+const uiStore = useUIStore();
 
-defineEmits<{
-  switchSection: [
-    section: "playlist" | "favorites" | "albums" | "library-management",
-  ];
-  toggleCollapse: [];
-}>();
+const navItems: { name: SectionName; title: string; icon: typeof House }[] = [
+  { name: "playlist", title: "播放列表", icon: House },
+  { name: "favorites", title: "收藏", icon: Heart },
+  { name: "albums", title: "专辑", icon: Disc3 },
+  { name: "library-management", title: "音乐库", icon: Library },
+];
+
+function switchSection(name: SectionName) {
+  uiStore.setActiveSection(name);
+}
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'is-collapsed': collapsed }">
+  <aside class="sidebar" :class="{ 'is-collapsed': uiStore.sidebarCollapsed }">
     <div class="brand brand--placeholder" aria-hidden="true">
       <button
         class="collapse-btn"
-        :title="collapsed ? '展开' : '折叠'"
+        :title="uiStore.sidebarCollapsed ? '展开' : '折叠'"
         type="button"
-        @click="$emit('toggleCollapse')"
+        @click="uiStore.toggleSidebar()"
       >
         <Menu :size="26" />
       </button>
@@ -29,44 +32,18 @@ defineEmits<{
 
     <div class="nav-panel">
       <button
+        v-for="item in navItems"
+        :key="item.name"
         class="nav-item"
-        title="播放列表"
-        :class="{ 'is-active': activeSection === 'playlist' }"
+        :title="item.title"
+        :class="{ 'is-active': uiStore.activeSection === item.name }"
         type="button"
-        @click="$emit('switchSection', 'playlist')"
+        @click="switchSection(item.name)"
       >
-        <span class="nav-icon"><House :size="26" /></span>
-        <span v-if="!collapsed" class="nav-label">播放列表</span>
-      </button>
-      <button
-        class="nav-item"
-        title="收藏"
-        :class="{ 'is-active': activeSection === 'favorites' }"
-        type="button"
-        @click="$emit('switchSection', 'favorites')"
-      >
-        <span class="nav-icon"><Heart :size="26" /></span>
-        <span v-if="!collapsed" class="nav-label">收藏</span>
-      </button>
-      <button
-        class="nav-item"
-        title="专辑"
-        :class="{ 'is-active': activeSection === 'albums' }"
-        type="button"
-        @click="$emit('switchSection', 'albums')"
-      >
-        <span class="nav-icon"><Disc3 :size="26" /></span>
-        <span v-if="!collapsed" class="nav-label">专辑</span>
-      </button>
-      <button
-        class="nav-item"
-        title="音乐库管理"
-        :class="{ 'is-active': activeSection === 'library-management' }"
-        type="button"
-        @click="$emit('switchSection', 'library-management')"
-      >
-        <span class="nav-icon"><Library :size="26" /></span>
-        <span v-if="!collapsed" class="nav-label">音乐库</span>
+        <span class="nav-icon"><component :is="item.icon" :size="26" /></span>
+        <span v-if="!uiStore.sidebarCollapsed" class="nav-label">{{
+          item.title
+        }}</span>
       </button>
     </div>
   </aside>
