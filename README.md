@@ -2,12 +2,20 @@
 
 基于 `Vite + Vue 3 + TypeScript` 的本地音乐播放器，支持手动打开本地音乐文件夹，界面风格参考spotify的黑绿视觉语言。
 
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/f16d1e03-5073-4532-b84a-feaf279b7f95" />
+
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/a247816c-5fb0-4f83-ba13-e29f973b8cc7" />
+
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/6d655a67-5cc9-4f24-9329-9084d0e10a09" />
+
+
 ## 技术栈
 
 - Vite
 - Vue 3
 - TypeScript
 - PWA (`vite-plugin-pwa`)
+- ViewTransition
 - 原生 File System Access API + `webkitdirectory` 回退
 
 ## 功能
@@ -17,7 +25,8 @@
 - 播放、暂停、上一首、下一首
 - 进度拖拽、音量调节、顺序 / 单曲循环 / 列表循环 / 随机播放
 - 搜索歌曲、歌手、专辑、路径
-- 解析 MP3 的标题、歌手、专辑与封面
+- 解析 MP3 的标题、歌手、专辑、封面、歌词
+- 收藏、滚动歌词
 
 ## 开发
 
@@ -47,7 +56,7 @@ npm run preview
 
 ## 目录结构
 
-- `src/App.vue`: 主状态管理与页面编排
-- `src/components/`: 侧栏、主视觉、列表区、底部播放器组件
+- `src/App.vue`: 页面编排
+- `src/components/` `src/views/`: 侧栏、主视觉、列表区、底部播放器组件
 - `src/utils/media.ts`: 文件导入、元数据解析、格式化工具
 - `src/types.ts`: 共享类型定义
