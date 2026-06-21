@@ -2,16 +2,16 @@
 import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, Pause, Play } from "lucide-vue-next";
+import TipContent from "./TipContent.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 
 const props = defineProps<{
-  tracks: Array<{ track: Track; index: number }>;
-  hasTracks: boolean;
+  tracks: Track[];
   loading: boolean;
   loadingDone: number;
   loadingTotal: number;
-  currentTrackIndex: number;
+  currentTrackId: string;
   isPlaying: boolean;
   status: string;
   likedTrackIdSet: Set<string>;
@@ -20,9 +20,9 @@ const props = defineProps<{
   emptyDescription?: string;
 }>();
 
-defineEmits<{
-  play: [index: number];
-  toggleFavorite: [index: number];
+const emit = defineEmits<{
+  play: [id: string];
+  toggleFavorite: [id: string];
 }>();
 
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
@@ -48,6 +48,20 @@ const virtualItems = computed(() =>
 );
 
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+
+const tipTitle = computed(() => {
+  if (props.loading) return "正在整理你的曲库";
+  if (props.tracks.length) return "没有匹配到结果";
+  return props.emptyTitle || "你的本地曲库还没接入";
+});
+
+const tipContent = computed(() => {
+  if (props.loading)
+    return `已处理 ${props.loadingDone} / ${props.loadingTotal} 首歌曲，请稍候。`;
+  if (props.tracks.length)
+    return "换个关键词试试，或者清空搜索框查看全部曲目。";
+  return props.emptyDescription || '前往"音乐库"添加音乐源。';
+});
 </script>
 
 <template>
@@ -82,14 +96,9 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
         >
           <div
             v-for="{ vRow, item } in virtualItems"
-            :key="item.track.id"
-            v-memo="[
-              item.index === currentTrackIndex,
-              item.index === currentTrackIndex && isPlaying,
-              likedTrackIdSet.has(item.track.id),
-            ]"
+            :key="item.id"
             class="track-row"
-            :class="{ 'is-active': item.index === currentTrackIndex }"
+            :class="{ 'is-active': item.id === currentTrackId }"
             :style="{
               position: 'absolute',
               top: 0,
@@ -97,62 +106,56 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
               width: '100%',
               transform: `translateY(${vRow.start}px)`,
             }"
-            @click="$emit('play', item.index)"
+            @click="$emit('play', item.id)"
           >
             <div class="track-song">
               <div class="track-thumb">
                 <img
-                  v-if="item.track.coverUrl"
-                  :src="item.track.coverUrl"
-                  :alt="`${item.track.title} 封面`"
+                  v-if="item.coverUrl"
+                  :src="item.coverUrl"
+                  :alt="`${item.title} 封面`"
                 />
                 <!-- <span v-else>♪</span> -->
               </div>
               <div class="track-copy">
-                <strong>{{ item.track.title }}</strong>
-                <span>{{ item.track.artist }}</span>
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.artist }}</span>
               </div>
             </div>
             <div class="track-album">
-              <strong>{{ item.track.album }}</strong>
+              <strong>{{ item.album }}</strong>
             </div>
-            <span class="track-duration">{{
-              formatTime(item.track.duration)
-            }}</span>
+            <span class="track-duration">{{ formatTime(item.duration) }}</span>
             <div class="row-action">
               <button
                 class="row-play"
                 :class="{
-                  'is-playing': item.index === currentTrackIndex && isPlaying,
+                  'is-playing': item.id === currentTrackId && isPlaying,
                 }"
                 type="button"
                 :aria-label="
-                  item.index === currentTrackIndex && isPlaying
-                    ? '暂停'
-                    : '播放'
+                  item.id === currentTrackId && isPlaying ? '暂停' : '播放'
                 "
-                @click.stop="$emit('play', item.index)"
+                @click.stop="$emit('play', item.id)"
               >
                 <Pause
-                  v-if="item.index === currentTrackIndex && isPlaying"
+                  v-if="item.id === currentTrackId && isPlaying"
                   :size="18"
                 />
                 <Play v-else :size="18" />
               </button>
               <button
                 class="row-like"
-                :class="{ 'is-active': likedTrackIdSet.has(item.track.id) }"
+                :class="{ 'is-active': likedTrackIdSet.has(item.id) }"
                 type="button"
                 :aria-label="
-                  likedTrackIdSet.has(item.track.id) ? '取消喜欢' : '标记喜欢'
+                  likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'
                 "
-                @click.stop="$emit('toggleFavorite', item.index)"
+                @click.stop="$emit('toggleFavorite', item.id)"
               >
                 <Heart
                   :size="16"
-                  :fill="
-                    likedTrackIdSet.has(item.track.id) ? 'currentColor' : 'none'
-                  "
+                  :fill="likedTrackIdSet.has(item.id) ? 'currentColor' : 'none'"
                 />
               </button>
             </div>
@@ -160,24 +163,7 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
         </div>
       </template>
 
-      <div v-else class="empty-panel empty-panel--fill">
-        <strong>{{
-          loading
-            ? "正在整理你的曲库"
-            : hasTracks
-              ? "没有匹配到结果"
-              : emptyTitle || "你的本地曲库还没接入"
-        }}</strong>
-        <p>
-          {{
-            loading
-              ? `已处理 ${loadingDone} / ${loadingTotal} 首歌曲，请稍候。`
-              : hasTracks
-                ? "换个关键词试试，或者清空搜索框查看全部曲目。"
-                : emptyDescription || '前往"音乐库"添加音乐源。'
-          }}
-        </p>
-      </div>
+      <TipContent v-else :title="tipTitle" :content="tipContent" />
     </div>
   </section>
 </template>

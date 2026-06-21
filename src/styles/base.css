@@ -29,14 +29,12 @@
     "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
   --window-safe-top: 0px;
   --dock-height: 70px;
-  --gradient-bg:
-    radial-gradient(circle at top left, var(--accent-dim), transparent 22%),
-    radial-gradient(
-      circle at top right,
-      rgba(255, 255, 255, 0.04),
-      transparent 18%
-    ),
-    linear-gradient(180deg, #1a1a1a 0%, var(--bg) 32%);
+  --gradient-bg: radial-gradient(
+      circle at top left,
+      var(--accent-dim),
+      transparent 22%
+    )
+    #0b0f0c;
 }
 
 @supports (top: env(titlebar-area-height)) {

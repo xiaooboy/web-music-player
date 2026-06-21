@@ -30,7 +30,6 @@
 
 .main-stage,
 .page-content,
-.hero-summary,
 .track-list {
   display: grid;
   gap: 12px;
@@ -103,9 +102,7 @@
   max-width: 14ch;
 }
 
-.topbar-actions,
-.hero-meta,
-.hero-actions {
+.topbar-actions {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -144,30 +141,8 @@
   color: var(--muted);
 }
 
-.hero-card,
 .library-panel {
   width: 100%;
-}
-
-.hero-card {
-  border-radius: var(--radius-xl);
-  padding: 28px;
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 220px;
-  gap: 26px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-card::after {
-  content: "";
-  position: absolute;
-  inset: auto -8% -40% auto;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(30, 215, 96, 0.12), transparent 68%);
-  pointer-events: none;
 }
 
 .cover-art {
@@ -198,42 +173,6 @@
   letter-spacing: 0.18em;
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.38);
-}
-
-.hero-cover {
-  aspect-ratio: 1;
-}
-
-.hero-copy {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 16px;
-}
-
-.hero-copy h2 {
-  margin: 0;
-  font-size: clamp(1.8rem, 2.2vw, 2.8rem);
-  line-height: 1.08;
-  font-family: var(--font-display);
-}
-
-.hero-artist {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--muted);
-  max-width: 62ch;
-}
-
-.hero-meta span {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--muted);
 }
 
 .summary-card {
@@ -272,23 +211,4 @@
 .library-status {
   color: var(--accent-light);
   font-weight: 600;
-}
-
-.empty-panel {
-  padding: 72px 16px 82px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.empty-panel--fill {
-  display: grid;
-  place-content: center;
-  min-height: 100%;
-}
-
-.empty-panel strong {
-  display: block;
-  color: var(--text);
-  font-size: 1.08rem;
-  margin-bottom: 10px;
 }

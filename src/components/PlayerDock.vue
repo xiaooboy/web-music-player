@@ -8,34 +8,23 @@ import {
   Repeat,
   Repeat1,
   Shuffle,
-  Volume2,
 } from "lucide-vue-next";
-import type { Track } from "../types";
+import { computed } from "vue";
 import { sliderStyle } from "../utils/media";
+import { usePlayerStore } from "../stores/playerStore";
+import { useFavoriteStore } from "../stores/favoriteStore";
+import { useUIStore } from "../stores/uiStore";
 
-defineProps<{
-  currentTrack: Track | null;
-  isPlaying: boolean;
-  currentTimeLabel: string;
-  totalTimeLabel: string;
-  progressPercent: number;
-  volumePercent: number;
-  playbackMode: "off" | "one" | "shuffle";
-  playbackModeLabel: string;
-  isCurrentTrackLiked: boolean;
-  enableCoverTransition?: boolean;
-}>();
+const playerStore = usePlayerStore();
+const favoriteStore = useFavoriteStore();
+const uiStore = useUIStore();
 
-defineEmits<{
-  openDetail: [];
-  prev: [];
-  next: [];
-  togglePlay: [];
-  cyclePlaybackMode: [];
-  seek: [value: number];
-  setVolume: [value: number];
-  toggleFavorite: [];
-}>();
+const isCurrentTrackLiked = computed(() =>
+  playerStore.currentTrack
+    ? favoriteStore.likedTrackIdSet.has(playerStore.currentTrackId)
+    : false,
+);
+const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
 </script>
 
 <template>
@@ -43,29 +32,29 @@ defineEmits<{
     <button
       class="dock-track detail-trigger"
       type="button"
-      @click="$emit('openDetail')"
+      @click="playerStore.currentTrack && uiStore.openDetail()"
     >
-      <div
-        class="cover-art dock-cover"
-        :style="
-          currentTrack && enableCoverTransition
-            ? { viewTransitionName: 'active-cover-art' }
-            : undefined
-        "
-      >
+      <div class="cover-art dock-cover">
         <img
-          v-if="currentTrack?.coverUrl"
-          :src="currentTrack.coverUrl"
+          v-if="playerStore.currentTrack?.coverUrl"
+          :src="playerStore.currentTrack.coverUrl"
           alt="底部播放器封面"
+          :style="
+            playerStore.currentTrack && uiStore.currentView !== 'detail'
+              ? { 'view-transition-name': 'active-cover-art' }
+              : undefined
+          "
         />
         <span v-else aria-hidden="true">LM</span>
       </div>
 
       <div class="dock-copy">
-        <strong>{{ currentTrack?.title || "请选择一首歌曲" }}</strong>
+        <strong>{{
+          playerStore.currentTrack?.title || "请选择一首歌曲"
+        }}</strong>
         <span>{{
-          currentTrack
-            ? `${currentTrack.artist} · ${currentTrack.album}`
+          playerStore.currentTrack
+            ? `${playerStore.currentTrack.artist} · ${playerStore.currentTrack.album}`
             : "点击歌曲后播放"
         }}</span>
       </div>
@@ -75,37 +64,37 @@ defineEmits<{
       <button
         class="mode-button mode-button--icon is-active"
         type="button"
-        :aria-label="playbackModeLabel"
-        :title="playbackModeLabel"
-        @click.stop="$emit('cyclePlaybackMode')"
+        :aria-label="playerStore.playbackModeLabel"
+        :title="playerStore.playbackModeLabel"
+        @click.stop="playerStore.nextPlaybackMode()"
       >
-        <Shuffle v-if="playbackMode === 'shuffle'" :size="18" />
-        <Repeat1 v-else-if="playbackMode === 'one'" :size="18" />
+        <Shuffle v-if="playerStore.playbackMode === 'shuffle'" :size="18" />
+        <Repeat1 v-else-if="playerStore.playbackMode === 'one'" :size="18" />
         <Repeat v-else :size="18" />
       </button>
       <button
         class="icon-button"
         type="button"
         aria-label="上一首"
-        @click.stop="$emit('prev')"
+        @click.stop="playerStore.playByStep(-1)"
       >
         <ChevronLeft :size="20" />
       </button>
       <button
         class="play-toggle"
-        :class="{ 'is-active': isPlaying }"
+        :class="{ 'is-active': playerStore.isPlaying }"
         type="button"
         aria-label="播放或暂停"
-        @click.stop="$emit('togglePlay')"
+        @click.stop="playerStore.togglePlay()"
       >
-        <Pause v-if="isPlaying" :size="22" />
+        <Pause v-if="playerStore.isPlaying" :size="22" />
         <Play v-else :size="22" />
       </button>
       <button
         class="icon-button"
         type="button"
         aria-label="下一首"
-        @click.stop="$emit('next')"
+        @click.stop="playerStore.playByStep(1)"
       >
         <ChevronRight :size="20" />
       </button>
@@ -114,7 +103,9 @@ defineEmits<{
         :class="{ 'is-active': isCurrentTrackLiked }"
         type="button"
         :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
-        @click.stop="$emit('toggleFavorite')"
+        @click.stop="
+          favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
+        "
       >
         <Heart
           :size="18"
@@ -124,16 +115,18 @@ defineEmits<{
     </div>
 
     <div class="dock-extra">
-      <div class="progress-row" v-if="currentTrack">
+      <div class="progress-row" v-if="playerStore.currentTrack">
         <input
           class="progress-slider"
           type="range"
           min="0"
           max="100"
-          :value="progressPercent"
-          :style="sliderStyle(progressPercent)"
+          :value="playerStore.progressPercent"
+          :style="sliderStyle(playerStore.progressPercent)"
           @input="
-            $emit('seek', Number(($event.target as HTMLInputElement).value))
+            playerStore.seekToPercent(
+              Number(($event.target as HTMLInputElement).value),
+            )
           "
         />
       </div>

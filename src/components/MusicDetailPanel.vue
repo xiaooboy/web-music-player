@@ -9,51 +9,26 @@ import {
   Repeat,
   Repeat1,
   Shuffle,
-  Volume2,
 } from "lucide-vue-next";
-import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import type { LyricsLine, Track } from "../types";
+import { nextTick, ref, watch, computed, onMounted } from "vue";
 import { sliderStyle } from "../utils/media";
+import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
+import { Volume2 } from "lucide-vue-next"; // used in volume control
+import TipContent from "../components/TipContent.vue";
 
-const props = defineProps<{
-  currentTrack: Track | null;
-  isPlaying: boolean;
-  currentTimeLabel: string;
-  totalTimeLabel: string;
-  progressPercent: number;
-  volumePercent: number;
-  playbackMode: "off" | "one" | "shuffle";
-  playbackModeLabel: string;
-  isCurrentTrackLiked: boolean;
-  lyricsLines: LyricsLine[];
-  activeLyricsIndex: number;
-  hasTimedLyrics: boolean;
-  enableCoverTransition?: boolean;
-}>();
+const playerStore = usePlayerStore();
+const favoriteStore = useFavoriteStore();
+const uiStore = useUIStore();
 
-const emit = defineEmits<{
-  close: [];
-  prev: [];
-  next: [];
-  togglePlay: [];
-  cyclePlaybackMode: [];
-  seek: [value: number];
-  setVolume: [value: number];
-  toggleFavorite: [];
-  seekLine: [index: number];
-}>();
+const isCurrentTrackLiked = computed(() =>
+  playerStore.currentTrack
+    ? favoriteStore.likedTrackIdSet.has(playerStore.currentTrackId)
+    : false,
+);
 
 const lyricsScrollRef = ref<HTMLElement | null>(null);
-const lyricsNotOverflowed = ref(true);
-
-function checkLyricsOverflow() {
-  const container = lyricsScrollRef.value;
-  if (!container) return;
-  lyricsNotOverflowed.value = container.scrollHeight <= container.clientHeight;
-}
 
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
-let lyricsObserver: ResizeObserver | null = null;
 
 function handleLyricsWheel(event: Event) {
   if (disableFollowTimeout) {
@@ -68,139 +43,63 @@ function displayLyricsText(text: string) {
   return text.replace(/^(\[[^\]]+\]\s*)+/, "").trim() || text.trim();
 }
 
-function getOffsetWithinContainer(
-  element: HTMLElement,
-  container: HTMLElement,
-) {
-  return (
-    element.getBoundingClientRect().top -
-    container.getBoundingClientRect().top +
-    container.scrollTop
-  );
-}
-
-function getLyricsStep(container: HTMLElement, index: number) {
-  const currentLine = container.querySelector<HTMLElement>(
-    `[data-line-index="${index}"]`,
-  );
-  const prevLine =
-    index > 0
-      ? container.querySelector<HTMLElement>(`[data-line-index="${index - 1}"]`)
-      : null;
-  const nextLine = container.querySelector<HTMLElement>(
-    `[data-line-index="${index + 1}"]`,
-  );
-
-  if (currentLine && prevLine) {
-    const step =
-      getOffsetWithinContainer(currentLine, container) -
-      getOffsetWithinContainer(prevLine, container);
-    if (step > 0) {
-      return step;
-    }
-  }
-
-  if (currentLine && nextLine) {
-    const step =
-      getOffsetWithinContainer(nextLine, container) -
-      getOffsetWithinContainer(currentLine, container);
-    if (step > 0) {
-      return step;
-    }
-  }
-
-  return currentLine?.offsetHeight || 0;
-}
-
 function scheduleLyricsFollow(index: number) {
   if (index < 0 || disableFollowTimeout) {
     return;
   }
 
-  void nextTick(() => {
-    const container = lyricsScrollRef.value;
-    if (!container) {
-      return;
-    }
+  const container = lyricsScrollRef.value;
+  if (!container || container.clientHeight === 0) {
+    return;
+  }
 
-    const activeLine = container.querySelector<HTMLElement>(
-      `[data-line-index="${index}"]`,
-    );
-    if (!activeLine) {
-      return;
-    }
+  const activeLine = container.querySelector<HTMLElement>(
+    `[data-line-index="${index}"]`,
+  );
+  if (!activeLine) {
+    return;
+  }
 
-    const targetTop =
-      getOffsetWithinContainer(activeLine, container) -
-      container.clientHeight / 2 +
-      activeLine.offsetHeight / 2;
-    const maxScrollTop = Math.max(
-      0,
-      container.scrollHeight - container.clientHeight,
-    );
-    const step = getLyricsStep(container, index);
-    const snappedTop =
-      step > 0 ? Math.round(targetTop / step) * step : targetTop;
-    container.scrollTo({
-      top: Math.min(Math.max(snappedTop, 0), maxScrollTop),
-      behavior: "smooth",
-    });
+  // 将当前歌词行滚动到容器可视区域的垂直居中位置
+  const targetTop =
+    activeLine.offsetTop -
+    container.clientHeight / 2 +
+    activeLine.offsetHeight / 2;
+  const maxScrollTop = Math.max(
+    0,
+    container.scrollHeight - container.clientHeight,
+  );
+  container.scrollTo({
+    top: Math.min(Math.max(targetTop, 0), maxScrollTop),
+    behavior: "smooth",
   });
 }
 
-function blockLyricsManualScroll(event: Event) {
-  // event.preventDefault();
-}
-
 watch(
-  () => props.activeLyricsIndex,
-  (index) => {
-    scheduleLyricsFollow(index);
+  [
+    () => playerStore.activeLyricsIndex,
+    () => uiStore.currentView,
+    () => playerStore.currentLyricsLines.length,
+  ],
+  ([index, view]) => {
+    if (view !== "detail") return;
+    // 延迟一帧，等待 v-show 切换后浏览器完成布局计算
+    // 否则容器 clientHeight 仍为 0，歌词无法滚动到正确位置
+    nextTick(() => {
+      scheduleLyricsFollow(index);
+    });
   },
-  { flush: "post", immediate: true },
+  { immediate: true },
 );
 
 watch(
-  () => props.currentTrack?.id,
+  () => playerStore.currentTrack?.id,
   () => {
-    void nextTick(() => {
+    nextTick(() => {
       lyricsScrollRef.value?.scrollTo({ top: 0, behavior: "auto" });
     });
   },
-  { flush: "post" },
 );
-
-watch(
-  () => props.lyricsLines.length,
-  () => {
-    scheduleLyricsFollow(props.activeLyricsIndex);
-  },
-  { flush: "post" },
-);
-
-onMounted(() => {
-  scheduleLyricsFollow(props.activeLyricsIndex);
-  checkLyricsOverflow();
-
-  const container = lyricsScrollRef.value;
-  if (container) {
-    lyricsObserver = new ResizeObserver(() => {
-      checkLyricsOverflow();
-    });
-    lyricsObserver.observe(container);
-  }
-});
-
-onUnmounted(() => {
-  if (disableFollowTimeout) {
-    clearTimeout(disableFollowTimeout);
-    disableFollowTimeout = null;
-  }
-  if (lyricsObserver) {
-    lyricsObserver.disconnect();
-    lyricsObserver = null;
-  }
-});
 </script>
 
 <template>
@@ -208,8 +107,8 @@ onUnmounted(() => {
     <div
       class="detail-backdrop"
       :style="
-        currentTrack?.coverUrl
-          ? { backgroundImage: `url(${currentTrack.coverUrl})` }
+        playerStore.currentTrack?.coverUrl
+          ? { backgroundImage: `url(${playerStore.currentTrack.coverUrl})` }
           : undefined
       "
     ></div>
@@ -219,7 +118,7 @@ onUnmounted(() => {
         class="icon-button"
         type="button"
         aria-label="返回列表"
-        @click="emit('close')"
+        @click="uiStore.closeDetail()"
       >
         <ArrowLeft :size="18" />
       </button>
@@ -227,28 +126,26 @@ onUnmounted(() => {
 
     <div class="detail-body">
       <div class="detail-meta">
-        <div
-          class="cover-art detail-cover"
-          :style="
-            currentTrack && props.enableCoverTransition
-              ? { viewTransitionName: 'active-cover-art' }
-              : undefined
-          "
-        >
+        <div class="cover-art detail-cover">
           <img
-            v-if="currentTrack?.coverUrl"
-            :src="currentTrack.coverUrl"
+            v-if="playerStore.currentTrack?.coverUrl"
+            :src="playerStore.currentTrack.coverUrl"
             alt="歌曲封面"
+            :style="
+              playerStore.currentTrack && uiStore.currentView === 'detail'
+                ? { 'view-transition-name': 'active-cover-art' }
+                : undefined
+            "
           />
           <span v-else>CB</span>
         </div>
 
         <div class="detail-copy">
-          <h3>{{ currentTrack?.title || "请选择一首歌曲" }}</h3>
+          <h3>{{ playerStore.currentTrack?.title || "请选择一首歌曲" }}</h3>
           <p>
             {{
-              currentTrack
-                ? `${currentTrack.artist} · ${currentTrack.album}`
+              playerStore.currentTrack
+                ? `${playerStore.currentTrack.artist} · ${playerStore.currentTrack.album}`
                 : "点击歌曲后播放"
             }}
           </p>
@@ -264,11 +161,10 @@ onUnmounted(() => {
               type="range"
               min="0"
               max="100"
-              :value="volumePercent"
-              :style="sliderStyle(volumePercent)"
+              :value="playerStore.volumePercent"
+              :style="sliderStyle(playerStore.volumePercent)"
               @input="
-                emit(
-                  'setVolume',
+                playerStore.setVolume(
                   Number(($event.target as HTMLInputElement).value),
                 )
               "
@@ -277,65 +173,75 @@ onUnmounted(() => {
           </label>
 
           <div class="detail-progress">
-            <span>{{ currentTimeLabel }}</span>
+            <span>{{ playerStore.currentTimeLabel }}</span>
             <input
               class="progress-slider"
               type="range"
               min="0"
               max="100"
-              :value="progressPercent"
-              :style="sliderStyle(progressPercent)"
+              :value="playerStore.progressPercent"
+              :style="sliderStyle(playerStore.progressPercent)"
               @input="
-                emit('seek', Number(($event.target as HTMLInputElement).value))
+                playerStore.seekToPercent(
+                  Number(($event.target as HTMLInputElement).value),
+                )
               "
             />
-            <span>{{ totalTimeLabel }}</span>
+            <span>{{ playerStore.totalTimeLabel }}</span>
           </div>
 
           <div class="detail-transport">
             <button
-              class="mode-button mode-button--icon is-active"
+              class="icon-button is-active"
               type="button"
-              :aria-label="playbackModeLabel"
-              :title="playbackModeLabel"
-              @click="emit('cyclePlaybackMode')"
+              :aria-label="playerStore.playbackModeLabel"
+              :title="playerStore.playbackModeLabel"
+              @click="playerStore.nextPlaybackMode()"
             >
-              <Shuffle v-if="playbackMode === 'shuffle'" :size="18" />
-              <Repeat1 v-else-if="playbackMode === 'one'" :size="18" />
+              <Shuffle
+                v-if="playerStore.playbackMode === 'shuffle'"
+                :size="18"
+              />
+              <Repeat1
+                v-else-if="playerStore.playbackMode === 'one'"
+                :size="18"
+              />
               <Repeat v-else :size="18" />
             </button>
             <button
-              class="icon-button detail-control-button"
+              class="icon-button"
               type="button"
               aria-label="上一首"
-              @click="emit('prev')"
+              @click="playerStore.playByStep(-1)"
             >
               <ChevronLeft :size="20" />
             </button>
             <button
-              class="play-toggle detail-main-toggle"
-              :class="{ 'is-active': isPlaying }"
+              class="icon-button play-toggle"
+              :class="{ 'is-active': playerStore.isPlaying }"
               type="button"
               aria-label="播放或暂停"
-              @click="emit('togglePlay')"
+              @click="playerStore.togglePlay()"
             >
-              <Pause v-if="isPlaying" :size="24" />
+              <Pause v-if="playerStore.isPlaying" :size="24" />
               <Play v-else :size="24" />
             </button>
             <button
-              class="icon-button detail-control-button"
+              class="icon-button"
               type="button"
               aria-label="下一首"
-              @click="emit('next')"
+              @click="playerStore.playByStep(1)"
             >
               <ChevronRight :size="20" />
             </button>
             <button
-              class="mode-button mode-button--icon favorite-button"
+              class="icon-button favorite-button"
               :class="{ 'is-active': isCurrentTrackLiked }"
               type="button"
               :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
-              @click="emit('toggleFavorite')"
+              @click="
+                favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
+              "
             >
               <Heart
                 :size="18"
@@ -347,34 +253,37 @@ onUnmounted(() => {
       </div>
 
       <div class="detail-lyrics">
-        <!-- @wheel.prevent="blockLyricsManualScroll"
-          @touchmove.prevent="blockLyricsManualScroll" -->
         <div
           ref="lyricsScrollRef"
           class="lyrics-scroll"
-          :class="{ 'not-overflowed': lyricsNotOverflowed }"
+          :class="{
+            'not-overflowed': playerStore.currentLyricsLines.length < 5,
+          }"
           @wheel="handleLyricsWheel"
         >
           <div class="lyrics-list">
-            <template v-if="lyricsLines.length">
+            <template v-if="playerStore.currentLyricsLines.length">
               <div
-                v-for="(line, index) in lyricsLines"
+                v-for="(line, index) in playerStore.currentLyricsLines"
                 :key="`${index}-${line.time ?? 'plain'}-${line.text}`"
                 class="lyrics-line"
                 :class="{
-                  'is-active': index === activeLyricsIndex,
+                  'is-active': index === playerStore.activeLyricsIndex,
                   'is-clickable': line.time !== null,
                 }"
                 :data-line-index="index"
-                @click="line.time !== null && emit('seekLine', index)"
+                @click="
+                  line.time !== null && playerStore.seekToLyricsLine(index)
+                "
               >
                 <span>{{ displayLyricsText(line.text) }}</span>
               </div>
             </template>
-            <div v-else class="empty-panel detail-empty">
-              <strong>这首歌还没有可展示的歌词</strong>
-              <p>优先读取同目录 `.lrc`，其次读取音频标签里的内嵌歌词。</p>
-            </div>
+            <TipContent
+              v-else
+              title="这首歌还没有可展示的歌词"
+              content="优先读取同目录 `.lrc`，其次读取音频标签里的内嵌歌词。"
+            />
           </div>
         </div>
       </div>

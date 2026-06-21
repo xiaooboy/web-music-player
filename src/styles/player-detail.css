@@ -147,6 +147,33 @@ input[type="range"]::-webkit-slider-thumb {
   width: 120px;
 }
 
+.detail-volume {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.detail-volume .volume-label {
+  justify-content: flex-start;
+  width: 42px;
+  min-width: 42px;
+  overflow: hidden;
+  padding-left: 6px;
+}
+
+.detail-progress .progress-slider,
+.detail-volume-slider {
+  width: 100%;
+  min-width: 0;
+}
+
+.detail-volume-end {
+  width: 42px;
+  min-width: 42px;
+}
+
 .primary-button,
 .secondary-button,
 .play-button,
@@ -201,9 +228,9 @@ input[type="range"]::-webkit-slider-thumb {
 .icon-button,
 .row-play,
 .row-like {
+  padding: 0;
   width: 40px;
   height: 40px;
-  border-radius: 12px;
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -216,8 +243,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .play-toggle {
-  width: 48px;
-  height: 48px;
   border-radius: 16px;
   display: grid;
   place-items: center;
@@ -229,8 +254,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .mode-button {
-  min-width: 92px;
-  min-height: 42px;
   padding: 0 14px;
   border-radius: 999px;
   font-size: 0.88rem;
@@ -362,7 +385,10 @@ input[type="range"]::-webkit-slider-thumb {
   aspect-ratio: 1;
   border-radius: var(--cover-radius);
   background: transparent;
-  box-shadow: none;
+  /* outer shadow for visual separation */
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 6px 18px rgba(0, 0, 0, 0.35);
   align-self: center;
   flex-shrink: 0;
 }
@@ -430,47 +456,20 @@ input[type="range"]::-webkit-slider-thumb {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .detail-main-toggle {
-  width: 60px;
-  height: 60px;
-  border-radius: 20px;
   font-size: 1.2rem;
 }
 
 .detail-control-button {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
 }
 
-.detail-volume {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.detail-volume .volume-label {
-  justify-content: flex-start;
-  width: 42px;
-  min-width: 42px;
-  overflow: hidden;
-  padding-left: 6px;
-}
-
-.detail-progress .progress-slider,
-.detail-volume-slider {
+.detail-progress .progress-slider {
   width: 100%;
   min-width: 0;
-}
-
-.detail-volume-end {
-  width: 42px;
-  min-width: 42px;
 }
 
 .lyrics-scroll {

@@ -3,6 +3,7 @@ import vue from "@vitejs/plugin-vue";
 
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
+import path from "node:path";
 
 // Determine base for GitHub Pages project site builds.
 // When DEPLOY_TO_GH_PAGES=true in CI and GITHUB_REPOSITORY is available,
@@ -31,11 +32,11 @@ export default defineConfig({
       ],
       manifest: {
         id: base,
-        name: "LocalMusic",
+        name: `LocalMusic${process.env.NODE_ENV === "development" ? "Dev" : ""}`,
         short_name: "LocalMusic",
         description:
           "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",
-        theme_color: "transparent",
+        theme_color: "#0b0f0c",
         background_color: "#0b0f0c",
         display_override: ["window-controls-overlay", "standalone"],
         display: "standalone",
@@ -91,6 +92,11 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "src"),
+    },
+  },
   server: {
     port: 8080,
   },
