@@ -14,6 +14,7 @@ export interface Track {
   artist: string;
   album: string;
   coverUrl: string;
+  coverBlob?: Blob;
   duration: number;
   format: string;
   lyricsText: string;

@@ -8,11 +8,9 @@ import {
   saveTrackCache,
 } from "@/utils/persistence";
 import {
-  blobToBase64,
   isAudioFile,
   revokeTrackResources,
   supportsDirectoryPicker,
-  urlBlobMap,
 } from "@/utils/media";
 import {
   buildCacheKeyFromSources,
@@ -82,7 +80,10 @@ export const useLibraryStore = defineStore("library", () => {
       updatePlayableTracks([]);
       return;
     }
-    if (hydratedTracks.length) updatePlayableTracks(hydratedTracks);
+    if (hydratedTracks.length) {
+      revokeTrackResources(tracks.value);
+      updatePlayableTracks(hydratedTracks);
+    }
     const finalTracks = await entriesToTracks(allEntries, isStale, {
       onProgress: ({ done, total }) => {
         loading.value = done !== total;
@@ -146,19 +147,9 @@ export const useLibraryStore = defineStore("library", () => {
       await clearTrackCache();
       return;
     }
-    const saveTracks = await Promise.all(
-      tracks.value.map(async (track) => {
-        let url = track.coverUrl;
-        if (urlBlobMap.has(track.coverUrl)) {
-          url = await blobToBase64(urlBlobMap.get(track.coverUrl)!);
-        }
-        return { ...track, coverUrl: url };
-      }),
-    );
-    urlBlobMap.clear();
     await saveTrackCache({
       sourceKey: cacheKey,
-      tracks: saveTracks,
+      tracks: tracks.value.map(({ coverUrl: _, ...rest }) => rest),
     });
   }
 

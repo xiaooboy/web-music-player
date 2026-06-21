@@ -13,7 +13,6 @@ import {
   buildLyricsLookup,
   buildTrack,
   collectAudioFiles,
-  collectDirectoryFiles,
   ensureDirectoryPermission,
   getLyricsLookupKey,
   isAudioFile,
@@ -25,13 +24,20 @@ import { defaultNameSort } from "./nameSort";
  * 批量从缓存记录创建 Track 对象数组
  */
 export function createTracksFromCache(records: CachedTrackRecord[]): Track[] {
-  return records.map((record) => ({
-    ...record,
-    // 非真实文件，水和后拿到真实 File
-    file: new File([], record.title || record.relativePath || "cached-track"),
-    coverUrl: record.coverUrl || "",
-    isPlayable: false,
-  }));
+  return records.map((record) => {
+    let coverUrl = "";
+    let coverBlob = record.coverBlob;
+    // 从 coverBlob 重建 blob: URL
+    if (coverBlob) {
+      coverUrl = URL.createObjectURL(coverBlob);
+    }
+    return {
+      ...record,
+      // 非真实文件，水和后拿到真实 File
+      coverUrl,
+      isPlayable: false,
+    };
+  });
 }
 
 /**
@@ -64,26 +70,12 @@ export function hydrateTracks(
     result.push({
       ...record,
       file: entry.file,
-      coverUrl: record.coverUrl || "",
+      coverUrl: record.coverBlob ? URL.createObjectURL(record.coverBlob) : "",
       isPlayable: true,
     });
 
     return result;
   }, []);
-}
-
-/**
- * 解析 Track 数组为可缓存的记录格式
- * 将封面 URL 转换为 data URL 以便持久化存储
- */
-export function serializeTracksForCache(
-  records: Track[],
-  coverDataUrls: Map<string, string>,
-): CachedTrackRecord[] {
-  return records.map((track) => ({
-    ...track,
-    coverUrl: coverDataUrls.get(track.coverUrl) ?? "",
-  }));
 }
 
 /**
