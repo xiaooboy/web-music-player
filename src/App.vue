@@ -89,6 +89,7 @@ function handleContextMenuBlock(event: MouseEvent) {
 </script>
 
 <template>
+  <div class="region-bar"></div>
   <div
     class="app-shell"
     :class="{ 'sidebar-collapsed': uiStore.sidebarCollapsed }"

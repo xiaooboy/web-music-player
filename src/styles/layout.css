@@ -1,3 +1,12 @@
+.region-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--window-safe-top);
+  app-region: drag;
+  z-index: calc(infinity);
+}
 .app-shell {
   display: grid;
   grid-template-columns: 140px minmax(0, 1fr);
