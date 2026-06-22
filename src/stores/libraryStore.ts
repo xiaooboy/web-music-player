@@ -122,7 +122,7 @@ export const useLibraryStore = defineStore("library", () => {
         `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}` ===
         key,
     );
-    if (isRepeat) return;
+    if (isRepeat || launchedFilePlaybackActive.value) return;
     musicSources.value = [...musicSources.value, source];
     persistHandleSources();
     startBuild();
@@ -132,6 +132,7 @@ export const useLibraryStore = defineStore("library", () => {
     musicSources.value = musicSources.value.filter(
       (source) => source.id !== sourceId,
     );
+    if (launchedFilePlaybackActive.value) return;
     persistHandleSources();
     startBuild();
   }
@@ -185,7 +186,12 @@ export const useLibraryStore = defineStore("library", () => {
     musicSources.value = [launchSource];
     const { entries } = await loadSourcesData(musicSources.value);
     const finalTracks = await entriesToTracks(entries, () => false);
-    if (finalTracks) tracks.value = finalTracks;
+    if (!finalTracks) return;
+    tracks.value = finalTracks;
+    playerStore.setPlaylist(finalTracks);
+    favoriteStore.setFavoriteSources(finalTracks);
+    albumStore.updateAlbumWithTracks(finalTracks);
+    playerStore.playTrack(0, true);
   }
   /** 更新 tracks，通知其他模块更新 */
   function updatePlayableTracks(updatedTracks: Track[]) {

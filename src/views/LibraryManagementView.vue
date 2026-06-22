@@ -25,6 +25,13 @@ async function openFolder(isFallback: boolean) {
   if (!nextSource) return;
   libraryStore.addSource(nextSource);
 }
+function removeSource(sourceId: string) {
+  if (libraryStore.launchedFilePlaybackActive) {
+    alert("本地文件启动，不支持移除");
+    return;
+  }
+  libraryStore.removeSource(sourceId);
+}
 </script>
 
 <template>
@@ -85,7 +92,7 @@ async function openFolder(isFallback: boolean) {
         <button
           class="source-remove"
           type="button"
-          @click="libraryStore.removeSource(source.id)"
+          @click="removeSource(source.id)"
         >
           <Trash2 :size="16" />
           <span>移除</span>

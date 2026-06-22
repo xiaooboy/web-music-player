@@ -45,10 +45,7 @@ onMounted(() => {
       ({ files }: { files: FileSystemFileHandle[] }) => {
         // 文件启动
         if ((libraryStore.launchedFilePlaybackActive = Boolean(files.length))) {
-          libraryStore.handleLaunchedMusicFiles(files || []).then(() => {
-            playerStore.setPlaylist(libraryStore.tracks);
-            playerStore.playTrack(0, true);
-          });
+          libraryStore.handleLaunchedMusicFiles(files || []);
         }
       },
     );
