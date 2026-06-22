@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "lucide-vue-next";
 import { supportsDirectoryPicker } from "../utils/media";
-import { openFallbackPicker, openPicker } from "../utils/folder";
+import { openPicker, openWebkitDirectory } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
 import TipContent from "../components/TipContent.vue";
 
@@ -26,17 +26,23 @@ const pendingReauthCount = computed(
       .length,
 );
 
-async function openFolder(isFallback: boolean) {
-  if (libraryStore.launchedFilePlaybackActive) {
+async function openFolder(type: "picker" | "webkitDirectory") {
+  if (libraryStore.isFileLaunch) {
     alert("本地文件启动，不支持添加音乐源");
     return;
   }
-  const nextSource = await (isFallback ? openFallbackPicker() : openPicker());
+  const nextSource = await (type === "webkitDirectory"
+    ? openWebkitDirectory()
+    : openPicker({
+        id: "music-source",
+        mode: "read",
+        startIn: "music",
+      }));
   if (!nextSource) return;
   libraryStore.addSource(nextSource);
 }
 function removeSource(sourceId: string) {
-  if (libraryStore.launchedFilePlaybackActive) {
+  if (libraryStore.isFileLaunch) {
     alert("本地文件启动，不支持移除");
     return;
   }
@@ -64,7 +70,7 @@ function removeSource(sourceId: string) {
         v-if="showAddButton"
         class="primary-button library-action-button"
         type="button"
-        @click="openFolder(false)"
+        @click="openFolder('picker')"
       >
         <FolderPlus :size="18" />
         <span>添加音乐源</span>
@@ -73,7 +79,7 @@ function removeSource(sourceId: string) {
         v-if="showTempButton"
         class="primary-button library-action-button"
         type="button"
-        @click="openFolder(true)"
+        @click="openFolder('webkitDirectory')"
       >
         <FolderSymlink :size="18" />
         <span>导入临时文件夹</span>

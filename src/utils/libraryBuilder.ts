@@ -6,6 +6,7 @@ import type {
   TrackMap,
 } from "../types";
 import {
+  clearTrackCache,
   loadTrackCache,
   type CachedTrackRecord,
   type PersistedMusicSource,
@@ -17,6 +18,7 @@ import {
   ensureDirectoryPermission,
   getLyricsLookupKey,
   isAudioFile,
+  normalizeSlashes,
   revokeTrackResources,
 } from "./media";
 import { defaultNameSort } from "./nameSort";
@@ -34,8 +36,7 @@ export function createTracksFromCache(records: CachedTrackRecord[]): Track[] {
     }
     return {
       ...record,
-      file: null,
-      // 非真实文件，水和后拿到真实 File
+      file: null, // 无 File，entriesToTracks 后再获取
       coverUrl,
       isPlayable: false,
     };
@@ -163,7 +164,9 @@ export async function entriesToTracks(
     const batch = audioEntries.slice(batchStart, batchStart + BATCH_SIZE);
     const results = await Promise.allSettled(
       batch.map(async (entry) => {
-        const cachedTrack = options?.trackMap?.get(entry.relativePath);
+        const cachedTrack = options?.trackMap?.get(
+          normalizeSlashes(entry.relativePath),
+        );
         if (
           cachedTrack &&
           entry.file.lastModified === cachedTrack.lastModified
@@ -214,6 +217,8 @@ export async function initTracksFromCache(cacheKey: string) {
     cachedTrackPayload.tracks.length
   ) {
     return createTracksFromCache(cachedTrackPayload.tracks);
+  } else {
+    clearTrackCache();
   }
   return [];
 }
@@ -237,4 +242,32 @@ export function diffTracks(oldList: Track[], newList: Track[]) {
     }
   }
   return { added, removed };
+}
+/** 判断音乐源列表是否包含某一个音乐源*/
+export async function includesSource(
+  sources: RuntimeMusicSource[],
+  source: RuntimeMusicSource,
+): Promise<boolean> {
+  const handle = source.handle;
+  let included = false;
+  // 没有文件句柄，无法准确判断
+  if (!handle) {
+    const key = `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}`;
+    included = sources.some(
+      (source) =>
+        `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}` ===
+        key,
+    );
+    return included;
+  }
+  // 文件句柄判断
+  for (let item of sources) {
+    if (!item.handle) continue;
+    const isSame = await handle.isSameEntry(item.handle);
+    if (isSame) {
+      included = true;
+      break;
+    }
+  }
+  return included;
 }

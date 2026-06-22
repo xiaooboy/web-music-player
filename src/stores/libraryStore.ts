@@ -22,9 +22,10 @@ import {
   initTracksFromCache,
   sourcesToEntries,
   diffTracks,
+  includesSource,
 } from "@/utils/libraryBuilder";
 import { defineStore } from "pinia";
-import { ref, shallowRef, watch, computed } from "vue";
+import { ref, shallowRef } from "vue";
 import { useFavoriteStore } from "./favoriteStore";
 import { useAlbumStore } from "./albumStore";
 import { usePlayerStore } from "./playerStore";
@@ -43,12 +44,12 @@ export const useLibraryStore = defineStore("library", () => {
 
   const isReauthorizing = shallowRef(false);
 
-  /* Track map for caching*/
+  /** relativePath 与 Track 对应关系 */
   const trackMap: TrackMap = new Map();
 
   const tracks = shallowRef<Track[]>([]);
 
-  const launchedFilePlaybackActive = ref(false);
+  const isFileLaunch = ref(false);
 
   function updateBuildToken() {
     return ++libraryBuildToken;
@@ -57,7 +58,10 @@ export const useLibraryStore = defineStore("library", () => {
   async function restoreCachedLibrary() {
     if (!supportsDirectoryPicker() && loadLastFolderName()) return;
     const persistedSources = await loadPersistedMusicSources();
-    if (!persistedSources.length) return;
+    if (!persistedSources.length) {
+      persistTracks("");
+      return;
+    }
     const cacheKey = buildCacheKeyFromSources(persistedSources);
     console.time();
     tracks.value = await initTracksFromCache(cacheKey);
@@ -72,7 +76,7 @@ export const useLibraryStore = defineStore("library", () => {
   }
   function updateTrackMap(tracks: Track[]) {
     for (const track of tracks) {
-      trackMap.set(track.id, track);
+      trackMap.set(track.relativePath, track);
     }
   }
   async function startBuild() {
@@ -80,9 +84,7 @@ export const useLibraryStore = defineStore("library", () => {
     const buildVersion = `build_verison${buildToken}`;
     console.time(buildVersion);
     const isStale = () => buildToken !== libraryBuildToken;
-    const { entries, cacheKey: newCacheKey } = await parseSource(
-      musicSources.value,
-    );
+    const { entries, cacheKey } = await parseSource(musicSources.value);
     console.timeLog(buildVersion, "parseSource");
     if (isStale()) return;
     if (!musicSources.value.length || !entries.length) {
@@ -90,6 +92,7 @@ export const useLibraryStore = defineStore("library", () => {
       loading.value = false;
       revokeTrackResources(tracks.value);
       updatePlayableTracks([]);
+      persistTracks(cacheKey);
       return;
     }
     const finalTracks = await entriesToTracks(entries, isStale, {
@@ -106,10 +109,9 @@ export const useLibraryStore = defineStore("library", () => {
     revokeTrackResources(removed);
     updatePlayableTracks(finalTracks);
     console.timeLog(buildVersion, "entriesToTracks");
-    persistTracks(newCacheKey).then(() => {
-      console.timeLog(buildVersion, "persistTracks");
-      console.timeEnd(buildVersion);
-    });
+    await persistTracks(cacheKey);
+    console.timeLog(buildVersion, "persistTracks");
+    console.timeEnd(buildVersion);
   }
 
   function disposeLibrary() {
@@ -118,14 +120,9 @@ export const useLibraryStore = defineStore("library", () => {
     updateBuildToken();
   }
 
-  function addSource(source: RuntimeMusicSource) {
-    const key = `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}`;
-    const isRepeat = musicSources.value.find(
-      (source) =>
-        `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}` ===
-        key,
-    );
-    if (isRepeat || launchedFilePlaybackActive.value) return;
+  async function addSource(source: RuntimeMusicSource) {
+    const isRepeat = await includesSource(musicSources.value, source);
+    if (isRepeat || isFileLaunch.value) return;
     musicSources.value = [...musicSources.value, source];
     persistHandleSources();
     startBuild();
@@ -135,7 +132,7 @@ export const useLibraryStore = defineStore("library", () => {
     musicSources.value = musicSources.value.filter(
       (source) => source.id !== sourceId,
     );
-    if (launchedFilePlaybackActive.value) return;
+    if (isFileLaunch.value) return;
     persistHandleSources();
     startBuild();
   }
@@ -152,6 +149,7 @@ export const useLibraryStore = defineStore("library", () => {
     await savePersistedMusicSources(persistedSources);
   }
 
+  /** 持久化 Tracks：清空 | 存储 */
   async function persistTracks(cacheKey: string) {
     if (!tracks.value.length || !cacheKey) {
       await clearTrackCache();
@@ -220,7 +218,6 @@ export const useLibraryStore = defineStore("library", () => {
           s.id === source.id ? { ...s, available } : s,
         );
         if (available) needRebuild = true;
-        // await persistHandleSources();
         if (permission === "denied") {
           alert(`目录 ${source.name} 的授权被拒绝`);
         }
@@ -254,7 +251,7 @@ export const useLibraryStore = defineStore("library", () => {
     musicSources,
     isReauthorizing,
     tracks,
-    launchedFilePlaybackActive,
+    isFileLaunch,
     disposeLibrary,
     restoreCachedLibrary,
     handleLaunchedMusicFiles,

@@ -44,15 +44,14 @@ onMounted(() => {
     window.launchQueue.setConsumer(
       ({ files }: { files: FileSystemFileHandle[] }) => {
         // 文件启动
-        if ((libraryStore.launchedFilePlaybackActive = Boolean(files.length))) {
+        if ((libraryStore.isFileLaunch = Boolean(files.length))) {
           libraryStore.handleLaunchedMusicFiles(files || []);
         }
       },
     );
   }
-  // 未启动文件播放时，恢复缓存的库
-  if (!libraryStore.launchedFilePlaybackActive)
-    libraryStore.restoreCachedLibrary();
+  // 普通启动
+  if (!libraryStore.isFileLaunch) libraryStore.restoreCachedLibrary();
 });
 
 function handleKeydown(event: KeyboardEvent) {
