@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { FolderPlus, FolderSymlink, Trash2 } from "lucide-vue-next";
+import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "lucide-vue-next";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openFallbackPicker, openPicker } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
@@ -8,12 +8,22 @@ import TipContent from "../components/TipContent.vue";
 
 const libraryStore = useLibraryStore();
 
+// 根据环境和浏览器支持情况决定是否显示添加按钮
+const showAddButton = import.meta.env.DEV ? true : supportsDirectoryPicker();
+const showTempButton = import.meta.env.DEV ? true : !supportsDirectoryPicker();
+
 const libraryHint = computed(() =>
   supportsDirectoryPicker()
     ? libraryStore.musicSources.some((source) => source.persistent)
       ? "已支持多个音乐源；缓存目录下次会自动恢复，失效目录会提示重新授权。"
       : "当前浏览器支持目录授权，添加后会把多个音乐源一起缓存。"
-    : "当前环境将使用系统目录选择器导入；若要直接目录授权并自动恢复，请在 Chrome 或 Edge 的 localhost / HTTPS 环境打开。",
+    : "当前环境将使用系统目录选择器导入；若要直接目录授权并自动恢复，请在 Chrome 或 Edge 的 localhost / HTTPS 环境打开",
+);
+
+const pendingReauthCount = computed(
+  () =>
+    libraryStore.musicSources.filter((s) => s.persistent && !s.available)
+      .length,
 );
 
 async function openFolder(isFallback: boolean) {
@@ -51,6 +61,7 @@ function removeSource(sourceId: string) {
 
     <div class="library-management-actions">
       <button
+        v-if="showAddButton"
         class="primary-button library-action-button"
         type="button"
         @click="openFolder(false)"
@@ -59,12 +70,27 @@ function removeSource(sourceId: string) {
         <span>添加音乐源</span>
       </button>
       <button
+        v-if="showTempButton"
         class="primary-button library-action-button"
         type="button"
         @click="openFolder(true)"
       >
         <FolderSymlink :size="18" />
         <span>导入临时文件夹</span>
+      </button>
+
+      <button
+        v-if="pendingReauthCount"
+        class="primary-button library-action-button"
+        type="button"
+        :disabled="libraryStore.isReauthorizing"
+        @click="libraryStore.reauthorizeAll()"
+      >
+        <RefreshCw :size="18" />
+        <span v-if="!libraryStore.isReauthorizing"
+          >重新授权 ({{ pendingReauthCount }})</span
+        >
+        <span v-else>正在授权…</span>
       </button>
     </div>
 

@@ -153,6 +153,10 @@ export const usePlayerStore = defineStore("player", () => {
       if (currentAudioUrl.value) {
         URL.revokeObjectURL(currentAudioUrl.value);
       }
+      if (!track.file) {
+        alert("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
+        return;
+      }
       currentAudioUrl.value = URL.createObjectURL(track.file);
       audio.src = currentAudioUrl.value;
       currentTrack.value = track;

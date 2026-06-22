@@ -46,8 +46,13 @@ export function createTracksFromCache(records: CachedTrackRecord[]): Track[] {
  * 根据源名称列表生成缓存键
  * 将源名称排序后用双冒号连接并转小写，确保相同源集合生成相同的键
  */
-export function buildCacheKeyFromSources(sourceNames: string[]): string {
-  return [...sourceNames]
+export function buildCacheKeyFromSources(musicSources: MusicSource[]): string {
+  const nameArr: string[] = [];
+  musicSources.map(({ name, available, persistent, kind }) => {
+    if (!persistent || !available || kind === "file-launch") return;
+    nameArr.push(name);
+  });
+  return nameArr
     .sort((left, right) => left.localeCompare(right, "zh-Hans-CN"))
     .join("::")
     .toLowerCase();
@@ -56,15 +61,10 @@ export function buildCacheKeyFromSources(sourceNames: string[]): string {
 /**
  * 加载音乐源数据，扫描所有可用源的文件条目，返回聚合结果
  */
-export async function loadSourcesData(sources: RuntimeMusicSource[]): Promise<{
-  entries: FileEntry[];
-  activeSourceNames: string[];
-  activePersistentSourceNames: string[];
-}> {
+export async function sourcesToEntries(
+  sources: RuntimeMusicSource[],
+): Promise<FileEntry[]> {
   const entries: FileEntry[] = [];
-  const activeSourceNames: string[] = [];
-  const activePersistentSourceNames: string[] = [];
-
   const sourcesToBuild = sources.some((s) => s.entries?.length)
     ? sources.filter((s) => s.entries?.length)
     : sources;
@@ -78,60 +78,39 @@ export async function loadSourcesData(sources: RuntimeMusicSource[]): Promise<{
         sourceEntries = await collectAudioFiles(source.handle, source.name);
       }
       if (!sourceEntries.length) return;
-      activeSourceNames.push(source.name);
-      if (source.persistent && source.available)
-        activePersistentSourceNames.push(source.name);
       entries.push(...sourceEntries);
     }),
   );
-  return { entries, activeSourceNames, activePersistentSourceNames };
+  return entries;
 }
 
 /**
- * 检查源授权状态
- * 并行检查所有持久化源的目录授权，返回可用的音乐源列表
+ * 检查源授权状态，并行检查所有持久化源的目录授权，返回可用的音乐源列表
  */
 export async function checkSourcePermissions(
   persistedSources: PersistedMusicSource[],
+  requestIfNeeded: boolean = false,
 ): Promise<MusicSource[]> {
   const restoredSources = await Promise.all(
     persistedSources.map(async (source) => {
       let permission: PermissionState = "prompt";
       try {
+        // Do not trigger permission prompt automatically on startup — requesting
+        // permission requires a user activation (e.g. click). Just query current
+        // permission state and let the UI ask the user to reconnect if needed.
         permission = await ensureDirectoryPermission(source.handle, false);
-      } catch {
+      } catch (e) {
+        console.log(e);
         permission = "prompt";
       }
-
       return {
-        id: source.id,
-        name: source.name,
-        persistent: true,
+        ...source,
         available: permission === "granted",
-        kind: "directory" as const,
-        handle: source.handle,
       };
     }),
   );
 
   return restoredSources;
-}
-
-/**
- * 计算缓存键
- * 当所有活动源都是持久化源时返回缓存键，否则返回 null
- */
-export function computeCacheKey(
-  activeSourceNames: string[],
-  activePersistentSourceNames: string[],
-): string | null {
-  if (
-    activeSourceNames.length &&
-    activeSourceNames.length === activePersistentSourceNames.length
-  ) {
-    return buildCacheKeyFromSources(activePersistentSourceNames);
-  }
-  return null;
 }
 
 /** 根据音乐源，解析cacheKey、entries */
@@ -143,11 +122,10 @@ export async function parseSource(musicSources: RuntimeMusicSource[]) {
   )
     ? musicSources.filter((source) => source.kind === "file-launch")
     : musicSources;
-  const { entries, activeSourceNames, activePersistentSourceNames } =
-    await loadSourcesData(sourcesToBuild);
+  const entries = await sourcesToEntries(sourcesToBuild);
   return {
     entries,
-    cacheKey: computeCacheKey(activeSourceNames, activePersistentSourceNames),
+    cacheKey: buildCacheKeyFromSources(musicSources),
   };
 }
 /** 文件入口转可播放音乐  FileEntry[] -> Track[] */
