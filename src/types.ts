@@ -5,15 +5,17 @@ export interface FileEntry {
   file: File;
   relativePath: string;
 }
-
+export type TrackMap = Map<string, Track>;
 export interface Track {
   id: string;
   file: File;
+  lastModified: number;
   relativePath: string;
   title: string;
   artist: string;
   album: string;
   coverUrl: string;
+  coverBlob?: Blob;
   duration: number;
   format: string;
   lyricsText: string;

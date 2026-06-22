@@ -1,3 +1,5 @@
+import { Track } from "@/types";
+
 const DB_NAME = "local-music";
 const DB_VERSION = 2;
 const STORE_NAME = "settings";
@@ -12,17 +14,7 @@ export interface PersistedMusicSource {
   name: string;
 }
 
-export interface CachedTrackRecord {
-  id: string;
-  relativePath: string;
-  title: string;
-  artist: string;
-  album: string;
-  coverUrl: string;
-  duration: number;
-  format: string;
-  lyricsText: string;
-}
+export type CachedTrackRecord = Omit<Track, "coverUrl" | "file">;
 
 export interface PersistedTrackCache {
   sourceKey: string;

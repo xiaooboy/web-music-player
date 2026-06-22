@@ -1,4 +1,4 @@
-import type { FileEntry, RuntimeMusicSource, Track } from "@/types";
+import type { TrackMap, FileEntry, RuntimeMusicSource, Track } from "@/types";
 import {
   clearPersistedMusicSources,
   clearTrackCache,
@@ -8,19 +8,18 @@ import {
   saveTrackCache,
 } from "@/utils/persistence";
 import {
-  blobToBase64,
   isAudioFile,
   revokeTrackResources,
   supportsDirectoryPicker,
-  urlBlobMap,
 } from "@/utils/media";
 import {
   buildCacheKeyFromSources,
   checkSourcePermissions,
   entriesToTracks,
-  hydrateTrackAndParseSource,
+  parseSource,
   initTracksFromCache,
   loadSourcesData,
+  diffTracks,
 } from "@/utils/libraryBuilder";
 import { defineStore } from "pinia";
 import { ref, shallowRef, watch } from "vue";
@@ -39,6 +38,9 @@ export const useLibraryStore = defineStore("library", () => {
   const loadingTotal = ref(0);
   const libraryStatus = ref("还没有载入音乐");
   const musicSources = shallowRef<RuntimeMusicSource[]>([]);
+
+  const trackMap: TrackMap = new Map();
+
   const tracks = shallowRef<Track[]>([]);
 
   const launchedFilePlaybackActive = ref(false);
@@ -54,48 +56,57 @@ export const useLibraryStore = defineStore("library", () => {
     const cacheKey = buildCacheKeyFromSources(
       persistedSources.map((source) => source.name),
     );
+    console.time();
     tracks.value = await initTracksFromCache(cacheKey);
+    console.timeEnd();
+    updateTrackMap(tracks.value);
     const restoredSources = await checkSourcePermissions(persistedSources);
     musicSources.value = restoredSources;
     const avaliable = restoredSources.some((source) => source.available);
     if (!avaliable) return;
     await startBuild();
   }
-
+  function updateTrackMap(tracks: Track[]) {
+    for (const track of tracks) {
+      trackMap.set(track.id, track);
+    }
+  }
   async function startBuild() {
     const buildToken = updateBuildToken();
-    console.log(`startBuild: ${buildToken}`);
-    const timeLable = `build-${buildToken}`;
-    console.time(timeLable);
+    const buildVersion = `build_verison${buildToken}`;
+    console.time(buildVersion);
     const isStale = () => buildToken !== libraryBuildToken;
-    const {
-      hydratedTracks,
-      allEntries,
-      cacheKey: newCacheKey,
-    } = await hydrateTrackAndParseSource(musicSources.value, tracks.value);
-    console.timeLog(timeLable);
+    const { entries, cacheKey: newCacheKey } = await parseSource(
+      musicSources.value,
+    );
+
+    console.timeLog(buildVersion, "parseSource");
     if (isStale()) return;
-    if (!musicSources.value.length || !allEntries.length) {
+    if (!musicSources.value.length || !entries.length) {
       loadingDone.value = loadingTotal.value = 0;
       loading.value = false;
       revokeTrackResources(tracks.value);
       updatePlayableTracks([]);
       return;
     }
-    if (hydratedTracks.length) updatePlayableTracks(hydratedTracks);
-    const finalTracks = await entriesToTracks(allEntries, isStale, {
+    const finalTracks = await entriesToTracks(entries, isStale, {
       onProgress: ({ done, total }) => {
         loading.value = done !== total;
         loadingDone.value = done;
         loadingTotal.value = total;
       },
+      trackMap,
     });
-    if (finalTracks) {
-      revokeTrackResources(tracks.value);
-      updatePlayableTracks(finalTracks);
-      console.timeLog(timeLable);
-      persistTracks(newCacheKey).then(() => console.timeLog(timeLable));
-    }
+    // build 失效
+    if (!finalTracks) return;
+    const { removed } = diffTracks(tracks.value, finalTracks);
+    revokeTrackResources(removed);
+    updatePlayableTracks(finalTracks);
+    console.timeLog(buildVersion, "entriesToTracks");
+    persistTracks(newCacheKey).then(() => {
+      console.timeLog(buildVersion, "persistTracks");
+      console.timeEnd(buildVersion);
+    });
   }
 
   function disposeLibrary() {
@@ -146,19 +157,9 @@ export const useLibraryStore = defineStore("library", () => {
       await clearTrackCache();
       return;
     }
-    const saveTracks = await Promise.all(
-      tracks.value.map(async (track) => {
-        let url = track.coverUrl;
-        if (urlBlobMap.has(track.coverUrl)) {
-          url = await blobToBase64(urlBlobMap.get(track.coverUrl)!);
-        }
-        return { ...track, coverUrl: url };
-      }),
-    );
-    urlBlobMap.clear();
     await saveTrackCache({
       sourceKey: cacheKey,
-      tracks: saveTracks,
+      tracks: tracks.value.map(({ coverUrl: _, file: __, ...rest }) => rest),
     });
   }
 
@@ -182,13 +183,14 @@ export const useLibraryStore = defineStore("library", () => {
       entries: audioEntries,
     };
     musicSources.value = [launchSource];
-    const { allEntries } = await loadSourcesData(musicSources.value);
-    const finalTracks = await entriesToTracks(allEntries, () => false);
+    const { entries } = await loadSourcesData(musicSources.value);
+    const finalTracks = await entriesToTracks(entries, () => false);
     if (finalTracks) tracks.value = finalTracks;
   }
   /** 更新 tracks，通知其他模块更新 */
   function updatePlayableTracks(updatedTracks: Track[]) {
     tracks.value = updatedTracks;
+    updateTrackMap(updatedTracks);
     favoriteStore.setFavoriteSources(updatedTracks);
     albumStore.updateAlbumWithTracks(updatedTracks);
     const type = playerStore.playSourceType;

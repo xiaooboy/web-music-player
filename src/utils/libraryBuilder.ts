@@ -3,6 +3,7 @@ import type {
   Track,
   MusicSource,
   RuntimeMusicSource,
+  TrackMap,
 } from "../types";
 import {
   loadTrackCache,
@@ -13,7 +14,6 @@ import {
   buildLyricsLookup,
   buildTrack,
   collectAudioFiles,
-  collectDirectoryFiles,
   ensureDirectoryPermission,
   getLyricsLookupKey,
   isAudioFile,
@@ -25,13 +25,21 @@ import { defaultNameSort } from "./nameSort";
  * 批量从缓存记录创建 Track 对象数组
  */
 export function createTracksFromCache(records: CachedTrackRecord[]): Track[] {
-  return records.map((record) => ({
-    ...record,
-    // 非真实文件，水和后拿到真实 File
-    file: new File([], record.title || record.relativePath || "cached-track"),
-    coverUrl: record.coverUrl || "",
-    isPlayable: false,
-  }));
+  return records.map((record) => {
+    let coverUrl = "";
+    let coverBlob = record.coverBlob;
+    // 从 coverBlob 重建 blob: URL
+    if (coverBlob) {
+      coverUrl = URL.createObjectURL(coverBlob);
+    }
+    return {
+      ...record,
+      file: null,
+      // 非真实文件，水和后拿到真实 File
+      coverUrl,
+      isPlayable: false,
+    };
+  });
 }
 
 /**
@@ -46,55 +54,14 @@ export function buildCacheKeyFromSources(sourceNames: string[]): string {
 }
 
 /**
- * 激活缓存曲目，将缓存的曲目元数据与实际文件条目关联，生成可播放的 Track 对象
- */
-export function hydrateTracks(
-  entries: FileEntry[],
-  records: CachedTrackRecord[],
-): Track[] {
-  const entryMap = new Map(
-    entries
-      .filter(({ file }) => isAudioFile(file.name, file.type))
-      .map((entry) => [entry.relativePath.toLowerCase(), entry] as const),
-  );
-
-  return records.reduce<Track[]>((result, record) => {
-    const entry = entryMap.get(record.relativePath.toLowerCase());
-    if (!entry) return result;
-    result.push({
-      ...record,
-      file: entry.file,
-      coverUrl: record.coverUrl || "",
-      isPlayable: true,
-    });
-
-    return result;
-  }, []);
-}
-
-/**
- * 解析 Track 数组为可缓存的记录格式
- * 将封面 URL 转换为 data URL 以便持久化存储
- */
-export function serializeTracksForCache(
-  records: Track[],
-  coverDataUrls: Map<string, string>,
-): CachedTrackRecord[] {
-  return records.map((track) => ({
-    ...track,
-    coverUrl: coverDataUrls.get(track.coverUrl) ?? "",
-  }));
-}
-
-/**
  * 加载音乐源数据，扫描所有可用源的文件条目，返回聚合结果
  */
 export async function loadSourcesData(sources: RuntimeMusicSource[]): Promise<{
-  allEntries: FileEntry[];
+  entries: FileEntry[];
   activeSourceNames: string[];
   activePersistentSourceNames: string[];
 }> {
-  const allEntries: FileEntry[] = [];
+  const entries: FileEntry[] = [];
   const activeSourceNames: string[] = [];
   const activePersistentSourceNames: string[] = [];
 
@@ -114,10 +81,10 @@ export async function loadSourcesData(sources: RuntimeMusicSource[]): Promise<{
       activeSourceNames.push(source.name);
       if (source.persistent && source.available)
         activePersistentSourceNames.push(source.name);
-      allEntries.push(...sourceEntries);
+      entries.push(...sourceEntries);
     }),
   );
-  return { allEntries, activeSourceNames, activePersistentSourceNames };
+  return { entries, activeSourceNames, activePersistentSourceNames };
 }
 
 /**
@@ -167,30 +134,19 @@ export function computeCacheKey(
   return null;
 }
 
-/** 根据音乐源，给音乐列表缓存添加 File 使其可播放，同时分析音乐源 */
-export async function hydrateTrackAndParseSource(
-  musicSources: RuntimeMusicSource[],
-  tracks: Track[],
-) {
-  let hydratedTracks: Track[] = [];
+/** 根据音乐源，解析cacheKey、entries */
+export async function parseSource(musicSources: RuntimeMusicSource[]) {
+  let hy;
   // 文件启动时只处理此文件
   const sourcesToBuild = musicSources.some(
     (source) => source.kind === "file-launch",
   )
     ? musicSources.filter((source) => source.kind === "file-launch")
     : musicSources;
-  const { allEntries, activeSourceNames, activePersistentSourceNames } =
+  const { entries, activeSourceNames, activePersistentSourceNames } =
     await loadSourcesData(sourcesToBuild);
-  if (!allEntries.length) revokeTrackResources(tracks);
-  // 启动阶段处理缓存，其他阶段跳过
-  const cachedVisibleTracks = tracks.filter((track) => !track.isPlayable);
-  if (cachedVisibleTracks.length && allEntries.length) {
-    // 水和，给缓存设置真实 File
-    hydratedTracks = hydrateTracks(allEntries, cachedVisibleTracks);
-  }
   return {
-    hydratedTracks,
-    allEntries,
+    entries,
     cacheKey: computeCacheKey(activeSourceNames, activePersistentSourceNames),
   };
 }
@@ -199,6 +155,7 @@ export async function entriesToTracks(
   entries: FileEntry[],
   isStale: () => boolean,
   options?: {
+    trackMap?: TrackMap;
     onProgress?: (info: { done: number; total: number }) => void;
   },
 ): Promise<Track[] | undefined> {
@@ -212,7 +169,8 @@ export async function entriesToTracks(
   const lyricsLookup = await buildLyricsLookup(entries);
 
   const BATCH_SIZE = 8;
-  const parsedTracks: Track[] = [];
+  const newTracks: Track[] = [];
+  const builtTracks: Track[] = [];
 
   for (
     let batchStart = 0;
@@ -220,32 +178,40 @@ export async function entriesToTracks(
     batchStart += BATCH_SIZE
   ) {
     if (isStale()) {
-      revokeTrackResources(parsedTracks);
+      revokeTrackResources(newTracks);
       return;
     }
 
     const batch = audioEntries.slice(batchStart, batchStart + BATCH_SIZE);
     const results = await Promise.allSettled(
-      batch.map((entry) =>
-        buildTrack(
+      batch.map(async (entry) => {
+        const cachedTrack = options?.trackMap?.get(entry.relativePath);
+        if (
+          cachedTrack &&
+          entry.file.lastModified === cachedTrack.lastModified
+        ) {
+          return {
+            ...cachedTrack,
+            file: entry.file,
+            isPlayable: true,
+          };
+        }
+        const newTrack = await buildTrack(
           entry,
           lyricsLookup.get(getLyricsLookupKey(entry.relativePath)) || "",
-        ),
-      ),
+        );
+        newTracks.push(newTrack);
+        return newTrack;
+      }),
     );
 
     if (isStale()) {
-      const builtTracks = results
-        .filter((r) => r.status === "fulfilled")
-        .map((r) => r.value);
-      revokeTrackResources([...parsedTracks, ...builtTracks]);
+      revokeTrackResources(newTracks);
       return;
     }
 
     for (const result of results) {
-      if (result.status === "fulfilled") {
-        parsedTracks.push(result.value);
-      }
+      if (result.status === "fulfilled") builtTracks.push(result.value);
     }
     options?.onProgress?.({
       done: Math.min(batchStart + BATCH_SIZE, audioEntries.length),
@@ -254,10 +220,10 @@ export async function entriesToTracks(
   }
 
   if (isStale()) {
-    revokeTrackResources(parsedTracks);
+    revokeTrackResources(newTracks);
     return;
   }
-  return parsedTracks.sort((a, b) => defaultNameSort(a.title, b.title));
+  return builtTracks.sort((a, b) => defaultNameSort(a.title, b.title));
 }
 /**
  * 从缓存获取初始化 tracks
@@ -272,4 +238,25 @@ export async function initTracksFromCache(cacheKey: string) {
     return createTracksFromCache(cachedTrackPayload.tracks);
   }
   return [];
+}
+/**
+ * 比较新旧Track列表差异
+ */
+export function diffTracks(oldList: Track[], newList: Track[]) {
+  const oldMap = new Map(oldList.map((t) => [t.id, t]));
+  const newMap = new Map(newList.map((t) => [t.id, t]));
+  const added: Track[] = [];
+  const removed: Track[] = [];
+  for (const t of newList) {
+    const oldTrack = oldMap.get(t.id);
+    if (oldTrack && oldTrack.lastModified === t.lastModified) {
+      added.push(t);
+    }
+  }
+  for (const t of oldList) {
+    if (!newMap.has(t.id)) {
+      removed.push(t);
+    }
+  }
+  return { added, removed };
 }

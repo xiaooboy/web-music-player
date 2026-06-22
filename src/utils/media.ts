@@ -148,11 +148,13 @@ export async function buildTrack(
   return {
     id: `${normalizeSlashes(relativePath)}`,
     file,
+    lastModified: file.lastModified,
     relativePath,
     title: metadata.title || fallback.title,
     artist: metadata.artist || fallback.artist,
     album: metadata.album || fallback.album,
     coverUrl: metadata.coverUrl || "",
+    coverBlob: metadata.coverBlob,
     duration,
     format,
     lyricsText: externalLyricsText || metadata.lyricsText || "",
@@ -222,33 +224,6 @@ export function sliderStyle(value: number) {
   return {
     background: `linear-gradient(90deg, var(--accent-deep) 0%, var(--accent) ${safeValue}%, rgba(211, 58, 49, 0.22) ${safeValue}%, rgba(211, 58, 49, 0.22) 100%)`,
   };
-}
-
-export async function coverUrlToDataUrl(coverUrl: string) {
-  if (!coverUrl) {
-    return "";
-  }
-
-  if (coverUrl.startsWith("data:")) {
-    return coverUrl;
-  }
-
-  try {
-    const response = await fetch(coverUrl);
-    const blob = await response.blob();
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.addEventListener("load", () =>
-        resolve(typeof reader.result === "string" ? reader.result : ""),
-      );
-      reader.addEventListener("error", () =>
-        reject(reader.error || new Error("cover read failed")),
-      );
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return "";
-  }
 }
 
 export async function buildLyricsLookup(entries: FileEntry[]) {
@@ -451,7 +426,9 @@ async function parseId3Tags(file: File) {
       }
 
       if (frameId === "PIC" && !metadata.coverUrl) {
-        metadata.coverUrl = decodePicFrame(frameBytes);
+        const cover = decodePicFrame(frameBytes);
+        metadata.coverUrl = cover.coverUrl || "";
+        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
       }
 
       offset = frameEnd;
@@ -502,7 +479,9 @@ async function parseId3Tags(file: File) {
     }
 
     if (frameId === "APIC" && !metadata.coverUrl) {
-      metadata.coverUrl = decodeApicFrame(frameBytes);
+      const cover = decodeApicFrame(frameBytes);
+      metadata.coverUrl = cover.coverUrl || "";
+      if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
     }
 
     offset = frameEnd;
@@ -543,7 +522,9 @@ async function parseFlacMetadata(file: File) {
     }
 
     if (blockType === 6 && !metadata.coverUrl) {
-      metadata.coverUrl = decodeFlacPictureBlock(blockBytes);
+      const cover = decodeFlacPictureBlock(blockBytes);
+      metadata.coverUrl = cover.coverUrl || "";
+      if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
     }
 
     offset = blockEnd;
@@ -565,14 +546,14 @@ function decodeApicFrame(frameBytes: Uint8Array) {
   let offset = 1;
   const mimeEnd = frameBytes.indexOf(0, offset);
   if (mimeEnd === -1) {
-    return "";
+    return { coverUrl: "" };
   }
 
   const mimeType = normalizeMimeType(
     decodeLatin1(frameBytes.slice(offset, mimeEnd)),
   );
   if (mimeType === "-->") {
-    return "";
+    return { coverUrl: "" };
   }
 
   offset = mimeEnd + 1;
@@ -581,7 +562,7 @@ function decodeApicFrame(frameBytes: Uint8Array) {
 
   const imageBytes = frameBytes.slice(offset);
   if (!imageBytes.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   return createObjectUrlFromBytes(imageBytes, mimeType);
@@ -597,7 +578,7 @@ function decodePicFrame(frameBytes: Uint8Array) {
 
   const imageBytes = frameBytes.slice(offset);
   if (!imageBytes.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   const mimeType = normalizeMimeType(formatToMimeType(format));
@@ -674,14 +655,14 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
 function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   let offset = 0;
   if (blockBytes.length < 32) {
-    return "";
+    return { coverUrl: "" };
   }
 
   offset += 4;
   const mimeLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + mimeLength > blockBytes.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   const mimeType = normalizeMimeType(
@@ -694,18 +675,18 @@ function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   offset += 16;
 
   if (offset + 4 > blockBytes.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   const imageLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + imageLength > blockBytes.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   const imageBytes = blockBytes.slice(offset, offset + imageLength);
   if (!imageBytes.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   return createObjectUrlFromBytes(imageBytes, mimeType);
@@ -803,7 +784,9 @@ function parseMp4MetadataAtom(
     if (childType === "data" && atomEnd >= offset + headerSize + 8) {
       const payload = bytes.slice(offset + headerSize + 8, atomEnd);
       if (atomType === "covr" && !metadata.coverUrl) {
-        metadata.coverUrl = decodeMp4Cover(payload);
+        const cover = decodeMp4Cover(payload);
+        metadata.coverUrl = cover.coverUrl || "";
+        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
       }
 
       if ((atomType === "\u00a9nam" || atomType === "nam") && !metadata.title) {
@@ -835,7 +818,7 @@ function parseMp4MetadataAtom(
 
 function decodeMp4Cover(payload: Uint8Array) {
   if (!payload.length) {
-    return "";
+    return { coverUrl: "" };
   }
 
   const mimeType = detectImageMimeType(payload);
@@ -1063,30 +1046,18 @@ function detectImageMimeType(bytes: Uint8Array) {
   return "image/jpeg";
 }
 
-function createObjectUrlFromBytes(bytes: Uint8Array, mimeType: string) {
+interface CoverResult {
+  coverUrl: string;
+  coverBlob?: Blob;
+}
+
+function createObjectUrlFromBytes(
+  bytes: Uint8Array,
+  mimeType: string,
+): CoverResult {
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
   const blob = new Blob([copy.buffer], { type: mimeType });
   const url = URL.createObjectURL(blob);
-  urlBlobMap.set(url, blob);
-  return url;
-}
-
-/** 用于存储 URL 和对应的 Blob 的映射，用于在需要时快速获取 Blob */
-export const urlBlobMap = new Map<string, Blob>();
-
-/** 将 Blob 转换为 base64 字符串 */
-export function blobToBase64(b: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (reader.result) {
-        resolve(reader.result as string);
-      } else {
-        reject(new Error("Failed to convert blob to base64"));
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(b);
-  });
+  return { coverUrl: url, coverBlob: blob };
 }
