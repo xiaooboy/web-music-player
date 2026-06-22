@@ -1,8 +1,8 @@
 import type { Album, Track } from "@/types";
-import { defaultNameSort } from "@/utils/nameSort";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
 import { usePlayerStore } from "./playerStore";
+import { defaultSort } from "@/utils/sort";
 
 export const useAlbumStore = defineStore("album", () => {
   const playerStore = usePlayerStore();
@@ -51,9 +51,7 @@ export const useAlbumStore = defineStore("album", () => {
         tracks: [track],
       });
     });
-    albums.value = [...albumMap.values()].sort((left, right) =>
-      defaultNameSort(left.name, right.name),
-    );
+    albums.value = defaultSort(albums.value, "name");
     if (!selectedAlbumName.value) {
       selectAlbum(albums.value[0].name);
     }
