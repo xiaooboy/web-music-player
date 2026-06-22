@@ -1,4 +1,10 @@
-import type { TrackMap, FileEntry, RuntimeMusicSource, Track } from "@/types";
+import type {
+  TrackMap,
+  FileEntry,
+  RuntimeMusicSource,
+  Track,
+  MusicSource,
+} from "@/types";
 import {
   clearPersistedMusicSources,
   clearTrackCache,
@@ -118,19 +124,41 @@ export const useLibraryStore = defineStore("library", () => {
     updateBuildToken();
   }
 
-  function addSource(source: RuntimeMusicSource) {
-    const key = `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}`;
-    const isRepeat = musicSources.value.find(
-      (source) =>
-        `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}` ===
-        key,
-    );
+  async function addSource(source: RuntimeMusicSource) {
+    const isRepeat = await includesSource(musicSources.value, source);
     if (isRepeat || launchedFilePlaybackActive.value) return;
     musicSources.value = [...musicSources.value, source];
     persistHandleSources();
     startBuild();
   }
-
+  /** 判断音乐源列表是否包含某一个音乐源*/
+  async function includesSource(
+    sources: RuntimeMusicSource[],
+    source: RuntimeMusicSource,
+  ): Promise<boolean> {
+    const handle = source.handle;
+    let included = false;
+    // 没有文件句柄，无法准确判断
+    if (!handle) {
+      const key = `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}`;
+      included = musicSources.value.some(
+        (source) =>
+          `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}` ===
+          key,
+      );
+      return included;
+    }
+    // 文件句柄判断
+    for (let item of sources) {
+      if (!item.handle) continue;
+      const isSame = await handle.isSameEntry(item.handle);
+      if (isSame) {
+        included = true;
+        break;
+      }
+    }
+    return included;
+  }
   function removeSource(sourceId: string) {
     musicSources.value = musicSources.value.filter(
       (source) => source.id !== sourceId,

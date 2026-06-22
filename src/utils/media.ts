@@ -10,12 +10,17 @@ const AUDIO_EXTENSIONS = new Set([
   "opus",
   "webm",
 ]);
+export type DirectoryPickerOptions = {
+  id?: string;
+  mode?: "read" | "readwrite";
+  startIn?: string;
+};
 
 type WindowWithDirectoryPicker = Window &
   typeof globalThis & {
-    showDirectoryPicker?: (options?: {
-      mode?: "read" | "readwrite";
-    }) => Promise<FileSystemDirectoryHandle>;
+    showDirectoryPicker?: (
+      options?: DirectoryPickerOptions,
+    ) => Promise<FileSystemDirectoryHandle>;
   };
 
 type IterableDirectoryHandle = FileSystemDirectoryHandle & {
@@ -40,13 +45,13 @@ export function supportsDirectoryPicker() {
   return Boolean(pickerWindow.showDirectoryPicker) && window.isSecureContext;
 }
 
-export async function pickDirectory() {
+export async function pickDirectory(options?: DirectoryPickerOptions) {
   const pickerWindow = window as WindowWithDirectoryPicker;
   if (!pickerWindow.showDirectoryPicker) {
     throw new Error("showDirectoryPicker is not supported");
   }
 
-  return pickerWindow.showDirectoryPicker({ mode: "read" });
+  return pickerWindow.showDirectoryPicker(options);
 }
 
 export async function ensureDirectoryPermission(
