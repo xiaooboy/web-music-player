@@ -163,10 +163,10 @@ export async function buildTrack(
   ]);
 
   return {
-    id: `${normalizeSlashes(relativePath)}`,
+    id: crypto.randomUUID(),
     file,
     lastModified: file.lastModified,
-    relativePath,
+    relativePath: normalizeSlashes(relativePath),
     title: metadata.title || fallback.title,
     artist: metadata.artist || fallback.artist,
     album: metadata.album || fallback.album,
@@ -221,19 +221,6 @@ export function formatTime(seconds: number) {
   const minutes = Math.floor(safeSeconds / 60);
   const remainSeconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(remainSeconds).padStart(2, "0")}`;
-}
-
-export function formatLongDuration(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return "00:00";
-  }
-
-  const totalMinutes = Math.floor(seconds / 60);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return hours > 0
-    ? `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m`
-    : formatTime(seconds);
 }
 
 export function sliderStyle(value: number) {

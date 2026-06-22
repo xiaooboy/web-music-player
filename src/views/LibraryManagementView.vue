@@ -27,7 +27,7 @@ const pendingReauthCount = computed(
 );
 
 async function openFolder(type: "picker" | "webkitDirectory") {
-  if (libraryStore.launchedFilePlaybackActive) {
+  if (libraryStore.isFileLaunch) {
     alert("本地文件启动，不支持添加音乐源");
     return;
   }
@@ -42,7 +42,7 @@ async function openFolder(type: "picker" | "webkitDirectory") {
   libraryStore.addSource(nextSource);
 }
 function removeSource(sourceId: string) {
-  if (libraryStore.launchedFilePlaybackActive) {
+  if (libraryStore.isFileLaunch) {
     alert("本地文件启动，不支持移除");
     return;
   }

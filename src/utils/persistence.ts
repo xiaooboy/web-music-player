@@ -120,10 +120,6 @@ export async function clearTrackCache() {
   });
 }
 
-export function saveLastFolderName(name: string) {
-  localStorage.setItem(LAST_FOLDER_NAME_KEY, name);
-}
-
 export function loadLastFolderName() {
   return localStorage.getItem(LAST_FOLDER_NAME_KEY) || "";
 }
