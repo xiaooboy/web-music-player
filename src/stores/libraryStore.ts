@@ -4,6 +4,7 @@ import {
   clearTrackCache,
   loadLastFolderName,
   loadPersistedMusicSources,
+  PersistedMusicSource,
   savePersistedMusicSources,
   saveTrackCache,
 } from "@/utils/persistence";
@@ -11,6 +12,7 @@ import {
   isAudioFile,
   revokeTrackResources,
   supportsDirectoryPicker,
+  ensureDirectoryPermission,
 } from "@/utils/media";
 import {
   buildCacheKeyFromSources,
@@ -18,11 +20,11 @@ import {
   entriesToTracks,
   parseSource,
   initTracksFromCache,
-  loadSourcesData,
+  sourcesToEntries,
   diffTracks,
 } from "@/utils/libraryBuilder";
 import { defineStore } from "pinia";
-import { ref, shallowRef, watch } from "vue";
+import { ref, shallowRef, watch, computed } from "vue";
 import { useFavoriteStore } from "./favoriteStore";
 import { useAlbumStore } from "./albumStore";
 import { usePlayerStore } from "./playerStore";
@@ -39,6 +41,9 @@ export const useLibraryStore = defineStore("library", () => {
   const libraryStatus = ref("还没有载入音乐");
   const musicSources = shallowRef<RuntimeMusicSource[]>([]);
 
+  const isReauthorizing = shallowRef(false);
+
+  /* Track map for caching*/
   const trackMap: TrackMap = new Map();
 
   const tracks = shallowRef<Track[]>([]);
@@ -53,15 +58,14 @@ export const useLibraryStore = defineStore("library", () => {
     if (!supportsDirectoryPicker() && loadLastFolderName()) return;
     const persistedSources = await loadPersistedMusicSources();
     if (!persistedSources.length) return;
-    const cacheKey = buildCacheKeyFromSources(
-      persistedSources.map((source) => source.name),
-    );
+    const cacheKey = buildCacheKeyFromSources(persistedSources);
     console.time();
     tracks.value = await initTracksFromCache(cacheKey);
     console.timeEnd();
     updateTrackMap(tracks.value);
     const restoredSources = await checkSourcePermissions(persistedSources);
     musicSources.value = restoredSources;
+    persistHandleSources();
     const avaliable = restoredSources.some((source) => source.available);
     if (!avaliable) return;
     await startBuild();
@@ -79,7 +83,6 @@ export const useLibraryStore = defineStore("library", () => {
     const { entries, cacheKey: newCacheKey } = await parseSource(
       musicSources.value,
     );
-
     console.timeLog(buildVersion, "parseSource");
     if (isStale()) return;
     if (!musicSources.value.length || !entries.length) {
@@ -140,11 +143,7 @@ export const useLibraryStore = defineStore("library", () => {
   async function persistHandleSources() {
     const persistedSources = musicSources.value
       .filter((source) => source.persistent && source.handle)
-      .map((source) => ({
-        id: source.id,
-        name: source.name,
-        handle: source.handle!,
-      }));
+      .map(({ entries: _, ...rest }) => rest as PersistedMusicSource);
 
     if (!persistedSources.length) {
       await clearPersistedMusicSources();
@@ -184,7 +183,7 @@ export const useLibraryStore = defineStore("library", () => {
       entries: audioEntries,
     };
     musicSources.value = [launchSource];
-    const { entries } = await loadSourcesData(musicSources.value);
+    const entries = await sourcesToEntries(musicSources.value);
     const finalTracks = await entriesToTracks(entries, () => false);
     if (!finalTracks) return;
     tracks.value = finalTracks;
@@ -193,6 +192,48 @@ export const useLibraryStore = defineStore("library", () => {
     albumStore.updateAlbumWithTracks(finalTracks);
     playerStore.playTrack(0, true);
   }
+
+  async function reauthorizeAll() {
+    const pending = musicSources.value.filter(
+      (s) => s.persistent && !s.available && s.handle,
+    );
+    if (!pending.length) {
+      alert("没有需要重新授权的音乐源");
+      return;
+    }
+    isReauthorizing.value = true;
+    if (
+      !confirm(
+        `即将为 ${pending.length} 个目录请求权限。浏览器可能会为每个目录弹出授权对话框，是否继续？`,
+      )
+    )
+      return;
+    let needRebuild = false;
+    try {
+      for (const source of pending) {
+        const permission = await ensureDirectoryPermission(
+          source.handle!,
+          true,
+        );
+        const available = permission === "granted";
+        musicSources.value = musicSources.value.map((s) =>
+          s.id === source.id ? { ...s, available } : s,
+        );
+        if (available) needRebuild = true;
+        // await persistHandleSources();
+        if (permission === "denied") {
+          alert(`目录 ${source.name} 的授权被拒绝`);
+        }
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("reauthorizeAll failed", e);
+    } finally {
+      isReauthorizing.value = false;
+      if (needRebuild) await startBuild();
+    }
+  }
+
   /** 更新 tracks，通知其他模块更新 */
   function updatePlayableTracks(updatedTracks: Track[]) {
     tracks.value = updatedTracks;
@@ -211,6 +252,7 @@ export const useLibraryStore = defineStore("library", () => {
     loadingTotal,
     libraryStatus,
     musicSources,
+    isReauthorizing,
     tracks,
     launchedFilePlaybackActive,
     disposeLibrary,
@@ -218,5 +260,6 @@ export const useLibraryStore = defineStore("library", () => {
     handleLaunchedMusicFiles,
     removeSource,
     addSource,
+    reauthorizeAll,
   };
 });

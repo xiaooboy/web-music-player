@@ -1,4 +1,4 @@
-import { Track } from "@/types";
+import { MusicSource, Track } from "@/types";
 
 const DB_NAME = "local-music";
 const DB_VERSION = 2;
@@ -8,11 +8,9 @@ const TRACK_CACHE_KEY = "track-cache";
 const LAST_FOLDER_NAME_KEY = "last-folder-name";
 const LIKED_TRACK_IDS_KEY = "liked-track-ids";
 
-export interface PersistedMusicSource {
-  id: string;
+export type PersistedMusicSource = MusicSource & {
   handle: FileSystemDirectoryHandle;
-  name: string;
-}
+};
 
 export type CachedTrackRecord = Omit<Track, "coverUrl" | "file">;
 

@@ -64,7 +64,19 @@ export async function ensureDirectoryPermission(
   }
 
   if (typeof permissionHandle.requestPermission === "function") {
-    return permissionHandle.requestPermission(options);
+    try {
+      // requestPermission must be called during a user activation (e.g., click).
+      // If it's invoked without activation some browsers throw a SecurityError.
+      const requested = await permissionHandle.requestPermission(options);
+      return requested;
+    } catch (e) {
+      // Treat failures (like SecurityError due to missing user activation) as "prompt"
+      // so callers can retry from a user gesture instead of crashing.
+      // Log at debug level to help troubleshooting.
+      // eslint-disable-next-line no-console
+      console.warn("ensureDirectoryPermission: requestPermission failed", e);
+      return "prompt" as PermissionState;
+    }
   }
 
   return "prompt" as PermissionState;

@@ -32,7 +32,7 @@ export interface MusicSource {
   name: string;
   persistent: boolean;
   available: boolean;
-  kind?: "directory" | "file-launch";
+  kind: "directory" | "file-launch";
 }
 export type RuntimeMusicSource = MusicSource & {
   handle?: FileSystemDirectoryHandle;
