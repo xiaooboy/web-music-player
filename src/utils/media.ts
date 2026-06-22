@@ -148,6 +148,7 @@ export async function buildTrack(
   return {
     id: `${normalizeSlashes(relativePath)}`,
     file,
+    lastModified: file.lastModified,
     relativePath,
     title: metadata.title || fallback.title,
     artist: metadata.artist || fallback.artist,

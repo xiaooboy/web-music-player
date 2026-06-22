@@ -14,7 +14,7 @@ export interface PersistedMusicSource {
   name: string;
 }
 
-export type CachedTrackRecord = Omit<Track, "coverUrl">;
+export type CachedTrackRecord = Omit<Track, "coverUrl" | "file">;
 
 export interface PersistedTrackCache {
   sourceKey: string;
