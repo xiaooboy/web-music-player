@@ -299,11 +299,16 @@ input[type="range"]::-webkit-slider-thumb {
 .detail-backdrop {
   position: absolute;
   inset: 0;
+  opacity: 0;
   background-position: center;
   background-size: cover;
-  opacity: 0.9;
-  filter: blur(24px) saturate(1.2);
+  filter: blur(60px) saturate(1.6);
+  transition: opacity 0.6s ease-in-out;
   pointer-events: none;
+}
+
+.detail-backdrop.is-active {
+  opacity: 0.9;
 }
 
 .detail-backdrop::after {
@@ -312,12 +317,10 @@ input[type="range"]::-webkit-slider-thumb {
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(10, 10, 10, 0.96) 0%,
-    rgba(10, 10, 10, 0.84) 44%,
-    rgba(10, 10, 10, 0.9) 100%
+    rgba(10, 10, 10, 0.7) 0%,
+    rgba(10, 10, 10, 0.5) 44%,
+    rgba(10, 10, 10, 0.6) 100%
   );
-  /*background: var(--gradient-bg);
-  opacity: 0.8;*/
 }
 
 .detail-head,
@@ -385,10 +388,6 @@ input[type="range"]::-webkit-slider-thumb {
   aspect-ratio: 1;
   border-radius: var(--cover-radius);
   background: transparent;
-  /* outer shadow for visual separation */
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.5),
-    0 6px 18px rgba(0, 0, 0, 0.35);
   align-self: center;
   flex-shrink: 0;
 }
@@ -478,7 +477,7 @@ input[type="range"]::-webkit-slider-thumb {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 56px 0 112px;
+  padding-block: 56px 76px;
   scroll-behavior: smooth;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
@@ -506,6 +505,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .lyrics-list {
+  margin-top: 50%;
   width: min(100%, 640px);
   margin: 0 auto;
   padding-right: 10px;
@@ -520,6 +520,7 @@ input[type="range"]::-webkit-slider-thumb {
   text-align: center;
   line-height: 1.6;
   font-size: 1.18rem;
+  font-weight: 700;
   opacity: 0.62;
   transition:
     color 260ms ease,
@@ -540,7 +541,6 @@ input[type="range"]::-webkit-slider-thumb {
 
 .lyrics-line.is-active {
   color: #ffffff;
-  font-weight: 700;
   opacity: 1;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
 }
