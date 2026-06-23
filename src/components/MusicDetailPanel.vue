@@ -28,34 +28,8 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = ref<HTMLElement | null>(null);
 
-// 双图层交叉淡入淡出背景
-const backdropA = ref<string | undefined>(undefined);
-const backdropB = ref<string | undefined>(undefined);
-const activeLayer = ref<"A" | "B">("A");
-
-function preloadAndSwitchLayer(url: string | undefined) {
-  if (!url) return;
-  // 重复状态
-  if (
-    (activeLayer.value === "A" && url === backdropA.value) ||
-    (activeLayer.value === "B" && url === backdropB.value)
-  )
-    return;
-  const img = new Image();
-  img.onload = img.onerror = () => {
-    // 竞态条件
-    if (playerStore.currentTrack.coverUrl !== url) return;
-    // 加载失败也切换，避免卡住
-    if (activeLayer.value === "A") {
-      backdropB.value = url;
-      activeLayer.value = "B";
-    } else {
-      backdropA.value = url;
-      activeLayer.value = "A";
-    }
-  };
-  img.src = url;
-}
+// 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
+const displayCoverUrl = ref<string | undefined>(undefined);
 
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -104,11 +78,21 @@ function scheduleLyricsFollow(index: number) {
   });
 }
 watch(
-  [() => playerStore.currentTrack?.coverUrl, () => uiStore.currentView],
-  ([url, view]) => {
-    if (view !== "detail") return;
-    preloadAndSwitchLayer(url);
+  () => playerStore.currentTrack?.coverUrl,
+  (url) => {
+    if (!url) {
+      displayCoverUrl.value = "";
+      return;
+    }
+    const img = new Image();
+    img.onload = img.onerror = () => {
+      // 竞态
+      if (playerStore.currentTrack?.coverUrl !== url) return;
+      displayCoverUrl.value = url;
+    };
+    img.src = url;
   },
+  { immediate: true },
 );
 watch(
   [
@@ -139,16 +123,17 @@ watch(
 
 <template>
   <section class="detail-page">
-    <div
-      class="detail-backdrop"
-      :class="{ 'is-active': activeLayer === 'A' }"
-      :style="backdropA ? { backgroundImage: `url(${backdropA})` } : undefined"
-    ></div>
-    <div
-      class="detail-backdrop"
-      :class="{ 'is-active': activeLayer === 'B' }"
-      :style="backdropB ? { backgroundImage: `url(${backdropB})` } : undefined"
-    ></div>
+    <Transition name="backdrop-fade">
+      <div
+        class="detail-backdrop"
+        :key="displayCoverUrl"
+        :style="
+          displayCoverUrl
+            ? { backgroundImage: `url(${displayCoverUrl})` }
+            : undefined
+        "
+      ></div>
+    </Transition>
 
     <header class="detail-head">
       <button

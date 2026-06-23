@@ -299,16 +299,22 @@ input[type="range"]::-webkit-slider-thumb {
 .detail-backdrop {
   position: absolute;
   inset: 0;
-  opacity: 0;
   background-position: center;
   background-size: cover;
   filter: blur(60px) saturate(1.6);
-  transition: opacity 0.6s ease-in-out;
+  opacity: 0.9;
   pointer-events: none;
+  animation: backdrop-breathe 6s ease-in-out infinite alternate;
 }
 
-.detail-backdrop.is-active {
-  opacity: 0.9;
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active {
+  transition: opacity 0.8s ease-in-out;
+}
+
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to {
+  opacity: 0;
 }
 
 .detail-backdrop::after {
