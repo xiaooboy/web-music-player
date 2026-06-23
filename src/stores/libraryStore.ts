@@ -20,7 +20,6 @@ import {
   entriesToTracks,
   parseSource,
   initTracksFromCache,
-  sourcesToEntries,
   diffTracks,
   includesSource,
 } from "@/utils/libraryBuilder";
@@ -32,29 +31,31 @@ import { usePlayerStore } from "./playerStore";
 
 export const useLibraryStore = defineStore("library", () => {
   let libraryBuildToken = 0;
+  /** relativePath 与 Track 对应关系 */
+  const trackMap: TrackMap = new Map();
   const favoriteStore = useFavoriteStore();
   const albumStore = useAlbumStore();
   const playerStore = usePlayerStore();
 
-  const loading = ref(false);
-  const loadingDone = ref(0);
-  const loadingTotal = ref(0);
-  const libraryStatus = ref("还没有载入音乐");
-  const musicSources = shallowRef<RuntimeMusicSource[]>([]);
-
+  /** 是否文件启动 */
+  const isFileLaunch = shallowRef(false);
   const isReauthorizing = shallowRef(false);
 
-  /** relativePath 与 Track 对应关系 */
-  const trackMap: TrackMap = new Map();
+  const loading = shallowRef(false);
+  const loadingDone = shallowRef(0);
+  const loadingTotal = shallowRef(0);
+  const libraryStatus = shallowRef("还没有载入音乐");
+  const musicSources = shallowRef<RuntimeMusicSource[]>([]);
 
   const tracks = shallowRef<Track[]>([]);
 
-  const isFileLaunch = ref(false);
-
+  /** 更新构建标识 */
   function updateBuildToken() {
     return ++libraryBuildToken;
   }
-
+  /**
+   * 恢复缓存的库，流程：恢复 sources->计算cacheKey->恢复tracks->启动构建
+   */
   async function restoreCachedLibrary() {
     if (!supportsDirectoryPicker() && loadLastFolderName()) return;
     const persistedSources = await loadPersistedMusicSources();
@@ -63,10 +64,9 @@ export const useLibraryStore = defineStore("library", () => {
       return;
     }
     const cacheKey = buildCacheKeyFromSources(persistedSources);
-    console.time();
-    tracks.value = await initTracksFromCache(cacheKey);
-    console.timeEnd();
-    updateTrackMap(tracks.value);
+    console.time("restoreTracks");
+    setTracks(await initTracksFromCache(cacheKey));
+    console.timeEnd("restoreTracks");
     const restoredSources = await checkSourcePermissions(persistedSources);
     musicSources.value = restoredSources;
     persistHandleSources();
@@ -79,21 +79,22 @@ export const useLibraryStore = defineStore("library", () => {
       trackMap.set(track.relativePath, track);
     }
   }
+  /**
+   * 构建开始，流程：sources->entries->tracks
+   */
   async function startBuild() {
     const buildToken = updateBuildToken();
     const buildVersion = `build_verison${buildToken}`;
     console.time(buildVersion);
     const isStale = () => buildToken !== libraryBuildToken;
-    const { entries, cacheKey } = await parseSource(musicSources.value);
+    const entries = await parseSource(musicSources.value);
     console.timeLog(buildVersion, "parseSource");
-    if (isStale()) return;
+    if (isStale()) return console.timeEnd(buildVersion);
     if (!musicSources.value.length || !entries.length) {
       loadingDone.value = loadingTotal.value = 0;
       loading.value = false;
-      revokeTrackResources(tracks.value);
-      updatePlayableTracks([]);
-      persistTracks(cacheKey);
-      return;
+      setTracks([], true);
+      return console.timeEnd(buildVersion);
     }
     const finalTracks = await entriesToTracks(entries, isStale, {
       onProgress: ({ done, total }) => {
@@ -103,21 +104,15 @@ export const useLibraryStore = defineStore("library", () => {
       },
       trackMap,
     });
-    // build 失效
-    if (!finalTracks) return;
-    const { removed } = diffTracks(tracks.value, finalTracks);
-    revokeTrackResources(removed);
-    updatePlayableTracks(finalTracks);
+    if (!finalTracks) return console.timeEnd(buildVersion); // 当前 build 过期
+    setTracks(finalTracks, true);
     console.timeLog(buildVersion, "entriesToTracks");
-    await persistTracks(cacheKey);
-    console.timeLog(buildVersion, "persistTracks");
     console.timeEnd(buildVersion);
   }
 
   function disposeLibrary() {
-    revokeTrackResources(tracks.value);
-    updatePlayableTracks([]);
     updateBuildToken();
+    setTracks([]);
   }
 
   async function addSource(source: RuntimeMusicSource) {
@@ -169,6 +164,7 @@ export const useLibraryStore = defineStore("library", () => {
         audioEntries.push({ file, relativePath: file.name });
     }
     if (!audioEntries.length) return;
+    // 使用虚假音乐源
     const launchSource: RuntimeMusicSource = {
       id: crypto.randomUUID(),
       name:
@@ -181,13 +177,9 @@ export const useLibraryStore = defineStore("library", () => {
       entries: audioEntries,
     };
     musicSources.value = [launchSource];
-    const entries = await sourcesToEntries(musicSources.value);
-    const finalTracks = await entriesToTracks(entries, () => false);
+    const finalTracks = await entriesToTracks(audioEntries, () => false);
     if (!finalTracks) return;
-    tracks.value = finalTracks;
-    playerStore.setPlaylist(finalTracks);
-    favoriteStore.setFavoriteSources(finalTracks);
-    albumStore.updateAlbumWithTracks(finalTracks);
+    setTracks(finalTracks);
     playerStore.playTrack(0, true);
   }
 
@@ -231,17 +223,23 @@ export const useLibraryStore = defineStore("library", () => {
     }
   }
 
-  /** 更新 tracks，通知其他模块更新 */
-  function updatePlayableTracks(updatedTracks: Track[]) {
-    tracks.value = updatedTracks;
-    updateTrackMap(updatedTracks);
-    favoriteStore.setFavoriteSources(updatedTracks);
-    albumStore.updateAlbumWithTracks(updatedTracks);
-    const type = playerStore.playSourceType;
-    if (type === "playlist") {
-      playerStore.setPlaylist(updatedTracks);
+  /**
+   * 设置 tracks 并执行副作用
+   * @param persist 是否持久化缓存
+   */
+  function setTracks(data: Track[], persist?: boolean) {
+    const { removed } = diffTracks(tracks.value, data);
+    tracks.value = data;
+    trackMap.clear();
+    updateTrackMap(data);
+    revokeTrackResources(removed);
+    if (playerStore.playSourceType === "playlist") {
+      playerStore.setPlaylist(data);
     }
-    // 其他 store 与 player g关联内部处理
+    // 其他 store 与 player 关联自行处理
+    favoriteStore.setFavoriteSources(data);
+    albumStore.updateAlbumWithTracks(data);
+    if (persist) persistTracks(buildCacheKeyFromSources(musicSources.value));
   }
   return {
     loading,

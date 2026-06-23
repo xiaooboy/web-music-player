@@ -51,7 +51,7 @@ export const useAlbumStore = defineStore("album", () => {
         tracks: [track],
       });
     });
-    albums.value = defaultSort(albums.value, "name");
+    albums.value = defaultSort([...albumMap.values()], "name");
     const firstAlbumName = albums.value[0]?.name;
     if (!selectedAlbumName.value && firstAlbumName) {
       selectAlbum(firstAlbumName);
