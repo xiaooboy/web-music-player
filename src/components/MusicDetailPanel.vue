@@ -10,7 +10,7 @@ import {
   Repeat1,
   Shuffle,
 } from "lucide-vue-next";
-import { nextTick, ref, watch, computed, onMounted } from "vue";
+import { nextTick, ref, watch, computed } from "vue";
 import { sliderStyle } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import { Volume2 } from "lucide-vue-next"; // used in volume control
@@ -27,6 +27,35 @@ const isCurrentTrackLiked = computed(() =>
 );
 
 const lyricsScrollRef = ref<HTMLElement | null>(null);
+
+// 双图层交叉淡入淡出背景
+const backdropA = ref<string | undefined>(undefined);
+const backdropB = ref<string | undefined>(undefined);
+const activeLayer = ref<"A" | "B">("A");
+
+function preloadAndSwitchLayer(url: string | undefined) {
+  if (!url) return;
+  // 重复状态
+  if (
+    (activeLayer.value === "A" && url === backdropA.value) ||
+    (activeLayer.value === "B" && url === backdropB.value)
+  )
+    return;
+  const img = new Image();
+  img.onload = img.onerror = () => {
+    // 竞态条件
+    if (playerStore.currentTrack.coverUrl !== url) return;
+    // 加载失败也切换，避免卡住
+    if (activeLayer.value === "A") {
+      backdropB.value = url;
+      activeLayer.value = "B";
+    } else {
+      backdropA.value = url;
+      activeLayer.value = "A";
+    }
+  };
+  img.src = url;
+}
 
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -74,7 +103,13 @@ function scheduleLyricsFollow(index: number) {
     behavior: "smooth",
   });
 }
-
+watch(
+  [() => playerStore.currentTrack?.coverUrl, () => uiStore.currentView],
+  ([url, view]) => {
+    if (view !== "detail") return;
+    preloadAndSwitchLayer(url);
+  },
+);
 watch(
   [
     () => playerStore.activeLyricsIndex,
@@ -106,11 +141,13 @@ watch(
   <section class="detail-page">
     <div
       class="detail-backdrop"
-      :style="
-        playerStore.currentTrack?.coverUrl
-          ? { backgroundImage: `url(${playerStore.currentTrack.coverUrl})` }
-          : undefined
-      "
+      :class="{ 'is-active': activeLayer === 'A' }"
+      :style="backdropA ? { backgroundImage: `url(${backdropA})` } : undefined"
+    ></div>
+    <div
+      class="detail-backdrop"
+      :class="{ 'is-active': activeLayer === 'B' }"
+      :style="backdropB ? { backgroundImage: `url(${backdropB})` } : undefined"
     ></div>
 
     <header class="detail-head">
