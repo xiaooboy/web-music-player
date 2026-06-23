@@ -21,7 +21,7 @@ import {
   normalizeSlashes,
   revokeTrackResources,
 } from "./media";
-import { defaultNameSort } from "./nameSort";
+import { defaultSort } from "./sort";
 
 /**
  * 批量从缓存记录创建 Track 对象数组
@@ -204,7 +204,7 @@ export async function entriesToTracks(
     revokeTrackResources(newTracks);
     return;
   }
-  return builtTracks.sort((a, b) => defaultNameSort(a.title, b.title));
+  return defaultSort(builtTracks, "title");
 }
 /**
  * 从缓存获取初始化 tracks
