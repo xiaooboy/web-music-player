@@ -114,22 +114,18 @@ export async function checkSourcePermissions(
   return restoredSources;
 }
 
-/** 根据音乐源，解析cacheKey、entries */
+/** 根据音乐源，解析出 entries，文件启动时只处理文件启动源 */
 export async function parseSource(musicSources: RuntimeMusicSource[]) {
-  let hy;
-  // 文件启动时只处理此文件
-  const sourcesToBuild = musicSources.some(
+  const fileLaunchSources = musicSources.filter(
     (source) => source.kind === "file-launch",
-  )
-    ? musicSources.filter((source) => source.kind === "file-launch")
+  );
+  // 文件启动时只处理此文件
+  const sourcesToBuild = fileLaunchSources.length
+    ? fileLaunchSources
     : musicSources;
-  const entries = await sourcesToEntries(sourcesToBuild);
-  return {
-    entries,
-    cacheKey: buildCacheKeyFromSources(musicSources),
-  };
+  return sourcesToEntries(sourcesToBuild);
 }
-/** 文件入口转可播放音乐  FileEntry[] -> Track[] */
+/** 文件入口转可播放音乐  FileEntry[] -> Track[] ，过期后解决值为 undefined */
 export async function entriesToTracks(
   entries: FileEntry[],
   isStale: () => boolean,
