@@ -1,11 +1,11 @@
 import type { PlaybackMode, PlaybackModeLabel, Track } from "@/types";
-import { formatTime } from "@/utils/media";
+import { parseLyricsText } from "@/utils/media";
 import {
   clearMediaSession,
   setMediaSectionControls,
   updateMediaSession,
 } from "@/utils/mediaControl";
-import { parseLyricsText } from "@/utils/media";
+import { loadCurrentTrackId, saveCurrentTrackId } from "@/utils/persistence";
 import { defineStore } from "pinia";
 import { computed, shallowRef } from "vue";
 
@@ -33,7 +33,7 @@ export const usePlayerStore = defineStore("player", () => {
   let playlistIndexMap = new Map<string, number>();
 
   // ─── 当前曲目 ───────────────────────────────────────────────────────────
-  const currentTrackId = shallowRef("");
+  const currentTrackId = shallowRef(loadCurrentTrackId());
   const currentTrack = shallowRef<Track | null>(null);
 
   // ─── 音频 ───────────────────────────────────────────────────────────────
@@ -44,13 +44,10 @@ export const usePlayerStore = defineStore("player", () => {
   // ─── 进度 ───────────────────────────────────────────────────────────────
   const progressPercent = shallowRef(0);
   const currentTimeSeconds = shallowRef(0);
-  const currentTimeLabel = shallowRef("");
-  const totalTimeLabel = shallowRef("");
 
   // ─── 音量 ───────────────────────────────────────────────────────────────
   const volume = shallowRef(1);
   const volumePercent = shallowRef(100);
-
   // ─── 歌词 ───────────────────────────────────────────────────────────────
   const currentLyricsLines = computed(() =>
     parseLyricsText(currentTrack.value?.lyricsText || ""),
@@ -164,7 +161,6 @@ export const usePlayerStore = defineStore("player", () => {
       currentAudioUrl.value = URL.createObjectURL(track.file);
       audio.src = currentAudioUrl.value;
       currentTrack.value = track;
-      totalTimeLabel.value = formatTime(track.duration);
     }
 
     updateMediaSession(currentTrack.value);
@@ -183,17 +179,11 @@ export const usePlayerStore = defineStore("player", () => {
     if (!audio) {
       currentTimeSeconds.value = 0;
       progressPercent.value = 0;
-      currentTimeLabel.value = "";
-      totalTimeLabel.value = "";
       return;
     }
 
     currentTimeSeconds.value = audio.currentTime || 0;
-    currentTimeLabel.value = formatTime(currentTimeSeconds.value);
-    const duration =
-      Number.isFinite(audio.duration) && audio.duration > 0
-        ? audio.duration
-        : currentTrack.value?.duration || 0;
+    const duration = currentTrack.value.duration;
     progressPercent.value =
       duration > 0 ? (currentTimeSeconds.value / duration) * 100 : 0;
   }
@@ -218,10 +208,11 @@ export const usePlayerStore = defineStore("player", () => {
 
   function seekToPercent(percent: number) {
     const audio = audioRef.value;
-    if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) {
+    const duration = currentTrack.value.duration || 0;
+    if (!audio || !Number.isFinite(duration) || duration <= 0) {
       return;
     }
-    audio.currentTime = (percent / 100) * audio.duration;
+    audio.currentTime = (percent / 100) * duration;
     syncProgress();
   }
 
@@ -236,9 +227,10 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function handleLoadedMetadata() {
+    // build 过程已经使用相同的逻辑获取 duration
     const audio = audioRef.value;
     const track = currentTrack.value;
-    if (!audio || !track) {
+    if (!audio || !track || track.duration) {
       return;
     }
     if (!track.duration && Number.isFinite(audio.duration)) {
@@ -250,6 +242,9 @@ export const usePlayerStore = defineStore("player", () => {
 
   function handleAudioPlay() {
     isPlaying.value = true;
+    if (currentTrackId.value) {
+      saveCurrentTrackId(currentTrackId.value);
+    }
   }
 
   function handleAudioPause() {
@@ -283,8 +278,6 @@ export const usePlayerStore = defineStore("player", () => {
     isPlaying,
     progressPercent,
     currentTimeSeconds,
-    currentTimeLabel,
-    totalTimeLabel,
     volumePercent,
     currentLyricsLines,
     hasTimedLyrics,

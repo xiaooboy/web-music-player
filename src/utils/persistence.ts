@@ -7,6 +7,7 @@ const SOURCES_KEY = "music-sources";
 const TRACK_CACHE_KEY = "track-cache";
 const LAST_FOLDER_NAME_KEY = "last-folder-name";
 const LIKED_TRACK_IDS_KEY = "liked-track-ids";
+const CURRENT_TRACK_ID_KEY = "current-track-id";
 
 export type PersistedMusicSource = MusicSource & {
   handle: FileSystemDirectoryHandle;
@@ -126,6 +127,14 @@ export function loadLastFolderName() {
 
 export function saveLikedTrackIds(trackIds: string[]) {
   localStorage.setItem(LIKED_TRACK_IDS_KEY, JSON.stringify(trackIds));
+}
+
+export function saveCurrentTrackId(trackId: string) {
+  localStorage.setItem(CURRENT_TRACK_ID_KEY, trackId);
+}
+
+export function loadCurrentTrackId() {
+  return localStorage.getItem(CURRENT_TRACK_ID_KEY) || "";
 }
 
 export function loadLikedTrackIds() {

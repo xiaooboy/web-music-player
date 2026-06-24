@@ -18,7 +18,7 @@ import {
   computed,
   useTemplateRef,
 } from "vue";
-import { sliderStyle } from "../utils/media";
+import { formatTime, sliderStyle } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import { Volume2 } from "lucide-vue-next"; // used in volume control
 import TipContent from "../components/TipContent.vue";
@@ -206,7 +206,7 @@ watch(
           </label>
 
           <div class="detail-progress">
-            <span>{{ playerStore.currentTimeLabel }}</span>
+            <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
             <input
               class="progress-slider"
               type="range"
@@ -220,7 +220,9 @@ watch(
                 )
               "
             />
-            <span>{{ playerStore.totalTimeLabel }}</span>
+            <span>{{
+              formatTime(playerStore.currentTrack?.duration || 0)
+            }}</span>
           </div>
 
           <div class="detail-transport">
