@@ -18,7 +18,13 @@ export function updateMediaSession(track: Track) {
     artist: track.artist,
     album: track.album,
     artwork: track.coverUrl
-      ? [{ src: track.coverUrl, sizes: "512x512", type: "image/jpeg" }]
+      ? [
+          {
+            src: track.coverUrl,
+            sizes: "512x512",
+            type: track.coverBlob?.type || "image/jpeg",
+          },
+        ]
       : [],
   });
 }
