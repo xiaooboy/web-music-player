@@ -53,7 +53,7 @@ export const useAlbumStore = defineStore("album", () => {
     });
     albums.value = defaultSort([...albumMap.values()], "name");
     const firstAlbumName = albums.value[0]?.name;
-    if (!selectedAlbumName.value && firstAlbumName) {
+    if (!albumMap.has(selectedAlbumName.value) && firstAlbumName) {
       selectAlbum(firstAlbumName);
     }
     updatePlayingAlbum(playingAlbumName.value);
@@ -63,7 +63,8 @@ export const useAlbumStore = defineStore("album", () => {
     const valid = albumMap.has(albumName);
     playingAlbumName.value = valid ? albumName : "";
     if (playerStore.playSourceType === "albums") {
-      playerStore.setPlaylist(getPlayingAlbum().tracks);
+      const album = getPlayingAlbum();
+      playerStore.setPlaylist(album ? album.tracks : []);
     }
   }
 

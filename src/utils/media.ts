@@ -331,12 +331,18 @@ export async function probeDuration(file: File) {
   return new Promise<number>((resolve) => {
     const probe = document.createElement("audio");
     const url = URL.createObjectURL(file);
+    let settled = false;
 
     const finish = (duration = 0) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
       URL.revokeObjectURL(url);
       probe.removeAttribute("src");
       resolve(Number.isFinite(duration) ? duration : 0);
     };
+
+    const timeout = setTimeout(() => finish(0), 10_000);
 
     probe.preload = "metadata";
     probe.addEventListener("loadedmetadata", () => finish(probe.duration), {
@@ -538,7 +544,9 @@ async function parseFlacMetadata(file: File) {
 }
 
 async function parseMp4Metadata(file: File) {
-  const bytes = new Uint8Array(await file.arrayBuffer());
+  const bytes = new Uint8Array(
+    await file.slice(0, Math.min(file.size, 16 * 1024 * 1024)).arrayBuffer(),
+  );
   const metadata: Partial<Track> = {};
 
   walkMp4Atoms(bytes, 0, bytes.length, [], metadata);
@@ -920,39 +928,44 @@ function decodeLatin1(bytes: Uint8Array) {
 
 function readSynchsafe(bytes: Uint8Array, offset: number) {
   return (
-    (bytes[offset] << 21) |
-    (bytes[offset + 1] << 14) |
-    (bytes[offset + 2] << 7) |
-    bytes[offset + 3]
+    ((bytes[offset] << 21) |
+      (bytes[offset + 1] << 14) |
+      (bytes[offset + 2] << 7) |
+      bytes[offset + 3]) >>>
+    0
   );
 }
 
 function readUint32(bytes: Uint8Array, offset: number) {
   return (
-    (bytes[offset] << 24) |
-    (bytes[offset + 1] << 16) |
-    (bytes[offset + 2] << 8) |
-    bytes[offset + 3]
+    ((bytes[offset] << 24) |
+      (bytes[offset + 1] << 16) |
+      (bytes[offset + 2] << 8) |
+      bytes[offset + 3]) >>>
+    0
   );
 }
 
 function readUint24(bytes: Uint8Array, offset: number) {
-  return (bytes[offset] << 16) | (bytes[offset + 1] << 8) | bytes[offset + 2];
+  return (
+    ((bytes[offset] << 16) | (bytes[offset + 1] << 8) | bytes[offset + 2]) >>> 0
+  );
 }
 
 function readUint32LE(bytes: Uint8Array, offset: number) {
   return (
-    bytes[offset] |
-    (bytes[offset + 1] << 8) |
-    (bytes[offset + 2] << 16) |
-    (bytes[offset + 3] << 24)
+    (bytes[offset] |
+      (bytes[offset + 1] << 8) |
+      (bytes[offset + 2] << 16) |
+      (bytes[offset + 3] << 24)) >>>
+    0
   );
 }
 
 function readUint64(bytes: Uint8Array, offset: number) {
   const high = readUint32(bytes, offset);
-  const low = readUint32(bytes, offset + 4);
-  return high * 2 ** 32 + low;
+  const low = readUint32(bytes, offset + 4) >>> 0;
+  return high * 0x1_0000_0000 + low;
 }
 
 function removeUnsynchronization(bytes: Uint8Array) {

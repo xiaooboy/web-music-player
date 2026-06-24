@@ -9,8 +9,6 @@ const favoriteStore = useFavoriteStore();
 const playerStore = usePlayerStore();
 
 const searchQuery = ref("");
-const isScrolling = ref(false);
-let scrollHideTimer: ReturnType<typeof setTimeout> | null = null;
 
 const visibleTracks = computed(() => {
   if (!searchQuery.value.trim()) return favoriteStore.favoriteTracks;
@@ -27,14 +25,6 @@ const status = computed(() =>
     ? `共 ${favoriteStore.favoriteTracks.length} 首喜欢的歌曲`
     : "还没有喜欢的歌曲",
 );
-
-function handleScroll() {
-  isScrolling.value = true;
-  if (scrollHideTimer) clearTimeout(scrollHideTimer);
-  scrollHideTimer = setTimeout(() => {
-    isScrolling.value = false;
-  }, 700);
-}
 
 function handleFavoriteTrackSelect(id: string) {
   playerStore.setPlaySourceType("favorites");
@@ -57,11 +47,7 @@ function handleFavoriteTrackSelect(id: string) {
       </label>
     </header>
 
-    <div
-      class="playlist-scroll"
-      :class="{ 'is-scrolling': isScrolling }"
-      @scroll.passive="handleScroll"
-    >
+    <div class="playlist-scroll">
       <LibraryPanel
         :tracks="visibleTracks"
         :has-tracks="favoriteStore.favoriteTracks.length > 0"

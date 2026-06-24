@@ -34,7 +34,7 @@ export function openWebkitDirectory() {
     el.addEventListener("change", () => {
       const entries = entriesFromInput(el.files);
       // 从第一个文件路径提取文件夹名作为音乐源名称
-      const folderName = entries[0].relativePath.split("/")[0] || "本地音乐";
+      const folderName = entries[0]?.relativePath.split("/")[0] || "本地音乐";
       const source: RuntimeMusicSource = {
         id: crypto.randomUUID(),
         name: folderName,

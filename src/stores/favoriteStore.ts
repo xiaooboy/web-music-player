@@ -9,7 +9,7 @@ export const useFavoriteStore = defineStore("favorite", () => {
 
   const tracks = shallowRef<Track[]>([]);
   const likedTrackIds = shallowRef<string[]>(loadLikedTrackIds());
-  const likedTrackIdSet = ref(new Set(likedTrackIds.value));
+  const likedTrackIdSet = shallowRef(new Set(likedTrackIds.value));
 
   const favoriteTracks = shallowRef<Track[]>([]);
 
@@ -30,12 +30,14 @@ export const useFavoriteStore = defineStore("favorite", () => {
   }
 
   function toggleTrackFavorite(trackId: string) {
-    if (likedTrackIdSet.value.has(trackId)) {
-      likedTrackIdSet.value.delete(trackId);
+    const next = new Set(likedTrackIdSet.value);
+    if (next.has(trackId)) {
+      next.delete(trackId);
     } else {
-      likedTrackIdSet.value.add(trackId);
+      next.add(trackId);
     }
-    likedTrackIds.value = [...likedTrackIdSet.value];
+    likedTrackIdSet.value = next;
+    likedTrackIds.value = [...next];
     saveLikedTrackIds(likedTrackIds.value);
     updateFavoriteTracks();
   }

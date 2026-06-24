@@ -44,7 +44,9 @@ onMounted(() => {
     window.launchQueue.setConsumer(
       ({ files }: { files: FileSystemFileHandle[] }) => {
         // 文件启动
-        if ((libraryStore.isFileLaunch = Boolean(files.length))) {
+        const isFileLaunch = Boolean(files.length);
+        libraryStore.isFileLaunch = isFileLaunch;
+        if (isFileLaunch) {
           libraryStore.handleLaunchedMusicFiles(files || []);
         }
       },

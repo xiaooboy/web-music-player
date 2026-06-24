@@ -11,8 +11,6 @@ const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 
 const searchQuery = ref("");
-const isScrolling = ref(false);
-let scrollHideTimer: ReturnType<typeof setTimeout> | null = null;
 
 const visibleTracks = computed(() => {
   if (!searchQuery.value.trim()) return libraryStore.tracks;
@@ -30,14 +28,6 @@ const playlistStatus = computed(() => {
   }
   return libraryStore.libraryStatus;
 });
-
-function handleScroll() {
-  isScrolling.value = true;
-  if (scrollHideTimer) clearTimeout(scrollHideTimer);
-  scrollHideTimer = setTimeout(() => {
-    isScrolling.value = false;
-  }, 700);
-}
 
 function handleSelectTrack(id: string) {
   playerStore.setPlaySourceType("playlist");
@@ -60,11 +50,7 @@ function handleSelectTrack(id: string) {
       </label>
     </header>
 
-    <div
-      class="playlist-scroll"
-      :class="{ 'is-scrolling': isScrolling }"
-      @scroll.passive="handleScroll"
-    >
+    <div class="playlist-scroll">
       <LibraryPanel
         :tracks="visibleTracks"
         :has-tracks="libraryStore.tracks.length > 0"

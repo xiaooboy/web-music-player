@@ -227,8 +227,7 @@ export function diffTracks(oldList: Track[], newList: Track[]) {
   const added: Track[] = [];
   const removed: Track[] = [];
   for (const t of newList) {
-    const oldTrack = oldMap.get(t.id);
-    if (oldTrack && oldTrack.lastModified === t.lastModified) {
+    if (!oldMap.has(t.id)) {
       added.push(t);
     }
   }

@@ -200,20 +200,21 @@ export const useLibraryStore = defineStore("library", () => {
       return;
     let needRebuild = false;
     try {
+      const availabilityMap = new Map<string, boolean>();
       for (const source of pending) {
-        const permission = await ensureDirectoryPermission(
-          source.handle!,
-          true,
-        );
+        if (!source.handle) continue;
+        const permission = await ensureDirectoryPermission(source.handle, true);
         const available = permission === "granted";
-        musicSources.value = musicSources.value.map((s) =>
-          s.id === source.id ? { ...s, available } : s,
-        );
+        availabilityMap.set(source.id, available);
         if (available) needRebuild = true;
         if (permission === "denied") {
           alert(`目录 ${source.name} 的授权被拒绝`);
         }
       }
+      musicSources.value = musicSources.value.map((s) => {
+        const available = availabilityMap.get(s.id);
+        return available !== undefined ? { ...s, available } : s;
+      });
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn("reauthorizeAll failed", e);
