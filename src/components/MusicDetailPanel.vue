@@ -10,7 +10,14 @@ import {
   Repeat1,
   Shuffle,
 } from "lucide-vue-next";
-import { nextTick, onBeforeUnmount, ref, watch, computed } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  watch,
+  computed,
+  useTemplateRef,
+} from "vue";
 import { sliderStyle } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import { Volume2 } from "lucide-vue-next"; // used in volume control
@@ -26,15 +33,17 @@ const isCurrentTrackLiked = computed(() =>
     : false,
 );
 
-const lyricsScrollRef = ref<HTMLElement | null>(null);
+const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 
 // 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
 const displayCoverUrl = ref<string | undefined>(undefined);
 
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
+let followThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
 
 onBeforeUnmount(() => {
   if (disableFollowTimeout) clearTimeout(disableFollowTimeout);
+  if (followThrottleTimeout) clearTimeout(followThrottleTimeout);
 });
 
 function handleLyricsWheel(event: Event) {
@@ -51,7 +60,7 @@ function displayLyricsText(text: string) {
 }
 
 function scheduleLyricsFollow(index: number) {
-  if (index < 0 || disableFollowTimeout) {
+  if (index < 0 || disableFollowTimeout || followThrottleTimeout) {
     return;
   }
 
@@ -68,18 +77,16 @@ function scheduleLyricsFollow(index: number) {
   }
 
   // 将当前歌词行滚动到容器可视区域的垂直居中位置
-  const targetTop =
-    activeLine.offsetTop -
-    container.clientHeight / 2 +
-    activeLine.offsetHeight / 2;
-  const maxScrollTop = Math.max(
-    0,
-    container.scrollHeight - container.clientHeight,
-  );
   container.scrollTo({
-    top: Math.min(Math.max(targetTop, 0), maxScrollTop),
-    behavior: "smooth",
+    top:
+      activeLine.offsetTop -
+      container.clientHeight / 2 +
+      activeLine.offsetHeight / 2,
   });
+
+  followThrottleTimeout = setTimeout(() => {
+    followThrottleTimeout = null;
+  }, 150);
 }
 watch(
   () => playerStore.currentTrack?.coverUrl,
