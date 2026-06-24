@@ -90,7 +90,6 @@ export async function sourcesToEntries(
  */
 export async function checkSourcePermissions(
   persistedSources: PersistedMusicSource[],
-  requestIfNeeded: boolean = false,
 ): Promise<MusicSource[]> {
   const restoredSources = await Promise.all(
     persistedSources.map(async (source) => {
