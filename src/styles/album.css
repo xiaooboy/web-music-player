@@ -18,22 +18,10 @@
   overflow: hidden;
 }
 
-.album-list,
-.album-song-list {
-  display: grid;
-  gap: 10px;
-  min-height: 0;
-  height: 100%;
-  overflow: auto;
-  align-content: start;
-  justify-items: stretch;
-}
-
 .album-list {
-  align-content: start;
-  padding-right: 6px;
   padding-bottom: var(--dock-height);
-  align-self: start;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .album-item,
@@ -165,12 +153,11 @@
 }
 
 .album-song-list {
-  width: 100%;
-  justify-self: stretch;
-  padding-right: 0;
-  padding-bottom: var(--dock-height);
-  grid-auto-rows: max-content;
-  justify-items: stretch;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  height: 100%;
+  padding-bottom: calc(var(--dock-height) + 8px);
 }
 
 .album-song-row {
