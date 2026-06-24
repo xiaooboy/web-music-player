@@ -112,9 +112,13 @@ export const usePlayerStore = defineStore("player", () => {
         newTracks[playlistIndexMap.get(currentTrackId.value)!];
       updateMediaSession(currentTrack.value);
     } else {
-      audioRef.value?.pause();
+      const audio = audioRef.value;
+      if (audio) {
+        audio.pause();
+        audio.src = "";
+      }
       URL.revokeObjectURL(currentAudioUrl.value);
-      currentAudioUrl.value = audioRef.value.src = "";
+      currentAudioUrl.value = "";
       currentTrack.value = null;
       clearMediaSession();
     }
