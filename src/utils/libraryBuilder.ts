@@ -49,7 +49,7 @@ export function createTracksFromCache(records: CachedTrackRecord[]): Track[] {
  */
 export function buildCacheKeyFromSources(musicSources: MusicSource[]): string {
   const nameArr: string[] = [];
-  musicSources.map(({ name, available, persistent, kind }) => {
+  musicSources.forEach(({ name, available, persistent, kind }) => {
     if (!persistent || !available || kind === "file-launch") return;
     nameArr.push(name);
   });
@@ -90,7 +90,6 @@ export async function sourcesToEntries(
  */
 export async function checkSourcePermissions(
   persistedSources: PersistedMusicSource[],
-  requestIfNeeded: boolean = false,
 ): Promise<MusicSource[]> {
   const restoredSources = await Promise.all(
     persistedSources.map(async (source) => {
