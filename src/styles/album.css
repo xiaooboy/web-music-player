@@ -155,9 +155,10 @@
 .album-song-list {
   overflow: auto;
   display: grid;
-  gap: 8px;
-  height: 100%;
   padding-bottom: calc(var(--dock-height) + 8px);
+  height: 100%;
+  gap: 8px;
+  align-content: flex-start;
 }
 
 .album-song-row {

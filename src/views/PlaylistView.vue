@@ -62,6 +62,7 @@ function handleSelectTrack(id: string) {
         :status="playlistStatus"
         :liked-track-id-set="favoriteStore.likedTrackIdSet"
         @play="handleSelectTrack"
+        @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
       />
     </div>

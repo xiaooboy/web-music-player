@@ -109,6 +109,7 @@ export const usePlayerStore = defineStore("player", () => {
         newTracks[playlistIndexMap.get(currentTrackId.value)!];
       updateMediaSession(currentTrack.value);
     } else {
+      // 当前播放的曲目不在新的播放列表中，暂停并清除
       const audio = audioRef.value;
       if (audio) {
         audio.pause();
@@ -117,6 +118,8 @@ export const usePlayerStore = defineStore("player", () => {
       URL.revokeObjectURL(currentAudioUrl.value);
       currentAudioUrl.value = "";
       currentTrack.value = null;
+      currentTrackId.value = "";
+      isPlaying.value = false;
       clearMediaSession();
     }
   }
@@ -147,16 +150,16 @@ export const usePlayerStore = defineStore("player", () => {
     const audio = audioRef.value;
     const track = playlist.value[index];
     if (!audio || !track) return;
+    if (!track.file) {
+      alert("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
+      return;
+    }
     const isSameTrack = currentTrackId.value === track.id;
     currentTrackId.value = track.id;
 
     if (!isSameTrack || !audio.src) {
       if (currentAudioUrl.value) {
         URL.revokeObjectURL(currentAudioUrl.value);
-      }
-      if (!track.file) {
-        alert("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
-        return;
       }
       currentAudioUrl.value = URL.createObjectURL(track.file);
       audio.src = currentAudioUrl.value;
@@ -176,7 +179,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   function syncProgress() {
     const audio = audioRef.value;
-    if (!audio) {
+    if (!audio || !currentTrack.value) {
       currentTimeSeconds.value = 0;
       progressPercent.value = 0;
       return;
@@ -208,10 +211,8 @@ export const usePlayerStore = defineStore("player", () => {
 
   function seekToPercent(percent: number) {
     const audio = audioRef.value;
-    const duration = currentTrack.value.duration || 0;
-    if (!audio || !Number.isFinite(duration) || duration <= 0) {
-      return;
-    }
+    if (!audio || !currentTrack.value) return;
+    const duration = currentTrack.value.duration;
     audio.currentTime = (percent / 100) * duration;
     syncProgress();
   }

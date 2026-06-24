@@ -22,6 +22,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   play: [id: string];
+  togglePlay: [];
   toggleFavorite: [id: string];
 }>();
 
@@ -136,7 +137,11 @@ const tipContent = computed(() => {
                 :aria-label="
                   item.id === currentTrackId && isPlaying ? '暂停' : '播放'
                 "
-                @click.stop="$emit('play', item.id)"
+                @click.stop="
+                  item.id === currentTrackId && isPlaying
+                    ? $emit('togglePlay')
+                    : $emit('play', item.id)
+                "
               >
                 <Pause
                   v-if="item.id === currentTrackId && isPlaying"

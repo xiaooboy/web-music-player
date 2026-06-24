@@ -31,7 +31,7 @@ import { usePlayerStore } from "./playerStore";
 
 export const useLibraryStore = defineStore("library", () => {
   let libraryBuildToken = 0;
-  /** relativePath 与 Track 对应关系 */
+  /** id 与 Track 对应关系 */
   const trackMap: TrackMap = new Map();
   const favoriteStore = useFavoriteStore();
   const albumStore = useAlbumStore();
@@ -76,7 +76,7 @@ export const useLibraryStore = defineStore("library", () => {
   }
   function updateTrackMap(tracks: Track[]) {
     for (const track of tracks) {
-      trackMap.set(track.relativePath, track);
+      trackMap.set(track.id, track);
     }
   }
   /**

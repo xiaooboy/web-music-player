@@ -62,6 +62,7 @@ function handleFavoriteTrackSelect(id: string) {
         empty-title="还没有喜欢的歌曲"
         empty-description="在播放列表或播放器里点亮心形按钮，这里会自动收集你喜欢的音乐。"
         @play="handleFavoriteTrackSelect"
+        @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
       />
     </div>

@@ -16,9 +16,9 @@ import {
   buildTrack,
   collectAudioFiles,
   ensureDirectoryPermission,
+  generateTrackId,
   getLyricsLookupKey,
   isAudioFile,
-  normalizeSlashes,
   revokeTrackResources,
 } from "./media";
 import { defaultSort } from "./sort";
@@ -26,21 +26,15 @@ import { defaultSort } from "./sort";
 /**
  * 批量从缓存记录创建 Track 对象数组
  */
-export function createTracksFromCache(records: CachedTrackRecord[]): Track[] {
-  return records.map((record) => {
-    let coverUrl = "";
-    let coverBlob = record.coverBlob;
-    // 从 coverBlob 重建 blob: URL
-    if (coverBlob) {
-      coverUrl = URL.createObjectURL(coverBlob);
-    }
-    return {
-      ...record,
-      file: null, // 无 File，entriesToTracks 后再获取
-      coverUrl,
-      isPlayable: false,
-    };
-  });
+export function cachedTrackRecordsToTracks(
+  records: CachedTrackRecord[],
+): Track[] {
+  return records.map((record) => ({
+    ...record,
+    file: null, // 无 File，entriesToTracks 后再获取
+    coverUrl: record.coverBlob ? URL.createObjectURL(record.coverBlob) : "",
+    isPlayable: false,
+  }));
 }
 
 /**
@@ -160,7 +154,7 @@ export async function entriesToTracks(
     const results = await Promise.allSettled(
       batch.map(async (entry) => {
         const cachedTrack = options?.trackMap?.get(
-          normalizeSlashes(entry.relativePath),
+          generateTrackId(entry.relativePath, entry.file),
         );
         if (
           cachedTrack &&
@@ -211,7 +205,7 @@ export async function initTracksFromCache(cacheKey: string) {
     cachedTrackPayload?.sourceKey === cacheKey &&
     cachedTrackPayload.tracks.length
   ) {
-    return createTracksFromCache(cachedTrackPayload.tracks);
+    return cachedTrackRecordsToTracks(cachedTrackPayload.tracks);
   } else {
     clearTrackCache();
   }

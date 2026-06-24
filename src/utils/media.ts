@@ -136,6 +136,10 @@ export function entriesFromInput(files: FileList | null) {
   }));
 }
 
+export function generateTrackId(path: string, file: File) {
+  return `${normalizeSlashes(path)}::${file.lastModified}`;
+}
+
 export async function buildTrack(
   entry: FileEntry,
   externalLyricsText = "",
@@ -163,7 +167,7 @@ export async function buildTrack(
   ]);
 
   return {
-    id: crypto.randomUUID(),
+    id: generateTrackId(relativePath, file),
     file,
     lastModified: file.lastModified,
     relativePath: normalizeSlashes(relativePath),
