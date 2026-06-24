@@ -191,13 +191,13 @@ export const useLibraryStore = defineStore("library", () => {
       alert("没有需要重新授权的音乐源");
       return;
     }
-    isReauthorizing.value = true;
     if (
       !confirm(
         `即将为 ${pending.length} 个目录请求权限。浏览器可能会为每个目录弹出授权对话框，是否继续？`,
       )
     )
       return;
+    isReauthorizing.value = true;
     let needRebuild = false;
     try {
       const availabilityMap = new Map<string, boolean>();
