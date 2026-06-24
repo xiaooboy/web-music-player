@@ -10,7 +10,7 @@ import {
   Repeat1,
   Shuffle,
 } from "lucide-vue-next";
-import { nextTick, ref, watch, computed } from "vue";
+import { nextTick, onBeforeUnmount, ref, watch, computed } from "vue";
 import { sliderStyle } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import { Volume2 } from "lucide-vue-next"; // used in volume control
@@ -32,6 +32,10 @@ const lyricsScrollRef = ref<HTMLElement | null>(null);
 const displayCoverUrl = ref<string | undefined>(undefined);
 
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
+
+onBeforeUnmount(() => {
+  if (disableFollowTimeout) clearTimeout(disableFollowTimeout);
+});
 
 function handleLyricsWheel(event: Event) {
   if (disableFollowTimeout) {
