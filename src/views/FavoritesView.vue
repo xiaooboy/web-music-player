@@ -22,7 +22,7 @@ const visibleTracks = computed(() => {
 
 const status = computed(() =>
   favoriteStore.favoriteTracks.length
-    ? `${favoriteStore.favoriteTracks.length} 首歌曲`
+    ? `${favoriteStore.favoriteTracks.length} 首`
     : "",
 );
 

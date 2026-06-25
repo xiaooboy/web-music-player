@@ -23,10 +23,8 @@
   --radius-xl: 24px;
   --cover-radius: 20%;
   --cover-radius-circled: 50%;
-  --font-display:
-    "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-body:
-    "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: system-ui;
+  --font-body: system-ui;
   --window-safe-top: 0px;
   --dock-height: 70px;
   --gradient-bg: radial-gradient(

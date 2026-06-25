@@ -57,7 +57,7 @@ function removeSource(sourceId: string) {
       title="音乐库管理"
       :status="
         libraryStore.musicSources.length
-          ? `${libraryStore.musicSources.length} 个音乐源`
+          ? `${libraryStore.musicSources.length} 个`
           : '等待添加'
       "
     />

@@ -82,9 +82,7 @@ function handleStop() {
       v-if="!showDetail"
       title="专辑"
       :status="
-        albumStore.albums.length
-          ? `${albumStore.albums.length} 张专辑`
-          : '等待扫描'
+        albumStore.albums.length ? `${albumStore.albums.length} 张` : '等待扫描'
       "
     />
 
