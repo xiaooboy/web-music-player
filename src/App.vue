@@ -5,11 +5,11 @@ import { usePlayerStore, useLibraryStore, useUIStore } from "./stores";
 import MusicDetailPanel from "./components/MusicDetailPanel.vue";
 import PlayerDock from "./components/PlayerDock.vue";
 import SidebarPanel from "./components/SidebarPanel.vue";
-import PlaylistView from "./views/PlaylistView.vue";
 import FavoritesView from "./views/FavoritesView.vue";
 import AlbumsView from "./views/AlbumsView.vue";
 import LibraryManagementView from "./views/LibraryManagementView.vue";
 import { storeToRefs } from "pinia";
+import AllTrackView from "./views/AllTrackView.vue";
 
 const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
@@ -95,7 +95,7 @@ function handleContextMenuBlock(event: MouseEvent) {
     <SidebarPanel />
 
     <main class="main-stage">
-      <PlaylistView v-show="activeSection === 'playlist'" />
+      <AllTrackView v-show="activeSection === 'all-track'" />
       <FavoritesView v-show="activeSection === 'favorites'" />
       <AlbumsView v-show="activeSection === 'albums'" />
       <LibraryManagementView v-show="activeSection === 'library-management'" />

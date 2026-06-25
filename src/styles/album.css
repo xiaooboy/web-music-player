@@ -93,32 +93,7 @@
   gap: 16px;
   align-self: start;
   align-content: start;
-  overflow: hidden;
-}
-/* ─── 返回按钮 ──────────────────────────────────────────────────────────── */
-.back-button {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--muted);
-  transition: background 160ms ease;
-  align-self: start;
-}
-
-.back-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* ─── 详情内容 ──────────────────────────────────────────────────────────── */
-.album-detail-content {
   overflow: auto;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 16px;
-  min-height: 0;
 }
 
 .album-detail-head {
@@ -127,18 +102,12 @@
   grid-template-rows: auto auto;
   gap: 14px 18px;
   align-items: center;
-  padding: 18px;
   border-radius: 24px;
-  background: linear-gradient(
-    135deg,
-    rgba(30, 215, 96, 0.1),
-    rgba(255, 255, 255, 0.04)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.back-button {
+.icon-button.back-button {
   grid-column: 1 / -1;
+  justify-items: flex-start;
 }
 
 .album-detail-cover,

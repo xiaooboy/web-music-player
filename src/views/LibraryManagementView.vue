@@ -5,6 +5,7 @@ import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
 import TipContent from "../components/TipContent.vue";
+import SectionHead from "../components/SectionHead.vue";
 
 const libraryStore = useLibraryStore();
 
@@ -51,17 +52,15 @@ function removeSource(sourceId: string) {
 </script>
 
 <template>
-  <section class="library-panel library-management-panel">
-    <div class="section-head">
-      <div>
-        <h2>音乐库管理</h2>
-      </div>
-      <span class="library-status">{{
+  <section class="main-panel library-management-panel">
+    <SectionHead
+      title="音乐库管理"
+      :status="
         libraryStore.musicSources.length
-          ? `共 ${libraryStore.musicSources.length} 个音乐源`
-          : "等待添加"
-      }}</span>
-    </div>
+          ? `${libraryStore.musicSources.length} 个音乐源`
+          : '等待添加'
+      "
+    />
 
     <p class="library-management-hint">{{ libraryHint }}</p>
 
@@ -135,7 +134,7 @@ function removeSource(sourceId: string) {
       v-else
       fill
       title="还没有添加音乐源"
-      content="从上方添加一个或多个本地文件夹后，播放器会合并生成统一播放列表。"
+      content="添加一个或多个本地文件夹后，播放器会合并生成统一播放列表。"
     />
   </section>
 </template>

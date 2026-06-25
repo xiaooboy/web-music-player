@@ -76,7 +76,7 @@
   align-content: stretch;
 }
 
-.main-stage > .playlist-stage,
+.main-stage > .all-track-view,
 .page-content > .album-browser,
 .page-content > .library-management-panel {
   width: 100%;
@@ -150,7 +150,7 @@
   color: var(--muted);
 }
 
-.library-panel {
+.main-panel {
   width: 100%;
 }
 
@@ -203,7 +203,7 @@
   font-family: var(--font-display);
 }
 
-.library-panel {
+.main-panel {
   border-radius: var(--radius-xl);
   min-height: 0;
   height: 100%;

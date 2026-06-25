@@ -3,14 +3,12 @@ import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, Pause, Play } from "lucide-vue-next";
 import TipContent from "./TipContent.vue";
+import SectionHead from "./SectionHead.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 
 const props = defineProps<{
   tracks: Track[];
-  loading: boolean;
-  loadingDone: number;
-  loadingTotal: number;
   currentTrackId: string;
   isPlaying: boolean;
   status: string;
@@ -49,30 +47,11 @@ const virtualItems = computed(() =>
 );
 
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
-
-const tipTitle = computed(() => {
-  if (props.loading) return "正在整理你的曲库";
-  if (props.tracks.length) return "没有匹配到结果";
-  return props.emptyTitle || "你的本地曲库还没接入";
-});
-
-const tipContent = computed(() => {
-  if (props.loading)
-    return `已处理 ${props.loadingDone} / ${props.loadingTotal} 首歌曲，请稍候。`;
-  if (props.tracks.length)
-    return "换个关键词试试，或者清空搜索框查看全部曲目。";
-  return props.emptyDescription || '前往"音乐库"添加音乐源。';
-});
 </script>
 
 <template>
-  <section class="library-panel">
-    <div class="section-head">
-      <div>
-        <h2>{{ title || "已导入曲目" }}</h2>
-      </div>
-      <span class="library-status">{{ status }}</span>
-    </div>
+  <section class="track-table">
+    <SectionHead :title="title || '歌曲'" :status="status" />
 
     <div v-if="tracks.length" class="track-header">
       <span>歌曲</span>
@@ -115,6 +94,7 @@ const tipContent = computed(() => {
                   v-if="item.coverUrl"
                   :src="item.coverUrl"
                   :alt="`${item.title} 封面`"
+                  loading="lazy"
                 />
                 <!-- <span v-else>♪</span> -->
               </div>
@@ -168,7 +148,7 @@ const tipContent = computed(() => {
         </div>
       </template>
 
-      <TipContent v-else :title="tipTitle" :content="tipContent" />
+      <TipContent v-else :title="emptyTitle" :content="emptyDescription" />
     </div>
   </section>
 </template>

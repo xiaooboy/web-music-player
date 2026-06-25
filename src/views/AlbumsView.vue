@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, shallowRef } from "vue";
 import AlbumGrid from "../components/AlbumGrid.vue";
+import SectionHead from "../components/SectionHead.vue";
 import AlbumDetail from "../components/AlbumDetail.vue";
 import TipContent from "../components/TipContent.vue";
 import { usePlayerStore, useAlbumStore } from "@/stores";
@@ -76,17 +77,16 @@ function handleStop() {
 </script>
 
 <template>
-  <section class="library-panel album-browser">
-    <div v-if="!showDetail" class="section-head">
-      <div>
-        <h2>专辑</h2>
-      </div>
-      <span class="library-status">{{
+  <section class="main-panel album-browser">
+    <SectionHead
+      v-if="!showDetail"
+      title="专辑"
+      :status="
         albumStore.albums.length
-          ? `共 ${albumStore.albums.length} 张专辑`
-          : "等待扫描"
-      }}</span>
-    </div>
+          ? `${albumStore.albums.length} 张专辑`
+          : '等待扫描'
+      "
+    />
 
     <template v-if="albumStore.albums.length">
       <AlbumGrid

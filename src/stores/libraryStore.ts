@@ -234,7 +234,7 @@ export const useLibraryStore = defineStore("library", () => {
     trackMap.clear();
     updateTrackMap(data);
     revokeTrackResources(removed);
-    if (playerStore.playSourceType === "playlist") {
+    if (playerStore.playSourceType === "all-track") {
       playerStore.setPlaylist(data);
     }
     // 其他 store 与 player 关联自行处理

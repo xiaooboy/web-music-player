@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Search } from "lucide-vue-next";
-import LibraryPanel from "../components/LibraryPanel.vue";
 import { useLibraryStore } from "../stores/libraryStore";
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
+import TrackTable from "@/components/TrackTable.vue";
 
 const libraryStore = useLibraryStore();
 const playerStore = usePlayerStore();
@@ -24,21 +24,32 @@ const visibleTracks = computed(() => {
 
 const playlistStatus = computed(() => {
   if (libraryStore.tracks.length) {
-    return `共 ${libraryStore.tracks.length} 首歌曲`;
+    return `${libraryStore.tracks.length} 首歌曲`;
   }
-  return libraryStore.libraryStatus;
+  return "";
+});
+const emptyTitle = computed(() => {
+  if (libraryStore.loading) return "正在整理曲库";
+  if (libraryStore.tracks.length) return "没有匹配到结果";
+  return "本地曲库未接入";
+});
+const emptyDescription = computed(() => {
+  if (libraryStore.loading)
+    return `已处理 ${libraryStore.loadingDone} / ${libraryStore.loadingTotal} 首歌曲，请稍候。`;
+  if (libraryStore.tracks.length) return "没有匹配到结果";
+  return '前往"音乐源"添加。';
 });
 
 function handleSelectTrack(id: string) {
-  playerStore.setPlaySourceType("playlist");
+  playerStore.setPlaySourceType("all-track");
   playerStore.setPlaylist(libraryStore.tracks);
   playerStore.playTrackById(id, true);
 }
 </script>
 
 <template>
-  <div class="playlist-stage">
-    <header class="playlist-searchbar">
+  <div class="all-track-view">
+    <header class="all-track-searchbar">
       <label class="search-field">
         <Search :size="18" aria-hidden="true" />
         <input
@@ -50,16 +61,15 @@ function handleSelectTrack(id: string) {
       </label>
     </header>
 
-    <div class="playlist-scroll">
-      <LibraryPanel
+    <div class="all-track-scroll">
+      <TrackTable
+        title="歌曲"
+        :status="playlistStatus"
         :tracks="visibleTracks"
-        :has-tracks="libraryStore.tracks.length > 0"
-        :loading="libraryStore.loading"
-        :loading-done="libraryStore.loadingDone"
-        :loading-total="libraryStore.loadingTotal"
         :current-track-id="playerStore.currentTrackId"
         :is-playing="playerStore.isPlaying"
-        :status="playlistStatus"
+        :empty-title="emptyTitle"
+        :empty-description="emptyDescription"
         :liked-track-id-set="favoriteStore.likedTrackIdSet"
         @play="handleSelectTrack"
         @toggle-play="playerStore.togglePlay"

@@ -27,8 +27,8 @@ export const usePlayerStore = defineStore("player", () => {
 
   // ─── 播放列表 ───────────────────────────────────────────────────────────
   const playlist = shallowRef<Track[]>([]);
-  const playSourceType = shallowRef<"playlist" | "favorites" | "albums">(
-    "playlist",
+  const playSourceType = shallowRef<"all-track" | "favorites" | "albums">(
+    "all-track",
   );
   let playlistIndexMap = new Map<string, number>();
 
@@ -83,7 +83,7 @@ export const usePlayerStore = defineStore("player", () => {
     });
   }
 
-  function setPlaySourceType(type: "playlist" | "favorites" | "albums") {
+  function setPlaySourceType(type: "all-track" | "favorites" | "albums") {
     playSourceType.value = type;
   }
 
