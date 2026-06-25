@@ -532,8 +532,7 @@ input[type="range"]::-webkit-slider-thumb {
     color 260ms ease,
     transform 260ms ease,
     opacity 260ms ease,
-    text-shadow 260ms ease,
-    font-size 260ms ease;
+    text-shadow 260ms ease;
   scroll-snap-align: start;
 }
 
@@ -548,7 +547,6 @@ input[type="range"]::-webkit-slider-thumb {
 
 .lyrics-line.is-active {
   color: #ffffff;
-  font-size: 1.4rem;
   opacity: 1;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
 }
