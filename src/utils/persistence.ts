@@ -8,6 +8,7 @@ const TRACK_CACHE_KEY = "track-cache";
 const LAST_FOLDER_NAME_KEY = "last-folder-name";
 const LIKED_TRACK_IDS_KEY = "liked-track-ids";
 const CURRENT_TRACK_ID_KEY = "current-track-id";
+const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
 
 export type PersistedMusicSource = MusicSource & {
   handle: FileSystemDirectoryHandle;
@@ -135,6 +136,14 @@ export function saveCurrentTrackId(trackId: string) {
 
 export function loadCurrentTrackId() {
   return localStorage.getItem(CURRENT_TRACK_ID_KEY) || "";
+}
+
+export function saveSidebarCollapsed(collapsed: boolean) {
+  localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
+}
+
+export function loadSidebarCollapsed() {
+  return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
 }
 
 export function loadLikedTrackIds() {

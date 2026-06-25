@@ -26,7 +26,6 @@
   .album-detail-head {
     grid-template-columns: 80px minmax(0, 1fr);
     gap: 14px;
-    padding: 14px;
   }
 
   .album-detail-cover {

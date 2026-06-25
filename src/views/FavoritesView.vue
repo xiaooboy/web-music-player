@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { Search } from "lucide-vue-next";
-import LibraryPanel from "../components/LibraryPanel.vue";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { usePlayerStore } from "../stores/playerStore";
+import TrackTable from "@/components/TrackTable.vue";
 
 const favoriteStore = useFavoriteStore();
 const playerStore = usePlayerStore();
@@ -22,8 +22,8 @@ const visibleTracks = computed(() => {
 
 const status = computed(() =>
   favoriteStore.favoriteTracks.length
-    ? `共 ${favoriteStore.favoriteTracks.length} 首喜欢的歌曲`
-    : "还没有喜欢的歌曲",
+    ? `${favoriteStore.favoriteTracks.length} 首歌曲`
+    : "",
 );
 
 function handleFavoriteTrackSelect(id: string) {
@@ -34,8 +34,8 @@ function handleFavoriteTrackSelect(id: string) {
 </script>
 
 <template>
-  <div class="playlist-stage">
-    <header class="playlist-searchbar">
+  <div class="all-track-view favorites-view">
+    <header class="all-track-searchbar">
       <label class="search-field">
         <Search :size="18" aria-hidden="true" />
         <input
@@ -47,20 +47,16 @@ function handleFavoriteTrackSelect(id: string) {
       </label>
     </header>
 
-    <div class="playlist-scroll">
-      <LibraryPanel
+    <div class="all-track-scroll">
+      <TrackTable
         :tracks="visibleTracks"
-        :has-tracks="favoriteStore.favoriteTracks.length > 0"
-        :loading="false"
-        :loading-done="0"
-        :loading-total="0"
         :current-track-id="playerStore.currentTrackId"
         :is-playing="playerStore.isPlaying"
         :status="status"
         :liked-track-id-set="favoriteStore.likedTrackIdSet"
-        title="喜欢的音乐"
-        empty-title="还没有喜欢的歌曲"
-        empty-description="在播放列表或播放器里点亮心形按钮，这里会自动收集你喜欢的音乐。"
+        title="收藏"
+        empty-title="收藏为空"
+        empty-description="点亮心形按钮，这里会自动收集你收藏的音乐。"
         @play="handleFavoriteTrackSelect"
         @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"

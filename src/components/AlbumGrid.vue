@@ -13,7 +13,7 @@ interface Props {
 const MIN_COL_WIDTH = 120;
 const ROW_GAP = 30;
 const ROW_HEIGHT = 190;
-
+const PADDING_RIGHT = 10;
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
@@ -28,7 +28,8 @@ const columnCount = computed(() =>
   Math.max(
     1,
     Math.floor(
-      (containerWidth.value - MIN_COL_WIDTH) / (MIN_COL_WIDTH + ROW_GAP) + 1,
+      (containerWidth.value - PADDING_RIGHT + ROW_GAP) /
+        (MIN_COL_WIDTH + ROW_GAP),
     ),
   ),
 );
@@ -94,7 +95,8 @@ onBeforeUnmount(() => {
           position: 'absolute',
           top: 0,
           left: 0,
-          width: '100%',
+          paddingRight: `${PADDING_RIGHT}px`,
+          right: 0,
           transform: `translateY(${vRow.start}px)`,
         }"
       >

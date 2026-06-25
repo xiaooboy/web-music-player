@@ -6,10 +6,10 @@ import type { SectionName } from "../stores/uiStore";
 const uiStore = useUIStore();
 
 const navItems: { name: SectionName; title: string; icon: typeof House }[] = [
-  { name: "playlist", title: "播放列表", icon: House },
+  { name: "all-track", title: "歌曲", icon: House },
   { name: "favorites", title: "收藏", icon: Heart },
   { name: "albums", title: "专辑", icon: Disc3 },
-  { name: "library-management", title: "音乐库", icon: Library },
+  { name: "library-management", title: "音乐源", icon: Library },
 ];
 
 function switchSection(name: SectionName) {
