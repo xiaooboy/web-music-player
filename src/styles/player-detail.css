@@ -2,7 +2,7 @@
   position: fixed;
   inset: auto 0 0;
   height: var(--dock-height);
-  padding: 0 20px;
+  padding: 0 20px 0 16px;
   background: rgba(24, 24, 24, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: grid;
@@ -532,7 +532,8 @@ input[type="range"]::-webkit-slider-thumb {
     color 260ms ease,
     transform 260ms ease,
     opacity 260ms ease,
-    text-shadow 260ms ease;
+    text-shadow 260ms ease,
+    font-size 260ms ease;
   scroll-snap-align: start;
 }
 
@@ -547,6 +548,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .lyrics-line.is-active {
   color: #ffffff;
+  font-size: 1.4rem;
   opacity: 1;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
 }

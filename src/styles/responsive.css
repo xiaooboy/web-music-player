@@ -121,9 +121,14 @@
 @media (max-width: 480px) {
   .app-shell {
     overflow-x: auto;
+    scrollbar-width: none;
     grid-template-columns: 140px 100%;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
+  }
+
+  .app-shell::-webkit-scrollbar {
+    display: none;
   }
   .main-stage {
     scroll-snap-align: start;

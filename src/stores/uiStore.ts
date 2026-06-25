@@ -14,7 +14,9 @@ export type SectionName =
 
 export const useUIStore = defineStore("ui", () => {
   const currentView = ref<"library" | "detail">("library");
-  const sidebarCollapsed = ref(loadSidebarCollapsed());
+  const sidebarCollapsed = ref(
+    window.screen.width < 480 ? false : loadSidebarCollapsed(),
+  );
   const activeSection = ref<SectionName>("all-track");
 
   function setCurrentView(nextView: "library" | "detail") {

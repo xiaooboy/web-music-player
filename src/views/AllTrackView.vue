@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import { Search } from "lucide-vue-next";
 import { useLibraryStore } from "../stores/libraryStore";
 import { usePlayerStore } from "../stores/playerStore";
@@ -11,7 +11,11 @@ const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 
 const searchQuery = ref("");
-
+const launchTimer = shallowRef<number>(
+  setTimeout(() => {
+    launchTimer.value = null;
+  }, 100),
+);
 const visibleTracks = computed(() => {
   if (!searchQuery.value.trim()) return libraryStore.tracks;
   const needle = searchQuery.value.trim().toLowerCase();
@@ -24,19 +28,25 @@ const visibleTracks = computed(() => {
 
 const playlistStatus = computed(() => {
   if (libraryStore.tracks.length) {
-    return `${libraryStore.tracks.length} 首歌曲`;
+    return `${libraryStore.tracks.length} 首`;
   }
   return "";
 });
 const emptyTitle = computed(() => {
-  if (libraryStore.loading) return "正在整理曲库";
-  if (libraryStore.tracks.length) return "没有匹配到结果";
+  const { loading, tracks } = libraryStore;
+  // 避免闪烁
+  if (launchTimer.value) return "";
+  if (loading) return "正在整理曲库";
+  if (tracks.length) return "没有匹配到结果";
   return "本地曲库未接入";
 });
 const emptyDescription = computed(() => {
-  if (libraryStore.loading)
-    return `已处理 ${libraryStore.loadingDone} / ${libraryStore.loadingTotal} 首歌曲，请稍候。`;
-  if (libraryStore.tracks.length) return "没有匹配到结果";
+  const { loading, loadingDone, loadingTotal, tracks } = libraryStore;
+  // 避免闪烁
+  if (launchTimer.value) return "";
+  if (loading)
+    return `已处理 ${loadingDone} / ${loadingTotal} 首歌曲，请稍候。`;
+  if (tracks.length) return "没有匹配到结果";
   return '前往"音乐源"添加。';
 });
 
