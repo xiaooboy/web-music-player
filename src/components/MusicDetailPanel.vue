@@ -34,6 +34,18 @@ const isCurrentTrackLiked = computed(() =>
 );
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
+const detailBodyRef = useTemplateRef("detailBodyRef");
+
+// 小屏下 .detail-body 可横向滚动，当滚动到歌词页时封面不可见
+// 此时返回应移除 view-transition-name，避免动画异常
+const isCoverVisible = ref(true);
+
+function handleDetailBodyScroll() {
+  const el = detailBodyRef.value;
+  if (!el) return;
+  // 滚动超过容器宽度的 40% 即认为封面不可见
+  isCoverVisible.value = el.scrollLeft < el.clientWidth * 0.4;
+}
 
 // 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
 const displayCoverUrl = ref<string | undefined>(undefined);
@@ -157,7 +169,11 @@ watch(
       </button>
     </header>
 
-    <div class="detail-body">
+    <div
+      ref="detailBodyRef"
+      class="detail-body"
+      @scroll="handleDetailBodyScroll"
+    >
       <div class="detail-meta">
         <div class="cover-art detail-cover">
           <img
@@ -165,12 +181,14 @@ watch(
             :src="playerStore.currentTrack.coverUrl"
             alt="歌曲封面"
             :style="
-              playerStore.currentTrack && uiStore.currentView === 'detail'
+              playerStore.currentTrack &&
+              uiStore.currentView === 'detail' &&
+              isCoverVisible
                 ? { 'view-transition-name': 'active-cover-art' }
                 : undefined
             "
           />
-          <span v-else>CB</span>
+          <span v-else>LM</span>
         </div>
 
         <div class="detail-copy">
