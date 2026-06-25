@@ -12,7 +12,7 @@
   grid-template-columns: 140px minmax(0, 1fr);
   min-height: 100dvh;
   max-height: 100dvh;
-  height: 100vh;
+  height: 100dvh;
   padding: calc(16px + var(--window-safe-top)) 16px 0;
   /*padding: calc(16px + var(--window-safe-top)) 16px var(--dock-height);*/
   gap: 20px;
