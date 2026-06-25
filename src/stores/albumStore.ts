@@ -18,6 +18,10 @@ export const useAlbumStore = defineStore("album", () => {
     selectedAlbumName.value = valid ? albumName : "";
   }
 
+  function clearSelection() {
+    selectedAlbumName.value = "";
+  }
+
   function getPlayingAlbum() {
     return albumMap.get(playingAlbumName.value);
   }
@@ -52,9 +56,8 @@ export const useAlbumStore = defineStore("album", () => {
       });
     });
     albums.value = defaultSort([...albumMap.values()], "name");
-    const firstAlbumName = albums.value[0]?.name;
-    if (!albumMap.has(selectedAlbumName.value) && firstAlbumName) {
-      selectAlbum(firstAlbumName);
+    if (!albumMap.has(selectedAlbumName.value)) {
+      selectedAlbumName.value = "";
     }
     updatePlayingAlbum(playingAlbumName.value);
   }
@@ -75,6 +78,7 @@ export const useAlbumStore = defineStore("album", () => {
     updateAlbumWithTracks,
     getPlayingAlbum,
     selectAlbum,
+    clearSelection,
     updatePlayingAlbum,
   };
 });

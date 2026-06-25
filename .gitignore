@@ -11,3 +11,5 @@ dev-dist/
 !.env.example
 .claude
 .codex
+
+dev-docs

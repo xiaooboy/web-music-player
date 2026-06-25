@@ -365,11 +365,16 @@ export function withViewTransition(callback: () => void) {
   };
 
   if (typeof transitionDocument.startViewTransition === "function") {
-    transitionDocument.startViewTransition(callback);
-    return;
+    return {
+      support: true,
+      transition: transitionDocument.startViewTransition(callback),
+    };
   }
 
   callback();
+  return {
+    support: false,
+  };
 }
 
 async function parseId3Tags(file: File) {
