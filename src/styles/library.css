@@ -177,6 +177,31 @@
   transition: background 160ms ease;
 }
 
+/* 滚动到当前音乐按钮 */
+.track-table {
+  position: relative;
+}
+
+.scroll-to-current {
+  position: absolute;
+  right: 12px;
+  bottom: calc(var(--dock-height) + 20px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.scroll-to-current:hover {
+  color: var(--accent-deep);
+}
+
 .all-track-scroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -212,6 +237,21 @@
   transition:
     background 160ms ease,
     transform 160ms ease;
+}
+
+.track-row.is-active {
+  color: var(--accent);
+}
+
+.track-row.is-active .track-copy strong,
+.track-row.is-active .track-album strong {
+  color: var(--accent);
+}
+
+.track-row.is-active .track-copy span,
+.track-row.is-active .track-album span,
+.track-row.is-active .track-duration {
+  color: var(--accent-light);
 }
 
 .track-song {

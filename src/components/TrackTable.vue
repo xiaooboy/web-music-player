@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { Heart, Pause, Play } from "lucide-vue-next";
+import { Heart, Pause, Play, LocateFixed } from "lucide-vue-next";
 import TipContent from "./TipContent.vue";
 import SectionHead from "./SectionHead.vue";
 import type { Track } from "../types";
@@ -47,6 +47,25 @@ const virtualItems = computed(() =>
 );
 
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+
+// 维护 id → index 映射，避免每次滚动时 O(n) 查找
+const indexIdMap = computed(() => {
+  const map = new Map<string, number>();
+  for (let i = 0; i < props.tracks.length; i++) {
+    map.set(props.tracks[i].id, i);
+  }
+  return map;
+});
+
+function scrollToCurrentTrack() {
+  if (!props.currentTrackId || !props.tracks.length) return;
+  const idx = indexIdMap.value.get(props.currentTrackId);
+  if (idx === undefined) return;
+  rowVirtualizer.value.scrollToIndex(idx, {
+    behavior: "smooth",
+    align: "center",
+  });
+}
 </script>
 
 <template>
@@ -150,5 +169,16 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 
       <TipContent v-else :title="emptyTitle" :content="emptyDescription" />
     </div>
+
+    <!-- 滚动到当前音乐按钮 -->
+    <button
+      v-if="currentTrackId"
+      class="scroll-to-current"
+      type="button"
+      aria-label="滚动到当前播放音乐"
+      @click="scrollToCurrentTrack"
+    >
+      <LocateFixed :size="20" />
+    </button>
   </section>
 </template>
