@@ -34,7 +34,11 @@ onMounted(() => {
   window.addEventListener("contextmenu", handleContextMenuBlock);
   // 移动端默认显示 main-stage
   if (window.innerWidth <= 480) {
-    document.querySelector(".app-shell")?.scrollTo(200, 0);
+    // 无动画滚动
+    document.querySelector(".app-shell")?.scroll({
+      left: 200,
+      behavior: "instant",
+    });
   }
 
   if (

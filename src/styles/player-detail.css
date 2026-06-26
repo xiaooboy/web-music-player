@@ -408,10 +408,7 @@ input[type="range"]::-webkit-slider-thumb {
   width: 100%;
   height: 100%;
   border-radius: inherit;
-}
-
-.detail-cover img {
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .detail-copy {

@@ -13,7 +13,7 @@ interface Props {
 const MIN_COL_WIDTH = 120;
 const ROW_GAP = 30;
 const ROW_HEIGHT = 190;
-const PADDING_RIGHT = 10;
+const PADDING_RIGHT = 4;
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
