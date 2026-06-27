@@ -1,30 +1,28 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from "vue";
+import { computed, onBeforeUnmount, shallowRef } from "vue";
 import { Search } from "lucide-vue-next";
 import { useLibraryStore } from "../stores/libraryStore";
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
+import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
 
 const libraryStore = useLibraryStore();
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 
-const searchQuery = ref("");
-const launchTimer = shallowRef<number>(
-  setTimeout(() => {
-    launchTimer.value = null;
-  }, 100),
-);
-const visibleTracks = computed(() => {
-  if (!searchQuery.value.trim()) return libraryStore.tracks;
-  const needle = searchQuery.value.trim().toLowerCase();
-  return libraryStore.tracks.filter((track) => {
-    const haystack =
-      `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
-    return haystack.includes(needle);
-  });
+const launchTimerId = setTimeout(() => {
+  launchTimer.value = false;
+}, 100);
+const launchTimer = shallowRef(true);
+
+onBeforeUnmount(() => {
+  clearTimeout(launchTimerId);
 });
+
+const { searchQuery, visibleTracks } = useTrackSearch(
+  () => libraryStore.tracks,
+);
 
 const playlistStatus = computed(() => {
   if (libraryStore.tracks.length) {

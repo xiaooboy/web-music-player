@@ -102,10 +102,10 @@ function handleContextMenuBlock(event: MouseEvent) {
     <SidebarPanel />
 
     <main class="main-stage">
-      <AllTrackView v-show="activeSection === 'all-track'" />
-      <FavoritesView v-show="activeSection === 'favorites'" />
-      <AlbumsView v-show="activeSection === 'albums'" />
-      <LibraryManagementView v-show="activeSection === 'library-management'" />
+      <AllTrackView v-if="activeSection === 'all-track'" />
+      <FavoritesView v-else-if="activeSection === 'favorites'" />
+      <AlbumsView v-else-if="activeSection === 'albums'" />
+      <LibraryManagementView v-else />
     </main>
 
     <PlayerDock />

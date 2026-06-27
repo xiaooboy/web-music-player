@@ -23,7 +23,10 @@ export const usePlayerStore = defineStore("player", () => {
     { mode: "shuffle", label: "随机播放" },
   ];
   const playbackMode = shallowRef<PlaybackMode>(playbackConfig[0].mode);
-  const playbackModeLabel = shallowRef<string>(playbackConfig[0].label);
+  const playbackModeLabel = computed(
+    () =>
+      playbackConfig.find((c) => c.mode === playbackMode.value)?.label ?? "",
+  );
 
   // ─── 播放列表 ───────────────────────────────────────────────────────────
   const playlist = shallowRef<Track[]>([]);
@@ -46,8 +49,8 @@ export const usePlayerStore = defineStore("player", () => {
   const currentTimeSeconds = shallowRef(0);
 
   // ─── 音量 ───────────────────────────────────────────────────────────────
-  const volume = shallowRef(1);
   const volumePercent = shallowRef(100);
+  const volume = computed(() => volumePercent.value / 100);
   // ─── 歌词 ───────────────────────────────────────────────────────────────
   const currentLyricsLines = computed(() =>
     parseLyricsText(currentTrack.value?.lyricsText || ""),
@@ -59,14 +62,23 @@ export const usePlayerStore = defineStore("player", () => {
     if (!currentLyricsLines.value.length || !hasTimedLyrics.value) {
       return -1;
     }
-    let activeIndex = -1;
-    for (let index = 0; index < currentLyricsLines.value.length; index += 1) {
-      const time = currentLyricsLines.value[index].time;
-      if (time !== null && time <= currentTimeSeconds.value + 0.05) {
-        activeIndex = index;
+    // 歌词已按 time 升序排列，二分查找最后一个 time <= target 的行
+    const lines = currentLyricsLines.value;
+    const target = currentTimeSeconds.value + 0.05;
+    let lo = 0;
+    let hi = lines.length - 1;
+    let result = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      const time = lines[mid].time;
+      if (time !== null && time <= target) {
+        result = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
       }
     }
-    return activeIndex;
+    return result;
   });
 
   // ─── 方法 ─────────────────────────────────────────────────────────────
@@ -94,7 +106,6 @@ export const usePlayerStore = defineStore("player", () => {
   function nextPlaybackMode() {
     playbackIndex = (playbackIndex + 1) % playbackConfig.length;
     playbackMode.value = playbackConfig[playbackIndex].mode;
-    playbackModeLabel.value = playbackConfig[playbackIndex].label;
   }
 
   function setPlaylist(newTracks: Track[]) {
@@ -218,7 +229,6 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function setVolume(percent: number) {
-    volume.value = percent / 100;
     volumePercent.value = percent;
     if (audioRef.value) audioRef.value.volume = volume.value;
   }
@@ -283,7 +293,7 @@ export const usePlayerStore = defineStore("player", () => {
       }
     } else {
       // 不在列表中，直接插入到当前曲目下方
-      list.splice(currentIndex, 0, track);
+      list.splice(currentIndex + 1, 0, track);
     }
     setPlaylist(list);
   }

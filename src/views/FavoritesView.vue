@@ -1,24 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { Search } from "lucide-vue-next";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { usePlayerStore } from "../stores/playerStore";
+import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
 
 const favoriteStore = useFavoriteStore();
 const playerStore = usePlayerStore();
 
-const searchQuery = ref("");
-
-const visibleTracks = computed(() => {
-  if (!searchQuery.value.trim()) return favoriteStore.favoriteTracks;
-  const needle = searchQuery.value.trim().toLowerCase();
-  return favoriteStore.favoriteTracks.filter((track) => {
-    const haystack =
-      `${track.title} ${track.artist} ${track.album} ${track.relativePath}`.toLowerCase();
-    return haystack.includes(needle);
-  });
-});
+const { searchQuery, visibleTracks } = useTrackSearch(
+  () => favoriteStore.favoriteTracks,
+);
 
 const status = computed(() =>
   favoriteStore.favoriteTracks.length

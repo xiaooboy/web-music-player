@@ -40,7 +40,7 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
           :src="playerStore.currentTrack.coverUrl"
           alt="底部播放器封面"
           :style="
-            playerStore.currentTrack && uiStore.currentView !== 'detail'
+            playerStore.currentTrack && enableCoverTransition
               ? { 'view-transition-name': 'active-cover-art' }
               : undefined
           "

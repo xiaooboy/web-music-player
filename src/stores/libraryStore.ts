@@ -24,7 +24,7 @@ import {
   includesSource,
 } from "@/utils/libraryBuilder";
 import { defineStore } from "pinia";
-import { ref, shallowRef } from "vue";
+import { shallowRef } from "vue";
 import { useFavoriteStore } from "./favoriteStore";
 import { useAlbumStore } from "./albumStore";
 import { usePlayerStore } from "./playerStore";
@@ -44,7 +44,6 @@ export const useLibraryStore = defineStore("library", () => {
   const loading = shallowRef(false);
   const loadingDone = shallowRef(0);
   const loadingTotal = shallowRef(0);
-  const libraryStatus = shallowRef("还没有载入音乐");
   const musicSources = shallowRef<RuntimeMusicSource[]>([]);
 
   const tracks = shallowRef<Track[]>([]);
@@ -246,7 +245,6 @@ export const useLibraryStore = defineStore("library", () => {
     loading,
     loadingDone,
     loadingTotal,
-    libraryStatus,
     musicSources,
     isReauthorizing,
     tracks,

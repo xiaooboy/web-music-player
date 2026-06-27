@@ -1,15 +1,14 @@
 import type { Track } from "@/types";
 import { loadLikedTrackIds, saveLikedTrackIds } from "@/utils/persistence";
 import { defineStore } from "pinia";
-import { ref, shallowRef } from "vue";
+import { shallowRef } from "vue";
 import { usePlayerStore } from "./playerStore";
 
 export const useFavoriteStore = defineStore("favorite", () => {
   const playerStore = usePlayerStore();
 
   const tracks = shallowRef<Track[]>([]);
-  const likedTrackIds = shallowRef<string[]>(loadLikedTrackIds());
-  const likedTrackIdSet = shallowRef(new Set(likedTrackIds.value));
+  const likedTrackIdSet = shallowRef(new Set(loadLikedTrackIds()));
 
   const favoriteTracks = shallowRef<Track[]>([]);
 
@@ -25,10 +24,6 @@ export const useFavoriteStore = defineStore("favorite", () => {
     updatePlayer();
   }
 
-  function getTrackLikedStatus(trackId: string): boolean {
-    return likedTrackIdSet.value.has(trackId);
-  }
-
   function toggleTrackFavorite(trackId: string) {
     const next = new Set(likedTrackIdSet.value);
     if (next.has(trackId)) {
@@ -37,8 +32,7 @@ export const useFavoriteStore = defineStore("favorite", () => {
       next.add(trackId);
     }
     likedTrackIdSet.value = next;
-    likedTrackIds.value = [...next];
-    saveLikedTrackIds(likedTrackIds.value);
+    saveLikedTrackIds([...next]);
     updateFavoriteTracks();
   }
   /** 更新  playerStore */
@@ -50,7 +44,6 @@ export const useFavoriteStore = defineStore("favorite", () => {
     favoriteTracks,
     likedTrackIdSet,
     setFavoriteSources,
-    getTrackLikedStatus,
     toggleTrackFavorite,
   };
 });
