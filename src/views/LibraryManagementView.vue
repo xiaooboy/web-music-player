@@ -4,6 +4,7 @@ import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "lucide-vue-next";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
+import { showToast } from "../composables/useToast";
 import TipContent from "../components/TipContent.vue";
 import SectionHead from "../components/SectionHead.vue";
 
@@ -29,7 +30,7 @@ const pendingReauthCount = computed(
 
 async function openFolder(type: "picker" | "webkitDirectory") {
   if (libraryStore.isFileLaunch) {
-    alert("本地文件启动，不支持添加音乐源");
+    showToast("本地文件启动，不支持添加音乐源");
     return;
   }
   const nextSource = await (type === "webkitDirectory"
@@ -44,7 +45,7 @@ async function openFolder(type: "picker" | "webkitDirectory") {
 }
 function removeSource(sourceId: string) {
   if (libraryStore.isFileLaunch) {
-    alert("本地文件启动，不支持移除");
+    showToast("本地文件启动，不支持移除");
     return;
   }
   libraryStore.removeSource(sourceId);

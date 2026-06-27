@@ -36,12 +36,14 @@ async function handleBack() {
   nextTick(async () => {
     const { support, transition } = withViewTransition(() => {
       detailViewTransitionName.value = ""; // 不能同时出现同名的元素
+      transitionTarget.value = albumStore.selectedAlbumName;
       albumViewTransitionName.value = VIEW_TRANSITION_NAME;
       albumStore.clearSelection();
     });
     if (!support) return;
     await transition.finished;
     albumViewTransitionName.value = "";
+    transitionTarget.value = "";
   });
 }
 function enterAlbum(albumName: string) {
@@ -56,6 +58,7 @@ function enterAlbum(albumName: string) {
     if (!support) return;
     await transition.finished;
     detailViewTransitionName.value = "";
+    transitionTarget.value = "";
   });
 }
 function handleStop() {

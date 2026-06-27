@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, computed } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
 import { usePlayerStore, useLibraryStore, useUIStore } from "./stores";
 
 import MusicDetailPanel from "./components/MusicDetailPanel.vue";
@@ -10,6 +10,7 @@ import AlbumsView from "./views/AlbumsView.vue";
 import LibraryManagementView from "./views/LibraryManagementView.vue";
 import { storeToRefs } from "pinia";
 import AllTrackView from "./views/AllTrackView.vue";
+import ToastContainer from "./components/ToastContainer.vue";
 
 const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
@@ -116,4 +117,5 @@ function handleContextMenuBlock(event: MouseEvent) {
       <MusicDetailPanel />
     </main>
   </div>
+  <ToastContainer />
 </template>
