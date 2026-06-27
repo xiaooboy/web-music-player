@@ -175,8 +175,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .primary-button,
-.secondary-button,
-.play-button,
 .icon-button,
 .play-toggle,
 .mode-button,
@@ -191,26 +189,20 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .primary-button,
-.play-button,
 .play-toggle {
-  /*background: linear-gradient(135deg, #1fdf64 0%, var(--accent-deep) 100%);*/
   background: transparent;
   color: white;
-  /*box-shadow: 0 14px 30px rgba(30, 215, 96, 0.24);*/
 }
 .play-toggle.is-active {
   color: var(--accent-deep);
 }
-.primary-button,
-.secondary-button,
-.play-button {
+.primary-button {
   min-height: 48px;
   padding: 0 20px;
   border-radius: 16px;
   font-weight: 700;
 }
 
-.secondary-button,
 .icon-button,
 .mode-button,
 .row-play,
@@ -269,7 +261,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .primary-button:hover,
-.play-button:hover,
 .play-toggle:hover,
 .row-play.is-playing,
 .row-play:hover {
@@ -460,15 +451,6 @@ input[type="range"]::-webkit-slider-thumb {
   gap: 10px;
 }
 
-.detail-main-toggle {
-  font-size: 1.2rem;
-}
-
-.detail-control-button {
-  width: 44px;
-  height: 44px;
-}
-
 .detail-progress .progress-slider {
   width: 100%;
   min-width: 0;
@@ -508,7 +490,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .lyrics-list {
-  margin-top: 50%;
   width: min(100%, 640px);
   margin: 0 auto;
   padding-right: 10px;
@@ -548,10 +529,6 @@ input[type="range"]::-webkit-slider-thumb {
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
 }
 
-.detail-empty {
-  padding-top: 120px;
-}
-
 ::view-transition-group(active-cover-art) {
   animation-duration: 420ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
@@ -565,24 +542,4 @@ input[type="range"]::-webkit-slider-thumb {
 ::view-transition-new(active-cover-art) {
   animation-duration: 420ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.detail-overlay-enter-active,
-.detail-overlay-leave-active {
-  transition:
-    opacity 260ms ease,
-    transform 320ms ease;
-}
-
-.detail-overlay-enter-from,
-.detail-overlay-leave-to {
-  opacity: 0;
-}
-
-.detail-overlay-enter-from {
-  transform: translateY(56px) scale(0.985);
-}
-
-.detail-overlay-leave-to {
-  transform: translateY(56px) scale(0.99);
 }

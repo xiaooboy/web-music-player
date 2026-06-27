@@ -15,7 +15,6 @@
   overflow: auto;
   width: 140px;
   transition: width 0.25s ease;
-  /*border-right: 1px solid rgba(255, 255, 255, 0.06);*/
 }
 
 .sidebar.is-collapsed {
@@ -46,28 +45,12 @@
 }
 
 .brand-mark {
-  /*width: 24px;
-  height: 24px;*/
   display: grid;
   place-items: center;
   color: var(--accent);
   flex-shrink: 0;
 }
 
-.brand-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.brand-copy strong {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  letter-spacing: 0.04em;
-}
-
-.brand-copy span,
-.muted-copy,
 .nav-item small {
   color: rgba(245, 247, 251, 0.66);
 }
@@ -140,8 +123,4 @@
 
 .collapse-btn svg {
   transition: transform 0.25s ease;
-}
-
-.collapse-btn svg.is-rotated {
-  transform: rotate(180deg);
 }
