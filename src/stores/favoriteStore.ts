@@ -1,33 +1,19 @@
 import type { Track } from "@/types";
 import { loadLikedTrackIds, saveLikedTrackIds } from "@/utils/persistence";
 import { defineStore } from "pinia";
-import { ref, shallowRef } from "vue";
-import { usePlayerStore } from "./playerStore";
+import { computed, shallowRef } from "vue";
+import { useLibraryStore } from "./libraryStore";
 
 export const useFavoriteStore = defineStore("favorite", () => {
-  const playerStore = usePlayerStore();
+  const likedTrackIdSet = shallowRef(new Set(loadLikedTrackIds()));
 
-  const tracks = shallowRef<Track[]>([]);
-  const likedTrackIds = shallowRef<string[]>(loadLikedTrackIds());
-  const likedTrackIdSet = shallowRef(new Set(likedTrackIds.value));
+  /** 拉模式：tracks 直接从 libraryStore 拉取 */
+  const tracks = computed(() => useLibraryStore().tracks);
 
-  const favoriteTracks = shallowRef<Track[]>([]);
-
-  function setFavoriteSources(data: Track[]) {
-    tracks.value = data;
-    updateFavoriteTracks();
-  }
-
-  function updateFavoriteTracks() {
-    favoriteTracks.value = tracks.value.filter((track) =>
-      likedTrackIdSet.value.has(track.id),
-    );
-    updatePlayer();
-  }
-
-  function getTrackLikedStatus(trackId: string): boolean {
-    return likedTrackIdSet.value.has(trackId);
-  }
+  /** 收藏曲目列表，由 tracks 和 likedTrackIdSet 派生 */
+  const favoriteTracks = computed(() =>
+    tracks.value.filter((track) => likedTrackIdSet.value.has(track.id)),
+  );
 
   function toggleTrackFavorite(trackId: string) {
     const next = new Set(likedTrackIdSet.value);
@@ -37,20 +23,11 @@ export const useFavoriteStore = defineStore("favorite", () => {
       next.add(trackId);
     }
     likedTrackIdSet.value = next;
-    likedTrackIds.value = [...next];
-    saveLikedTrackIds(likedTrackIds.value);
-    updateFavoriteTracks();
-  }
-  /** 更新  playerStore */
-  function updatePlayer() {
-    if (playerStore.playSourceType !== "favorites") return;
-    playerStore.setPlaylist(favoriteTracks.value);
+    saveLikedTrackIds([...next]);
   }
   return {
     favoriteTracks,
     likedTrackIdSet,
-    setFavoriteSources,
-    getTrackLikedStatus,
     toggleTrackFavorite,
   };
 });

@@ -17,6 +17,7 @@ const uiStore = useUIStore();
 const { currentView, activeSection } = storeToRefs(uiStore);
 
 onBeforeUnmount(() => {
+  playerStore.dispose();
   libraryStore.disposeLibrary();
   window.removeEventListener("keydown", handleKeydown);
   window.removeEventListener("contextmenu", handleContextMenuBlock);
@@ -102,10 +103,10 @@ function handleContextMenuBlock(event: MouseEvent) {
     <SidebarPanel />
 
     <main class="main-stage">
-      <AllTrackView v-show="activeSection === 'all-track'" />
-      <FavoritesView v-show="activeSection === 'favorites'" />
-      <AlbumsView v-show="activeSection === 'albums'" />
-      <LibraryManagementView v-show="activeSection === 'library-management'" />
+      <AllTrackView v-if="activeSection === 'all-track'" />
+      <FavoritesView v-else-if="activeSection === 'favorites'" />
+      <AlbumsView v-else-if="activeSection === 'albums'" />
+      <LibraryManagementView v-else />
     </main>
 
     <PlayerDock />
@@ -115,13 +116,4 @@ function handleContextMenuBlock(event: MouseEvent) {
       <MusicDetailPanel />
     </main>
   </div>
-  <audio
-    :ref="playerStore.setAudioRef"
-    preload="metadata"
-    @timeupdate="playerStore.handleTimeUpdate"
-    @loadedmetadata="playerStore.handleLoadedMetadata"
-    @play="playerStore.handleAudioPlay"
-    @pause="playerStore.handleAudioPause"
-    @ended="playerStore.handleAudioEnded"
-  ></audio>
 </template>

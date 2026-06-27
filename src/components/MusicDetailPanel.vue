@@ -18,7 +18,7 @@ import {
   computed,
   useTemplateRef,
 } from "vue";
-import { formatTime, sliderStyle } from "../utils/media";
+import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import { Volume2 } from "lucide-vue-next"; // used in volume control
 import TipContent from "../components/TipContent.vue";
@@ -40,11 +40,15 @@ const detailBodyRef = useTemplateRef("detailBodyRef");
 // 此时返回应移除 view-transition-name，避免动画异常
 const isCoverVisible = ref(true);
 
+let scrollRafId = 0;
 function handleDetailBodyScroll() {
-  const el = detailBodyRef.value;
-  if (!el) return;
-  // 滚动超过容器宽度的 40% 即认为封面不可见
-  isCoverVisible.value = el.scrollLeft < el.clientWidth * 0.4;
+  cancelAnimationFrame(scrollRafId);
+  scrollRafId = requestAnimationFrame(() => {
+    const el = detailBodyRef.value;
+    if (!el) return;
+    // 滚动超过容器宽度的 40% 即认为封面不可见
+    isCoverVisible.value = el.scrollLeft < el.clientWidth * 0.4;
+  });
 }
 
 // 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
@@ -52,10 +56,15 @@ const displayCoverUrl = ref<string | undefined>(undefined);
 
 let disableFollowTimeout: ReturnType<typeof setTimeout> | null = null;
 let followThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
+let pendingCoverImg: HTMLImageElement | null = null;
 
 onBeforeUnmount(() => {
   if (disableFollowTimeout) clearTimeout(disableFollowTimeout);
   if (followThrottleTimeout) clearTimeout(followThrottleTimeout);
+  if (pendingCoverImg) {
+    pendingCoverImg.onload = pendingCoverImg.onerror = null;
+    pendingCoverImg = null;
+  }
 });
 
 function handleLyricsWheel(event: Event) {
@@ -108,10 +117,12 @@ watch(
       return;
     }
     const img = new Image();
+    pendingCoverImg = img;
     img.onload = img.onerror = () => {
       // 竞态
       if (playerStore.currentTrack?.coverUrl !== url) return;
       displayCoverUrl.value = url;
+      pendingCoverImg = null;
     };
     img.src = url;
   },
@@ -213,7 +224,7 @@ watch(
               min="0"
               max="100"
               :value="playerStore.volumePercent"
-              :style="sliderStyle(playerStore.volumePercent)"
+              :style="{ '--slider-value': playerStore.volumePercent + '%' }"
               @input="
                 playerStore.setVolume(
                   Number(($event.target as HTMLInputElement).value),
@@ -231,7 +242,7 @@ watch(
               min="0"
               max="100"
               :value="playerStore.progressPercent"
-              :style="sliderStyle(playerStore.progressPercent)"
+              :style="{ '--slider-value': playerStore.progressPercent + '%' }"
               @input="
                 playerStore.seekToPercent(
                   Number(($event.target as HTMLInputElement).value),
@@ -318,7 +329,7 @@ watch(
             <template v-if="playerStore.currentLyricsLines.length">
               <div
                 v-for="(line, index) in playerStore.currentLyricsLines"
-                :key="`${index}-${line.time ?? 'plain'}-${line.text}`"
+                :key="`${index}-${line.time ?? 'plain'}`"
                 class="lyrics-line"
                 :class="{
                   'is-active': index === playerStore.activeLyricsIndex,

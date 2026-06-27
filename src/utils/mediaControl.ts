@@ -11,7 +11,7 @@ interface MediaSectionControlOption {
  * 更新原生媒体控件中信息
  */
 export function updateMediaSession(track: Track) {
-  if (!track || !supportMediaSession()) return;
+  if (!track || !supportsMediaSession()) return;
 
   navigator.mediaSession.metadata = new MediaMetadata({
     title: track.title,
@@ -35,17 +35,21 @@ export function setMediaSectionControls({
   onPreviousTrack,
   onNextTrack,
 }: MediaSectionControlOption) {
-  if (!supportMediaSession()) return;
+  if (!supportsMediaSession()) return;
   navigator.mediaSession.setActionHandler("play", onPlay);
   navigator.mediaSession.setActionHandler("pause", onPause);
   navigator.mediaSession.setActionHandler("previoustrack", onPreviousTrack);
   navigator.mediaSession.setActionHandler("nexttrack", onNextTrack);
 }
 export function clearMediaSession() {
-  if (!supportMediaSession()) return;
+  if (!supportsMediaSession()) return;
   navigator.mediaSession.metadata = null;
+  navigator.mediaSession.setActionHandler("play", null);
+  navigator.mediaSession.setActionHandler("pause", null);
+  navigator.mediaSession.setActionHandler("previoustrack", null);
+  navigator.mediaSession.setActionHandler("nexttrack", null);
 }
 /** 是否支持媒体会话 */
-export function supportMediaSession() {
+export function supportsMediaSession() {
   return "mediaSession" in navigator;
 }

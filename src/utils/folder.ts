@@ -30,7 +30,7 @@ export function openWebkitDirectory() {
   const el = document.createElement("input");
   el.type = "file";
   el.webkitdirectory = true;
-  return new Promise<RuntimeMusicSource>((resolve) => {
+  return new Promise<RuntimeMusicSource | null>((resolve) => {
     el.addEventListener("change", () => {
       const entries = entriesFromInput(el.files);
       // 从第一个文件路径提取文件夹名作为音乐源名称

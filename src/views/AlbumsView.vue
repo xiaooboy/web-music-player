@@ -5,7 +5,7 @@ import SectionHead from "../components/SectionHead.vue";
 import AlbumDetail from "../components/AlbumDetail.vue";
 import TipContent from "../components/TipContent.vue";
 import { usePlayerStore, useAlbumStore } from "@/stores";
-import { withViewTransition } from "@/utils/media";
+import { withViewTransition } from "@/utils/viewTransition";
 const VIEW_TRANSITION_NAME = "album-cover";
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();
@@ -25,23 +25,15 @@ const playingTrackId = computed(() => {
 });
 
 function handlePlayTrack(albumName: string, id: string) {
-  const targetAlbum = albumStore.albums.find(
-    (album) => album.name === albumName,
-  );
-  if (!targetAlbum?.tracks.length) return;
+  albumStore.updatePlayingAlbum(albumName);
   albumStore.selectedAlbumName = albumName;
   playerStore.setPlaySourceType("albums");
-  playerStore.setPlaylist(targetAlbum.tracks);
   playerStore.playTrackById(id, true);
 }
 function handlePlayAlbum(albumName: string) {
-  const targetAlbum = albumStore.albums.find(
-    (album) => album.name === albumName,
-  );
-  if (!targetAlbum?.tracks.length) return;
+  albumStore.updatePlayingAlbum(albumName);
   albumStore.selectedAlbumName = albumName;
   playerStore.setPlaySourceType("albums");
-  playerStore.setPlaylist(targetAlbum.tracks);
   playerStore.playTrack(0, true);
 }
 async function handleBack() {

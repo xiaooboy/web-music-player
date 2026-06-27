@@ -16,6 +16,8 @@ export function defaultSort<T extends object>(
   );
 }
 /** 默认字符比较 */
+const collator = new Intl.Collator("zh-Hans-CN");
+/** 默认字符比较 */
 export function defaultStringCompare(a: string, b: string): number {
-  return a.localeCompare(b, "zh-Hans-CN");
+  return collator.compare(a, b);
 }

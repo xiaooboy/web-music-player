@@ -7,7 +7,10 @@ import {
 } from "@/utils/mediaControl";
 import { loadCurrentTrackId, saveCurrentTrackId } from "@/utils/persistence";
 import { defineStore } from "pinia";
-import { computed, shallowRef } from "vue";
+import { computed, shallowRef, watch } from "vue";
+import { useLibraryStore } from "./libraryStore";
+import { useFavoriteStore } from "./favoriteStore";
+import { useAlbumStore } from "./albumStore";
 
 type PlaybackConfig = Array<{
   mode: PlaybackMode;
@@ -23,7 +26,10 @@ export const usePlayerStore = defineStore("player", () => {
     { mode: "shuffle", label: "随机播放" },
   ];
   const playbackMode = shallowRef<PlaybackMode>(playbackConfig[0].mode);
-  const playbackModeLabel = shallowRef<string>(playbackConfig[0].label);
+  const playbackModeLabel = computed(
+    () =>
+      playbackConfig.find((c) => c.mode === playbackMode.value)?.label ?? "",
+  );
 
   // ─── 播放列表 ───────────────────────────────────────────────────────────
   const playlist = shallowRef<Track[]>([]);
@@ -31,13 +37,31 @@ export const usePlayerStore = defineStore("player", () => {
     "all-track",
   );
   let playlistIndexMap = new Map<string, number>();
+  let playlistSourceInitialized = false;
+
+  // ─── 拉模式：根据 playSourceType 自动拉取对应数据源 ─────────────────────
+  const playlistSource = computed<Track[]>(() => {
+    const libraryStore = useLibraryStore();
+    const favoriteStore = useFavoriteStore();
+    const albumStore = useAlbumStore();
+    switch (playSourceType.value) {
+      case "all-track":
+        return libraryStore.tracks;
+      case "favorites":
+        return favoriteStore.favoriteTracks;
+      case "albums":
+        return albumStore.currentAlbumTracks;
+      default:
+        return [];
+    }
+  });
 
   // ─── 当前曲目 ───────────────────────────────────────────────────────────
   const currentTrackId = shallowRef(loadCurrentTrackId());
   const currentTrack = shallowRef<Track | null>(null);
 
   // ─── 音频 ───────────────────────────────────────────────────────────────
-  const audioRef = shallowRef<HTMLAudioElement | null>(null);
+  const audio = new Audio();
   const currentAudioUrl = shallowRef("");
   const isPlaying = shallowRef(false);
 
@@ -46,8 +70,8 @@ export const usePlayerStore = defineStore("player", () => {
   const currentTimeSeconds = shallowRef(0);
 
   // ─── 音量 ───────────────────────────────────────────────────────────────
-  const volume = shallowRef(1);
   const volumePercent = shallowRef(100);
+  const volume = computed(() => volumePercent.value / 100);
   // ─── 歌词 ───────────────────────────────────────────────────────────────
   const currentLyricsLines = computed(() =>
     parseLyricsText(currentTrack.value?.lyricsText || ""),
@@ -59,14 +83,23 @@ export const usePlayerStore = defineStore("player", () => {
     if (!currentLyricsLines.value.length || !hasTimedLyrics.value) {
       return -1;
     }
-    let activeIndex = -1;
-    for (let index = 0; index < currentLyricsLines.value.length; index += 1) {
-      const time = currentLyricsLines.value[index].time;
-      if (time !== null && time <= currentTimeSeconds.value + 0.05) {
-        activeIndex = index;
+    // 歌词已按 time 升序排列，二分查找最后一个 time <= target 的行
+    const lines = currentLyricsLines.value;
+    const target = currentTimeSeconds.value + 0.05;
+    let lo = 0;
+    let hi = lines.length - 1;
+    let result = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >>> 1;
+      const time = lines[mid].time;
+      if (time !== null && time <= target) {
+        result = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
       }
     }
-    return activeIndex;
+    return result;
   });
 
   // ─── 方法 ─────────────────────────────────────────────────────────────
@@ -87,14 +120,9 @@ export const usePlayerStore = defineStore("player", () => {
     playSourceType.value = type;
   }
 
-  function setAudioRef(ref: HTMLAudioElement | null) {
-    audioRef.value = ref;
-  }
-
   function nextPlaybackMode() {
     playbackIndex = (playbackIndex + 1) % playbackConfig.length;
     playbackMode.value = playbackConfig[playbackIndex].mode;
-    playbackModeLabel.value = playbackConfig[playbackIndex].label;
   }
 
   function setPlaylist(newTracks: Track[]) {
@@ -103,31 +131,45 @@ export const usePlayerStore = defineStore("player", () => {
     newTracks.forEach((track, index) => {
       playlistIndexMap.set(track.id, index);
     });
-    if (!currentTrackId.value) return;
+    if (!currentTrackId.value) {
+      if (newTracks.length > 0) playlistSourceInitialized = true;
+      return;
+    }
     if (playlistIndexMap.has(currentTrackId.value)) {
       currentTrack.value =
         newTracks[playlistIndexMap.get(currentTrackId.value)!];
       updateMediaSession(currentTrack.value);
-    } else {
-      // 当前播放的曲目不在新的播放列表中，暂停并清除
-      const audio = audioRef.value;
-      if (audio) {
-        audio.pause();
-        audio.src = "";
-      }
+    } else if (newTracks.length > 0 || playlistSourceInitialized) {
+      // 非空列表中找不到，或数据曾加载过但现在被清空 → 暂停并清除
+      audio.pause();
+      audio.src = "";
       URL.revokeObjectURL(currentAudioUrl.value);
       currentAudioUrl.value = "";
       currentTrack.value = null;
       currentTrackId.value = "";
+      saveCurrentTrackId("");
       isPlaying.value = false;
       clearMediaSession();
     }
+    // 数据尚未加载（首次 immediate 触发空数组），保留 currentTrackId 等待后续更新
+    if (newTracks.length > 0) playlistSourceInitialized = true;
+  }
+
+  // 使用 flush:'sync' 确保在 playTrack 等命令式调用前 playlist 已同步
+  // 必须放在 setPlaylist 及其依赖的状态声明之后（immediate:true 会立即执行）
+  watch(playlistSource, (newTracks) => setPlaylist(newTracks), {
+    flush: "sync",
+    immediate: true,
+  });
+
+  function getCurrentTrackIndex(): number {
+    const find = playlistIndexMap.get(currentTrackId.value);
+    return find ?? -1;
   }
 
   function togglePlay() {
-    const audio = audioRef.value;
     const index = getCurrentTrackIndex();
-    if (!audio || index === -1) return;
+    if (index === -1) return;
     if (!audio.src) {
       playTrack(index, true);
       return;
@@ -136,20 +178,14 @@ export const usePlayerStore = defineStore("player", () => {
     else audio.pause();
   }
 
-  function getCurrentTrackIndex(): number {
-    const find = playlistIndexMap.get(currentTrackId.value);
-    return find ?? -1;
-  }
-
   function playTrackById(id: string, autoplay = true) {
     const index = playlistIndexMap.get(id);
     if (index !== undefined) playTrack(index, autoplay);
   }
 
   function playTrack(index: number, autoplay = true) {
-    const audio = audioRef.value;
     const track = playlist.value[index];
-    if (!audio || !track) return;
+    if (!track) return;
     if (!track.file) {
       alert("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
       return;
@@ -178,8 +214,7 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function syncProgress() {
-    const audio = audioRef.value;
-    if (!audio || !currentTrack.value) {
+    if (!currentTrack.value) {
       currentTimeSeconds.value = 0;
       progressPercent.value = 0;
       return;
@@ -203,37 +238,66 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function playByStep(direction: number) {
-    const audio = audioRef.value;
-    if (!audio || !playlist.value.length) return;
+    if (!playlist.value.length) return;
     const targetIndex = getAdjacentIndex(direction);
     if (targetIndex !== null) playTrack(targetIndex, true);
   }
 
   function seekToPercent(percent: number) {
-    const audio = audioRef.value;
-    if (!audio || !currentTrack.value) return;
+    if (!currentTrack.value) return;
     const duration = currentTrack.value.duration;
     audio.currentTime = (percent / 100) * duration;
     syncProgress();
   }
 
   function setVolume(percent: number) {
-    volume.value = percent / 100;
     volumePercent.value = percent;
-    if (audioRef.value) audioRef.value.volume = volume.value;
+    audio.volume = volume.value;
   }
 
+  /**
+   * 将指定曲目插入到当前播放曲目的下一首位置
+   * - 如果该曲目就是当前播放的曲目，则不处理
+   * - 如果该曲目已在播放列表中，先移除再插入到当前位置下方
+   * - 如果该曲目不在播放列表中，直接插入到当前位置下方
+   */
+  function setNextTrack(track: Track) {
+    if (track.id === currentTrackId.value) return;
+    if (!currentTrack.value) return;
+    const list = [...playlist.value];
+    const currentIndex = getCurrentTrackIndex();
+    // 从列表中移除该曲目（如果存在）
+    if (playlistIndexMap.has(track.id)) {
+      const existIndex = playlistIndexMap.get(track.id);
+      list.splice(existIndex, 1);
+      // 移除元素在当前曲目之前时，当前曲目的实际索引前移了一位
+      if (existIndex < currentIndex) {
+        list.splice(currentIndex, 0, track);
+      } else {
+        list.splice(currentIndex + 1, 0, track);
+      }
+    } else {
+      // 不在列表中，直接插入到当前曲目下方
+      list.splice(currentIndex + 1, 0, track);
+    }
+    setPlaylist(list);
+  }
+
+  function seekToLyricsLine(index: number) {
+    const line = currentLyricsLines.value[index];
+    if (!line || line.time === null) return;
+    audio.currentTime = line.time;
+  }
+
+  // ─── 音频事件处理（内部） ──────────────────────────────────────────────
   function handleTimeUpdate() {
     syncProgress();
   }
 
   function handleLoadedMetadata() {
     // build 过程已经使用相同的逻辑获取 duration
-    const audio = audioRef.value;
     const track = currentTrack.value;
-    if (!audio || !track || track.duration) {
-      return;
-    }
+    if (!track || track.duration) return;
     if (!track.duration && Number.isFinite(audio.duration)) {
       track.duration = audio.duration;
     }
@@ -260,45 +324,31 @@ export const usePlayerStore = defineStore("player", () => {
     playByStep(step);
   }
 
-  /**
-   * 将指定曲目插入到当前播放曲目的下一首位置
-   * - 如果该曲目就是当前播放的曲目，则不处理
-   * - 如果该曲目已在播放列表中，先移除再插入到当前位置下方
-   * - 如果该曲目不在播放列表中，直接插入到当前位置下方
-   */
-  function setNextTrack(track: Track) {
-    if (track.id === currentTrackId.value) return;
-    if (!currentTrack.value) return;
-    const list = [...playlist.value];
-    const currentIndex = getCurrentTrackIndex();
-    // 从列表中移除该曲目（如果存在）
-    if (playlistIndexMap.has(track.id)) {
-      const existIndex = playlistIndexMap.get(track.id);
-      list.splice(existIndex, 1);
-      // 移除元素在当前曲目之前时，当前曲目的实际索引前移了一位
-      if (existIndex < currentIndex) {
-        list.splice(currentIndex, 0, track);
-      } else {
-        list.splice(currentIndex + 1, 0, track);
-      }
-    } else {
-      // 不在列表中，直接插入到当前曲目下方
-      list.splice(currentIndex, 0, track);
-    }
-    setPlaylist(list);
-  }
+  // ─── 初始化音频 ─────────────────────────────────────────────────────────
+  audio.preload = "metadata";
+  audio.addEventListener("timeupdate", handleTimeUpdate);
+  audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+  audio.addEventListener("play", handleAudioPlay);
+  audio.addEventListener("pause", handleAudioPause);
+  audio.addEventListener("ended", handleAudioEnded);
 
-  function seekToLyricsLine(index: number) {
-    const line = currentLyricsLines.value[index];
-    if (!line || line.time === null) return;
-    const audio = audioRef.value;
-    if (!audio) return;
-    audio.currentTime = line.time;
+  // ─── 资源清理 ─────────────────────────────────────────────────────────────
+  function dispose() {
+    audio.pause();
+    audio.removeEventListener("timeupdate", handleTimeUpdate);
+    audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.removeEventListener("play", handleAudioPlay);
+    audio.removeEventListener("pause", handleAudioPause);
+    audio.removeEventListener("ended", handleAudioEnded);
+    audio.src = "";
+    if (currentAudioUrl.value) {
+      URL.revokeObjectURL(currentAudioUrl.value);
+      currentAudioUrl.value = "";
+    }
   }
 
   return {
     // state
-    audioRef,
     playbackMode,
     playbackModeLabel,
     playSourceType,
@@ -314,8 +364,6 @@ export const usePlayerStore = defineStore("player", () => {
     // actions
     initMediaSession,
     setPlaySourceType,
-    setAudioRef,
-    setPlaylist,
     playTrack,
     playTrackById,
     setNextTrack,
@@ -325,10 +373,6 @@ export const usePlayerStore = defineStore("player", () => {
     setVolume,
     seekToPercent,
     seekToLyricsLine,
-    handleTimeUpdate,
-    handleLoadedMetadata,
-    handleAudioPlay,
-    handleAudioPause,
-    handleAudioEnded,
+    dispose,
   };
 });

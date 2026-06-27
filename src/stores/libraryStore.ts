@@ -24,17 +24,13 @@ import {
   includesSource,
 } from "@/utils/libraryBuilder";
 import { defineStore } from "pinia";
-import { ref, shallowRef } from "vue";
-import { useFavoriteStore } from "./favoriteStore";
-import { useAlbumStore } from "./albumStore";
+import { shallowRef } from "vue";
 import { usePlayerStore } from "./playerStore";
 
 export const useLibraryStore = defineStore("library", () => {
   let libraryBuildToken = 0;
   /** id 与 Track 对应关系 */
   const trackMap: TrackMap = new Map();
-  const favoriteStore = useFavoriteStore();
-  const albumStore = useAlbumStore();
   const playerStore = usePlayerStore();
 
   /** 是否文件启动 */
@@ -44,7 +40,6 @@ export const useLibraryStore = defineStore("library", () => {
   const loading = shallowRef(false);
   const loadingDone = shallowRef(0);
   const loadingTotal = shallowRef(0);
-  const libraryStatus = shallowRef("还没有载入音乐");
   const musicSources = shallowRef<RuntimeMusicSource[]>([]);
 
   const tracks = shallowRef<Track[]>([]);
@@ -234,19 +229,12 @@ export const useLibraryStore = defineStore("library", () => {
     trackMap.clear();
     updateTrackMap(data);
     revokeTrackResources(removed);
-    if (playerStore.playSourceType === "all-track") {
-      playerStore.setPlaylist(data);
-    }
-    // 其他 store 与 player 关联自行处理
-    favoriteStore.setFavoriteSources(data);
-    albumStore.updateAlbumWithTracks(data);
     if (persist) persistTracks(buildCacheKeyFromSources(musicSources.value));
   }
   return {
     loading,
     loadingDone,
     loadingTotal,
-    libraryStatus,
     musicSources,
     isReauthorizing,
     tracks,

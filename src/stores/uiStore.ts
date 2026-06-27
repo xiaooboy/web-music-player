@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
-import { ref, watch } from "vue";
+import { shallowRef } from "vue";
 import {
   loadSidebarCollapsed,
   saveSidebarCollapsed,
 } from "@/utils/persistence";
-import { withViewTransition } from "@/utils/media";
+import { withViewTransition } from "@/utils/viewTransition";
 
 export type SectionName =
   | "all-track"
@@ -13,11 +13,11 @@ export type SectionName =
   | "library-management";
 
 export const useUIStore = defineStore("ui", () => {
-  const currentView = ref<"library" | "detail">("library");
-  const sidebarCollapsed = ref(
+  const currentView = shallowRef<"library" | "detail">("library");
+  const sidebarCollapsed = shallowRef(
     window.screen.width < 480 ? false : loadSidebarCollapsed(),
   );
-  const activeSection = ref<SectionName>("all-track");
+  const activeSection = shallowRef<SectionName>("all-track");
 
   function setCurrentView(nextView: "library" | "detail") {
     if (currentView.value === nextView) return;

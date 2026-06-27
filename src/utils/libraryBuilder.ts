@@ -21,7 +21,7 @@ import {
   isAudioFile,
   revokeTrackResources,
 } from "./media";
-import { defaultSort } from "./sort";
+import { defaultSort, defaultStringCompare } from "./sort";
 
 /**
  * 批量从缓存记录创建 Track 对象数组
@@ -48,7 +48,7 @@ export function buildCacheKeyFromSources(musicSources: MusicSource[]): string {
     nameArr.push(name);
   });
   return nameArr
-    .sort((left, right) => left.localeCompare(right, "zh-Hans-CN"))
+    .sort((left, right) => defaultStringCompare(left, right))
     .join("::")
     .toLowerCase();
 }
@@ -181,7 +181,11 @@ export async function entriesToTracks(
     }
 
     for (const result of results) {
-      if (result.status === "fulfilled") builtTracks.push(result.value);
+      if (result.status === "fulfilled") {
+        builtTracks.push(result.value);
+      } else if (result.reason) {
+        console.warn("解析音频文件失败:", result.reason);
+      }
     }
     options?.onProgress?.({
       done: Math.min(batchStart + BATCH_SIZE, audioEntries.length),
@@ -242,8 +246,8 @@ export async function includesSource(
   if (!handle) {
     const key = `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}`;
     included = sources.some(
-      (source) =>
-        `${source.kind || "directory"}:${source.name}:${source.persistent ? "persistent" : "temp"}` ===
+      (s) =>
+        `${s.kind || "directory"}:${s.name}:${s.persistent ? "persistent" : "temp"}` ===
         key,
     );
     return included;

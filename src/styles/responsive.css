@@ -11,10 +11,6 @@
 }
 
 @media (max-width: 1080px) {
-  .topbar-actions {
-    width: 100%;
-  }
-
   .search-field {
     min-width: 0;
     flex: 1;
@@ -65,12 +61,6 @@
 }
 
 @media (max-width: 640px) {
-  .topbar-actions {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .transport {
     flex-wrap: wrap;
   }
@@ -84,11 +74,6 @@
 
   .detail-transport {
     gap: 10px;
-  }
-
-  .detail-main-toggle {
-    width: 60px;
-    height: 60px;
   }
 
   .lyrics-line {

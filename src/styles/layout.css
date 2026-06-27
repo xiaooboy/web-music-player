@@ -14,7 +14,7 @@
   max-height: 100dvh;
   height: 100dvh;
   padding: calc(16px + var(--window-safe-top)) 16px 0;
-  /*padding: calc(16px + var(--window-safe-top)) 16px var(--dock-height);*/
+
   gap: 20px;
   overflow: hidden;
   transition: grid-template-columns 0.25s ease;
@@ -36,7 +36,6 @@
 }
 
 .main-stage,
-.page-content,
 .track-list {
   display: grid;
   gap: 12px;
@@ -63,20 +62,7 @@
   height: 0;
 }
 
-.page-content {
-  gap: 18px;
-  grid-template-rows: minmax(0, 1fr);
-  min-height: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  justify-items: stretch;
-  align-content: stretch;
-}
-
-.main-stage > .all-track-view,
-.page-content > .album-browser,
-.page-content > .library-management-panel {
+.main-stage > .all-track-view {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -84,7 +70,6 @@
   align-self: stretch;
 }
 
-.topbar,
 .section-head,
 .dock-track,
 .transport,
@@ -93,36 +78,11 @@
   display: flex;
 }
 
-.topbar,
 .section-head {
   height: 42px;
   justify-content: space-between;
   align-items: center;
   gap: 18px;
-}
-
-.topbar h1 {
-  margin: 8px 0 0;
-  font-size: clamp(1.8rem, 2vw, 2.6rem);
-  line-height: 1.15;
-  font-family: var(--font-display);
-  max-width: 14ch;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.eyebrow {
-  margin: 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--accent);
-  font-weight: 700;
 }
 
 .search-field {
@@ -150,6 +110,9 @@
 
 .main-panel {
   width: 100%;
+  border-radius: var(--radius-xl);
+  min-height: 0;
+  height: 100%;
 }
 
 .cover-art {
@@ -180,31 +143,6 @@
   letter-spacing: 0.18em;
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.38);
-}
-
-.summary-card {
-  padding: 18px;
-  border-radius: 22px;
-  background: var(--panel-2);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: grid;
-  gap: 10px;
-}
-
-.summary-card span {
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.summary-card strong {
-  font-size: 1.32rem;
-  font-family: var(--font-display);
-}
-
-.main-panel {
-  border-radius: var(--radius-xl);
-  min-height: 0;
-  height: 100%;
 }
 
 .section-head h2 {
