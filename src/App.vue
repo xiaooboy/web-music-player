@@ -17,6 +17,7 @@ const uiStore = useUIStore();
 const { currentView, activeSection } = storeToRefs(uiStore);
 
 onBeforeUnmount(() => {
+  playerStore.dispose();
   libraryStore.disposeLibrary();
   window.removeEventListener("keydown", handleKeydown);
   window.removeEventListener("contextmenu", handleContextMenuBlock);

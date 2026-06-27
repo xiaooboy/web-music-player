@@ -114,6 +114,13 @@ input[type="range"] {
   height: 6px;
   border-radius: 999px;
   outline: none;
+  background: linear-gradient(
+    90deg,
+    var(--accent-deep) 0%,
+    var(--accent) var(--slider-value, 0%),
+    rgba(211, 58, 49, 0.22) var(--slider-value, 0%),
+    rgba(211, 58, 49, 0.22) 100%
+  );
 }
 
 input[type="range"]::-webkit-slider-thumb {

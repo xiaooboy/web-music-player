@@ -5,7 +5,7 @@ import SectionHead from "../components/SectionHead.vue";
 import AlbumDetail from "../components/AlbumDetail.vue";
 import TipContent from "../components/TipContent.vue";
 import { usePlayerStore, useAlbumStore } from "@/stores";
-import { withViewTransition } from "@/utils/media";
+import { withViewTransition } from "@/utils/viewTransition";
 const VIEW_TRANSITION_NAME = "album-cover";
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();

@@ -227,13 +227,6 @@ export function formatTime(seconds: number) {
   return `${String(minutes).padStart(2, "0")}:${String(remainSeconds).padStart(2, "0")}`;
 }
 
-export function sliderStyle(value: number) {
-  const safeValue = Math.max(0, Math.min(100, value));
-  return {
-    background: `linear-gradient(90deg, var(--accent-deep) 0%, var(--accent) ${safeValue}%, rgba(211, 58, 49, 0.22) ${safeValue}%, rgba(211, 58, 49, 0.22) 100%)`,
-  };
-}
-
 export async function buildLyricsLookup(entries: FileEntry[]) {
   const lookup = new Map<string, string>();
 
@@ -355,26 +348,6 @@ export async function probeDuration(file: File) {
     probe.addEventListener("error", () => finish(0), { once: true });
     probe.src = url;
   });
-}
-
-export function withViewTransition(callback: () => void) {
-  const transitionDocument = document as Document & {
-    startViewTransition?: (cb: () => void) => {
-      finished: Promise<void>;
-    };
-  };
-
-  if (typeof transitionDocument.startViewTransition === "function") {
-    return {
-      support: true,
-      transition: transitionDocument.startViewTransition(callback),
-    };
-  }
-
-  callback();
-  return {
-    support: false,
-  };
 }
 
 async function parseId3Tags(file: File) {

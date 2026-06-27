@@ -10,7 +10,7 @@ import {
   Shuffle,
 } from "lucide-vue-next";
 import { computed } from "vue";
-import { sliderStyle } from "../utils/media";
+
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { useUIStore } from "../stores/uiStore";
@@ -122,7 +122,7 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
           min="0"
           max="100"
           :value="playerStore.progressPercent"
-          :style="sliderStyle(playerStore.progressPercent)"
+          :style="{ '--slider-value': playerStore.progressPercent + '%' }"
           @input="
             playerStore.seekToPercent(
               Number(($event.target as HTMLInputElement).value),

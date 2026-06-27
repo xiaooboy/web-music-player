@@ -37,6 +37,7 @@ export const usePlayerStore = defineStore("player", () => {
     "all-track",
   );
   let playlistIndexMap = new Map<string, number>();
+  let playlistSourceInitialized = false;
 
   // ─── 拉模式：根据 playSourceType 自动拉取对应数据源 ─────────────────────
   const playlistSource = computed<Track[]>(() => {
@@ -130,22 +131,28 @@ export const usePlayerStore = defineStore("player", () => {
     newTracks.forEach((track, index) => {
       playlistIndexMap.set(track.id, index);
     });
-    if (!currentTrackId.value) return;
+    if (!currentTrackId.value) {
+      if (newTracks.length > 0) playlistSourceInitialized = true;
+      return;
+    }
     if (playlistIndexMap.has(currentTrackId.value)) {
       currentTrack.value =
         newTracks[playlistIndexMap.get(currentTrackId.value)!];
       updateMediaSession(currentTrack.value);
-    } else {
-      // 当前播放的曲目不在新的播放列表中，暂停并清除
+    } else if (newTracks.length > 0 || playlistSourceInitialized) {
+      // 非空列表中找不到，或数据曾加载过但现在被清空 → 暂停并清除
       audio.pause();
       audio.src = "";
       URL.revokeObjectURL(currentAudioUrl.value);
       currentAudioUrl.value = "";
       currentTrack.value = null;
       currentTrackId.value = "";
+      saveCurrentTrackId("");
       isPlaying.value = false;
       clearMediaSession();
     }
+    // 数据尚未加载（首次 immediate 触发空数组），保留 currentTrackId 等待后续更新
+    if (newTracks.length > 0) playlistSourceInitialized = true;
   }
 
   // 使用 flush:'sync' 确保在 playTrack 等命令式调用前 playlist 已同步
@@ -325,6 +332,21 @@ export const usePlayerStore = defineStore("player", () => {
   audio.addEventListener("pause", handleAudioPause);
   audio.addEventListener("ended", handleAudioEnded);
 
+  // ─── 资源清理 ─────────────────────────────────────────────────────────────
+  function dispose() {
+    audio.pause();
+    audio.removeEventListener("timeupdate", handleTimeUpdate);
+    audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.removeEventListener("play", handleAudioPlay);
+    audio.removeEventListener("pause", handleAudioPause);
+    audio.removeEventListener("ended", handleAudioEnded);
+    audio.src = "";
+    if (currentAudioUrl.value) {
+      URL.revokeObjectURL(currentAudioUrl.value);
+      currentAudioUrl.value = "";
+    }
+  }
+
   return {
     // state
     playbackMode,
@@ -351,5 +373,6 @@ export const usePlayerStore = defineStore("player", () => {
     setVolume,
     seekToPercent,
     seekToLyricsLine,
+    dispose,
   };
 });

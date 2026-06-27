@@ -4,7 +4,7 @@ import {
   loadSidebarCollapsed,
   saveSidebarCollapsed,
 } from "@/utils/persistence";
-import { withViewTransition } from "@/utils/media";
+import { withViewTransition } from "@/utils/viewTransition";
 
 export type SectionName =
   | "all-track"

@@ -21,8 +21,14 @@ export interface PersistedTrackCache {
   tracks: CachedTrackRecord[];
 }
 
+let dbInstance: IDBDatabase | null = null;
+let dbReady: Promise<IDBDatabase> | null = null;
+
 function openDatabase() {
-  return new Promise<IDBDatabase>((resolve, reject) => {
+  if (dbInstance) return Promise.resolve(dbInstance);
+  if (dbReady) return dbReady;
+
+  dbReady = new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.addEventListener("upgradeneeded", () => {
@@ -32,11 +38,16 @@ function openDatabase() {
       }
     });
 
-    request.addEventListener("success", () => resolve(request.result));
+    request.addEventListener("success", () => {
+      dbInstance = request.result;
+      resolve(dbInstance);
+    });
     request.addEventListener("error", () =>
       reject(request.error || new Error("IndexedDB open failed")),
     );
   });
+
+  return dbReady;
 }
 
 async function withStore<T>(
@@ -45,25 +56,21 @@ async function withStore<T>(
 ) {
   const database = await openDatabase();
 
-  try {
-    const transaction = database.transaction(STORE_NAME, mode);
-    const store = transaction.objectStore(STORE_NAME);
-    const result = await runner(store);
+  const transaction = database.transaction(STORE_NAME, mode);
+  const store = transaction.objectStore(STORE_NAME);
+  const result = await runner(store);
 
-    await new Promise<void>((resolve, reject) => {
-      transaction.addEventListener("complete", () => resolve());
-      transaction.addEventListener("error", () =>
-        reject(transaction.error || new Error("IndexedDB transaction failed")),
-      );
-      transaction.addEventListener("abort", () =>
-        reject(transaction.error || new Error("IndexedDB transaction aborted")),
-      );
-    });
+  await new Promise<void>((resolve, reject) => {
+    transaction.addEventListener("complete", () => resolve());
+    transaction.addEventListener("error", () =>
+      reject(transaction.error || new Error("IndexedDB transaction failed")),
+    );
+    transaction.addEventListener("abort", () =>
+      reject(transaction.error || new Error("IndexedDB transaction aborted")),
+    );
+  });
 
-    return result;
-  } finally {
-    database.close();
-  }
+  return result;
 }
 
 function requestToPromise<T = unknown>(request: IDBRequest<T>) {

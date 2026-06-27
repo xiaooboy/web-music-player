@@ -18,7 +18,7 @@ import {
   computed,
   useTemplateRef,
 } from "vue";
-import { formatTime, sliderStyle } from "../utils/media";
+import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import { Volume2 } from "lucide-vue-next"; // used in volume control
 import TipContent from "../components/TipContent.vue";
@@ -224,7 +224,7 @@ watch(
               min="0"
               max="100"
               :value="playerStore.volumePercent"
-              :style="sliderStyle(playerStore.volumePercent)"
+              :style="{ '--slider-value': playerStore.volumePercent + '%' }"
               @input="
                 playerStore.setVolume(
                   Number(($event.target as HTMLInputElement).value),
@@ -242,7 +242,7 @@ watch(
               min="0"
               max="100"
               :value="playerStore.progressPercent"
-              :style="sliderStyle(playerStore.progressPercent)"
+              :style="{ '--slider-value': playerStore.progressPercent + '%' }"
               @input="
                 playerStore.seekToPercent(
                   Number(($event.target as HTMLInputElement).value),
