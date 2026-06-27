@@ -50,7 +50,6 @@ const emptyDescription = computed(() => {
 
 function handleSelectTrack(id: string) {
   playerStore.setPlaySourceType("all-track");
-  playerStore.setPlaylist(libraryStore.tracks);
   playerStore.playTrackById(id, true);
 }
 

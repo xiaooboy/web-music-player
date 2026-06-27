@@ -7,7 +7,10 @@ import {
 } from "@/utils/mediaControl";
 import { loadCurrentTrackId, saveCurrentTrackId } from "@/utils/persistence";
 import { defineStore } from "pinia";
-import { computed, shallowRef } from "vue";
+import { computed, shallowRef, watch } from "vue";
+import { useLibraryStore } from "./libraryStore";
+import { useFavoriteStore } from "./favoriteStore";
+import { useAlbumStore } from "./albumStore";
 
 type PlaybackConfig = Array<{
   mode: PlaybackMode;
@@ -35,12 +38,29 @@ export const usePlayerStore = defineStore("player", () => {
   );
   let playlistIndexMap = new Map<string, number>();
 
+  // ─── 拉模式：根据 playSourceType 自动拉取对应数据源 ─────────────────────
+  const playlistSource = computed<Track[]>(() => {
+    const libraryStore = useLibraryStore();
+    const favoriteStore = useFavoriteStore();
+    const albumStore = useAlbumStore();
+    switch (playSourceType.value) {
+      case "all-track":
+        return libraryStore.tracks;
+      case "favorites":
+        return favoriteStore.favoriteTracks;
+      case "albums":
+        return albumStore.currentAlbumTracks;
+      default:
+        return [];
+    }
+  });
+
   // ─── 当前曲目 ───────────────────────────────────────────────────────────
   const currentTrackId = shallowRef(loadCurrentTrackId());
   const currentTrack = shallowRef<Track | null>(null);
 
   // ─── 音频 ───────────────────────────────────────────────────────────────
-  const audioRef = shallowRef<HTMLAudioElement | null>(null);
+  const audio = new Audio();
   const currentAudioUrl = shallowRef("");
   const isPlaying = shallowRef(false);
 
@@ -99,10 +119,6 @@ export const usePlayerStore = defineStore("player", () => {
     playSourceType.value = type;
   }
 
-  function setAudioRef(ref: HTMLAudioElement | null) {
-    audioRef.value = ref;
-  }
-
   function nextPlaybackMode() {
     playbackIndex = (playbackIndex + 1) % playbackConfig.length;
     playbackMode.value = playbackConfig[playbackIndex].mode;
@@ -121,11 +137,8 @@ export const usePlayerStore = defineStore("player", () => {
       updateMediaSession(currentTrack.value);
     } else {
       // 当前播放的曲目不在新的播放列表中，暂停并清除
-      const audio = audioRef.value;
-      if (audio) {
-        audio.pause();
-        audio.src = "";
-      }
+      audio.pause();
+      audio.src = "";
       URL.revokeObjectURL(currentAudioUrl.value);
       currentAudioUrl.value = "";
       currentTrack.value = null;
@@ -135,10 +148,21 @@ export const usePlayerStore = defineStore("player", () => {
     }
   }
 
+  // 使用 flush:'sync' 确保在 playTrack 等命令式调用前 playlist 已同步
+  // 必须放在 setPlaylist 及其依赖的状态声明之后（immediate:true 会立即执行）
+  watch(playlistSource, (newTracks) => setPlaylist(newTracks), {
+    flush: "sync",
+    immediate: true,
+  });
+
+  function getCurrentTrackIndex(): number {
+    const find = playlistIndexMap.get(currentTrackId.value);
+    return find ?? -1;
+  }
+
   function togglePlay() {
-    const audio = audioRef.value;
     const index = getCurrentTrackIndex();
-    if (!audio || index === -1) return;
+    if (index === -1) return;
     if (!audio.src) {
       playTrack(index, true);
       return;
@@ -147,20 +171,14 @@ export const usePlayerStore = defineStore("player", () => {
     else audio.pause();
   }
 
-  function getCurrentTrackIndex(): number {
-    const find = playlistIndexMap.get(currentTrackId.value);
-    return find ?? -1;
-  }
-
   function playTrackById(id: string, autoplay = true) {
     const index = playlistIndexMap.get(id);
     if (index !== undefined) playTrack(index, autoplay);
   }
 
   function playTrack(index: number, autoplay = true) {
-    const audio = audioRef.value;
     const track = playlist.value[index];
-    if (!audio || !track) return;
+    if (!track) return;
     if (!track.file) {
       alert("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
       return;
@@ -189,8 +207,7 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function syncProgress() {
-    const audio = audioRef.value;
-    if (!audio || !currentTrack.value) {
+    if (!currentTrack.value) {
       currentTimeSeconds.value = 0;
       progressPercent.value = 0;
       return;
@@ -214,15 +231,13 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function playByStep(direction: number) {
-    const audio = audioRef.value;
-    if (!audio || !playlist.value.length) return;
+    if (!playlist.value.length) return;
     const targetIndex = getAdjacentIndex(direction);
     if (targetIndex !== null) playTrack(targetIndex, true);
   }
 
   function seekToPercent(percent: number) {
-    const audio = audioRef.value;
-    if (!audio || !currentTrack.value) return;
+    if (!currentTrack.value) return;
     const duration = currentTrack.value.duration;
     audio.currentTime = (percent / 100) * duration;
     syncProgress();
@@ -230,44 +245,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   function setVolume(percent: number) {
     volumePercent.value = percent;
-    if (audioRef.value) audioRef.value.volume = volume.value;
-  }
-
-  function handleTimeUpdate() {
-    syncProgress();
-  }
-
-  function handleLoadedMetadata() {
-    // build 过程已经使用相同的逻辑获取 duration
-    const audio = audioRef.value;
-    const track = currentTrack.value;
-    if (!audio || !track || track.duration) {
-      return;
-    }
-    if (!track.duration && Number.isFinite(audio.duration)) {
-      track.duration = audio.duration;
-    }
-    syncProgress();
-    updateMediaSession(currentTrack.value);
-  }
-
-  function handleAudioPlay() {
-    isPlaying.value = true;
-    if (currentTrackId.value) {
-      saveCurrentTrackId(currentTrackId.value);
-    }
-  }
-
-  function handleAudioPause() {
-    isPlaying.value = false;
-  }
-
-  function handleAudioEnded() {
-    let step = 1;
-    if (playbackMode.value === "one") {
-      step = 0;
-    }
-    playByStep(step);
+    audio.volume = volume.value;
   }
 
   /**
@@ -301,14 +279,54 @@ export const usePlayerStore = defineStore("player", () => {
   function seekToLyricsLine(index: number) {
     const line = currentLyricsLines.value[index];
     if (!line || line.time === null) return;
-    const audio = audioRef.value;
-    if (!audio) return;
     audio.currentTime = line.time;
   }
 
+  // ─── 音频事件处理（内部） ──────────────────────────────────────────────
+  function handleTimeUpdate() {
+    syncProgress();
+  }
+
+  function handleLoadedMetadata() {
+    // build 过程已经使用相同的逻辑获取 duration
+    const track = currentTrack.value;
+    if (!track || track.duration) return;
+    if (!track.duration && Number.isFinite(audio.duration)) {
+      track.duration = audio.duration;
+    }
+    syncProgress();
+    updateMediaSession(currentTrack.value);
+  }
+
+  function handleAudioPlay() {
+    isPlaying.value = true;
+    if (currentTrackId.value) {
+      saveCurrentTrackId(currentTrackId.value);
+    }
+  }
+
+  function handleAudioPause() {
+    isPlaying.value = false;
+  }
+
+  function handleAudioEnded() {
+    let step = 1;
+    if (playbackMode.value === "one") {
+      step = 0;
+    }
+    playByStep(step);
+  }
+
+  // ─── 初始化音频 ─────────────────────────────────────────────────────────
+  audio.preload = "metadata";
+  audio.addEventListener("timeupdate", handleTimeUpdate);
+  audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+  audio.addEventListener("play", handleAudioPlay);
+  audio.addEventListener("pause", handleAudioPause);
+  audio.addEventListener("ended", handleAudioEnded);
+
   return {
     // state
-    audioRef,
     playbackMode,
     playbackModeLabel,
     playSourceType,
@@ -324,8 +342,6 @@ export const usePlayerStore = defineStore("player", () => {
     // actions
     initMediaSession,
     setPlaySourceType,
-    setAudioRef,
-    setPlaylist,
     playTrack,
     playTrackById,
     setNextTrack,
@@ -335,10 +351,5 @@ export const usePlayerStore = defineStore("player", () => {
     setVolume,
     seekToPercent,
     seekToLyricsLine,
-    handleTimeUpdate,
-    handleLoadedMetadata,
-    handleAudioPlay,
-    handleAudioPause,
-    handleAudioEnded,
   };
 });

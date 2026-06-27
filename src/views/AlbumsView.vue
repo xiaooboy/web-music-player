@@ -25,23 +25,15 @@ const playingTrackId = computed(() => {
 });
 
 function handlePlayTrack(albumName: string, id: string) {
-  const targetAlbum = albumStore.albums.find(
-    (album) => album.name === albumName,
-  );
-  if (!targetAlbum?.tracks.length) return;
+  albumStore.updatePlayingAlbum(albumName);
   albumStore.selectedAlbumName = albumName;
   playerStore.setPlaySourceType("albums");
-  playerStore.setPlaylist(targetAlbum.tracks);
   playerStore.playTrackById(id, true);
 }
 function handlePlayAlbum(albumName: string) {
-  const targetAlbum = albumStore.albums.find(
-    (album) => album.name === albumName,
-  );
-  if (!targetAlbum?.tracks.length) return;
+  albumStore.updatePlayingAlbum(albumName);
   albumStore.selectedAlbumName = albumName;
   playerStore.setPlaySourceType("albums");
-  playerStore.setPlaylist(targetAlbum.tracks);
   playerStore.playTrack(0, true);
 }
 async function handleBack() {

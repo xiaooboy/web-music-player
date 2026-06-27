@@ -21,7 +21,6 @@ const status = computed(() =>
 
 function handleFavoriteTrackSelect(id: string) {
   playerStore.setPlaySourceType("favorites");
-  playerStore.setPlaylist(favoriteStore.favoriteTracks);
   playerStore.playTrackById(id, true);
 }
 

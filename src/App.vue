@@ -115,13 +115,4 @@ function handleContextMenuBlock(event: MouseEvent) {
       <MusicDetailPanel />
     </main>
   </div>
-  <audio
-    :ref="playerStore.setAudioRef"
-    preload="metadata"
-    @timeupdate="playerStore.handleTimeUpdate"
-    @loadedmetadata="playerStore.handleLoadedMetadata"
-    @play="playerStore.handleAudioPlay"
-    @pause="playerStore.handleAudioPause"
-    @ended="playerStore.handleAudioEnded"
-  ></audio>
 </template>
