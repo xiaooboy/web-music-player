@@ -11,7 +11,6 @@ const visible = ref(false);
 const items = ref<MenuItem[]>([]);
 const menuRef = ref<HTMLElement | null>(null);
 const menuStyle = ref<Record<string, string>>({});
-const menuKey = ref(0);
 const isAnimating = ref(false);
 
 function open(event: MouseEvent, menuItems: MenuItem[]) {
@@ -19,25 +18,30 @@ function open(event: MouseEvent, menuItems: MenuItem[]) {
   if (isAnimating.value) return;
 
   const wasOpen = visible.value;
-
-  if (wasOpen) {
-    // 标记正在动画
-    isAnimating.value = true;
-    visible.value = false;
-    menuKey.value += 1;
-  }
-
   items.value = menuItems;
 
   if (wasOpen) {
-    // 等待离场动画完成后再显示
-    nextTick(() => {
-      setTimeout(() => {
+    // 先关闭触发离场动画，结束后再重新打开
+    isAnimating.value = true;
+    visible.value = false;
+
+    const el = menuRef.value;
+    if (el) {
+      const onEnd = () => {
+        el.removeEventListener("transitionend", onEnd);
         computePosition(event);
-        isAnimating.value = false;
         visible.value = true;
-      }, 150); // 稍微大于 transition 时间 120ms
-    });
+        // 入场动画结束后解锁
+        const onEnterEnd = () => {
+          el.removeEventListener("transitionend", onEnterEnd);
+          isAnimating.value = false;
+        };
+        el.addEventListener("transitionend", onEnterEnd);
+      };
+      el.addEventListener("transitionend", onEnd);
+    } else {
+      isAnimating.value = false;
+    }
   } else {
     nextTick(() => {
       computePosition(event);
@@ -105,7 +109,6 @@ defineExpose({ open, close });
 <template>
   <Teleport to="body">
     <div
-      :key="menuKey"
       ref="menuRef"
       class="context-menu"
       :class="{ 'is-open': visible }"

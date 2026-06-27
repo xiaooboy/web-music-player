@@ -20,9 +20,10 @@ export const useAlbumStore = defineStore("album", () => {
     selectedAlbumName.value = "";
   }
 
-  function getPlayingAlbum() {
-    return albumMap.get(playingAlbumName.value);
-  }
+  /** 当前选中的专辑 */
+  const selectedAlbum = computed(
+    () => albumMap.get(selectedAlbumName.value) ?? null,
+  );
 
   /** 当前播放专辑的曲目列表，供 playerStore 拉取 */
   const currentAlbumTracks = computed(() => {
@@ -85,9 +86,9 @@ export const useAlbumStore = defineStore("album", () => {
   return {
     albums,
     selectedAlbumName,
+    selectedAlbum,
     playingAlbumName,
     currentAlbumTracks,
-    getPlayingAlbum,
     selectAlbum,
     clearSelection,
     updatePlayingAlbum,

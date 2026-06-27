@@ -15,11 +15,6 @@ const albumViewTransitionName = shallowRef("");
 const transitionTarget = shallowRef("");
 
 const showDetail = computed(() => !!albumStore.selectedAlbumName);
-const activeAlbum = computed(
-  () =>
-    albumStore.albums.find((a) => a.name === albumStore.selectedAlbumName) ??
-    null,
-);
 const playingTrackId = computed(() => {
   return playerStore.isPlaying ? playerStore.currentTrackId : "";
 });
@@ -79,7 +74,7 @@ function handleStop() {
     />
     <AlbumDetail
       v-if="showDetail"
-      :album="activeAlbum"
+      :album="albumStore.selectedAlbum"
       :playingTrackId="playingTrackId"
       :viewTransitionName="detailViewTransitionName"
       :style="{
