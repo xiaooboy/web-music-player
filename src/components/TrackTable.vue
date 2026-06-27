@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, Pause, Play, LocateFixed } from "lucide-vue-next";
 import TipContent from "./TipContent.vue";
 import SectionHead from "./SectionHead.vue";
+import ContextMenu from "./ContextMenu.vue";
+import type { MenuItem } from "./ContextMenu.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 
@@ -22,7 +24,24 @@ const emit = defineEmits<{
   play: [id: string];
   togglePlay: [];
   toggleFavorite: [id: string];
+  setNextTrack: [id: string];
 }>();
+
+// ─── 右键菜单 ────────────────────────────────────────────────────────────────
+const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
+
+function handleContextMenu(event: MouseEvent, track: Track) {
+  event.preventDefault();
+  event.stopPropagation();
+  const items: MenuItem[] = [
+    {
+      label: "下一首播放",
+      action: () => emit("setNextTrack", track.id),
+      disabled: track.id === props.currentTrackId,
+    },
+  ];
+  contextMenuRef.value?.open(event, items);
+}
 
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
 // 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
@@ -106,6 +125,7 @@ function scrollToCurrentTrack() {
               transform: `translateY(${vRow.start}px)`,
             }"
             @click="$emit('play', item.id)"
+            @contextmenu="handleContextMenu($event, item)"
           >
             <div class="track-song">
               <div class="track-thumb">
@@ -180,5 +200,8 @@ function scrollToCurrentTrack() {
     >
       <LocateFixed :size="20" />
     </button>
+
+    <!-- 右键菜单 -->
+    <ContextMenu ref="contextMenuRef" />
   </section>
 </template>

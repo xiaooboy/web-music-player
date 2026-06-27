@@ -260,6 +260,34 @@ export const usePlayerStore = defineStore("player", () => {
     playByStep(step);
   }
 
+  /**
+   * 将指定曲目插入到当前播放曲目的下一首位置
+   * - 如果该曲目就是当前播放的曲目，则不处理
+   * - 如果该曲目已在播放列表中，先移除再插入到当前位置下方
+   * - 如果该曲目不在播放列表中，直接插入到当前位置下方
+   */
+  function setNextTrack(track: Track) {
+    if (track.id === currentTrackId.value) return;
+    if (!currentTrack.value) return;
+    const list = [...playlist.value];
+    const currentIndex = getCurrentTrackIndex();
+    // 从列表中移除该曲目（如果存在）
+    if (playlistIndexMap.has(track.id)) {
+      const existIndex = playlistIndexMap.get(track.id);
+      list.splice(existIndex, 1);
+      // 移除元素在当前曲目之前时，当前曲目的实际索引前移了一位
+      if (existIndex < currentIndex) {
+        list.splice(currentIndex, 0, track);
+      } else {
+        list.splice(currentIndex + 1, 0, track);
+      }
+    } else {
+      // 不在列表中，直接插入到当前曲目下方
+      list.splice(currentIndex, 0, track);
+    }
+    setPlaylist(list);
+  }
+
   function seekToLyricsLine(index: number) {
     const line = currentLyricsLines.value[index];
     if (!line || line.time === null) return;
@@ -290,6 +318,7 @@ export const usePlayerStore = defineStore("player", () => {
     setPlaylist,
     playTrack,
     playTrackById,
+    setNextTrack,
     playByStep,
     nextPlaybackMode,
     togglePlay,
