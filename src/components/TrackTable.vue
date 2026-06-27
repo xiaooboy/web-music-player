@@ -192,7 +192,7 @@ function scrollToCurrentTrack() {
 
     <!-- 滚动到当前音乐按钮 -->
     <button
-      v-if="currentTrackId"
+      v-if="currentTrackId && tracks.length"
       class="scroll-to-current"
       type="button"
       aria-label="滚动到当前播放音乐"
