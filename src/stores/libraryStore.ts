@@ -1,8 +1,8 @@
 import type { TrackMap, FileEntry, RuntimeMusicSource, Track } from "@/types";
+import { showToast } from "@/composables/useToast";
 import {
   clearPersistedMusicSources,
   clearTrackCache,
-  loadLastFolderName,
   loadPersistedMusicSources,
   PersistedMusicSource,
   savePersistedMusicSources,
@@ -52,7 +52,6 @@ export const useLibraryStore = defineStore("library", () => {
    * 恢复缓存的库，流程：恢复 sources->计算cacheKey->恢复tracks->启动构建
    */
   async function restoreCachedLibrary() {
-    if (!supportsDirectoryPicker() && loadLastFolderName()) return;
     const persistedSources = await loadPersistedMusicSources();
     if (!persistedSources.length) {
       persistTracks("");
@@ -62,12 +61,10 @@ export const useLibraryStore = defineStore("library", () => {
     console.time("restoreTracks");
     setTracks(await initTracksFromCache(cacheKey));
     console.timeEnd("restoreTracks");
-    const restoredSources = await checkSourcePermissions(persistedSources);
-    musicSources.value = restoredSources;
+    musicSources.value = await checkSourcePermissions(persistedSources);
     persistHandleSources();
-    const avaliable = restoredSources.some((source) => source.available);
-    if (!avaliable) return;
-    await startBuild();
+    if (musicSources.value.some((source) => source.available))
+      await startBuild();
   }
   function updateTrackMap(tracks: Track[]) {
     for (const track of tracks) {
@@ -183,7 +180,7 @@ export const useLibraryStore = defineStore("library", () => {
       (s) => s.persistent && !s.available && s.handle,
     );
     if (!pending.length) {
-      alert("没有需要重新授权的音乐源");
+      showToast("没有需要重新授权的音乐源");
       return;
     }
     if (
@@ -203,7 +200,7 @@ export const useLibraryStore = defineStore("library", () => {
         availabilityMap.set(source.id, available);
         if (available) needRebuild = true;
         if (permission === "denied") {
-          alert(`目录 ${source.name} 的授权被拒绝`);
+          showToast(`目录 ${source.name} 的授权被拒绝`);
         }
       }
       musicSources.value = musicSources.value.map((s) => {

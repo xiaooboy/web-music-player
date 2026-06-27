@@ -1,4 +1,5 @@
 import type { PlaybackMode, PlaybackModeLabel, Track } from "@/types";
+import { showToast } from "@/composables/useToast";
 import { parseLyricsText } from "@/utils/media";
 import {
   clearMediaSession,
@@ -187,7 +188,7 @@ export const usePlayerStore = defineStore("player", () => {
     const track = playlist.value[index];
     if (!track) return;
     if (!track.file) {
-      alert("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
+      showToast("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
       return;
     }
     const isSameTrack = currentTrackId.value === track.id;

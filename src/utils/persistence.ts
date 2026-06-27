@@ -5,7 +5,6 @@ const DB_VERSION = 2;
 const STORE_NAME = "settings";
 const SOURCES_KEY = "music-sources";
 const TRACK_CACHE_KEY = "track-cache";
-const LAST_FOLDER_NAME_KEY = "last-folder-name";
 const LIKED_TRACK_IDS_KEY = "liked-track-ids";
 const CURRENT_TRACK_ID_KEY = "current-track-id";
 const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
@@ -127,10 +126,6 @@ export async function clearTrackCache() {
   await withStore("readwrite", async (store) => {
     await requestToPromise(store.delete(TRACK_CACHE_KEY));
   });
-}
-
-export function loadLastFolderName() {
-  return localStorage.getItem(LAST_FOLDER_NAME_KEY) || "";
 }
 
 export function saveLikedTrackIds(trackIds: string[]) {

@@ -15,11 +15,6 @@ const albumViewTransitionName = shallowRef("");
 const transitionTarget = shallowRef("");
 
 const showDetail = computed(() => !!albumStore.selectedAlbumName);
-const activeAlbum = computed(
-  () =>
-    albumStore.albums.find((a) => a.name === albumStore.selectedAlbumName) ??
-    null,
-);
 const playingTrackId = computed(() => {
   return playerStore.isPlaying ? playerStore.currentTrackId : "";
 });
@@ -41,12 +36,14 @@ async function handleBack() {
   nextTick(async () => {
     const { support, transition } = withViewTransition(() => {
       detailViewTransitionName.value = ""; // 不能同时出现同名的元素
+      transitionTarget.value = albumStore.selectedAlbumName;
       albumViewTransitionName.value = VIEW_TRANSITION_NAME;
       albumStore.clearSelection();
     });
     if (!support) return;
     await transition.finished;
     albumViewTransitionName.value = "";
+    transitionTarget.value = "";
   });
 }
 function enterAlbum(albumName: string) {
@@ -61,6 +58,7 @@ function enterAlbum(albumName: string) {
     if (!support) return;
     await transition.finished;
     detailViewTransitionName.value = "";
+    transitionTarget.value = "";
   });
 }
 function handleStop() {
@@ -79,7 +77,7 @@ function handleStop() {
     />
     <AlbumDetail
       v-if="showDetail"
-      :album="activeAlbum"
+      :album="albumStore.selectedAlbum"
       :playingTrackId="playingTrackId"
       :viewTransitionName="detailViewTransitionName"
       :style="{
