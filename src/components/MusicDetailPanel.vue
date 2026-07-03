@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import {
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
   Heart,
+  List,
+  MoreVertical,
   Pause,
   Play,
   Repeat,
   Repeat1,
   Shuffle,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
 } from "lucide-vue-next";
 import {
   nextTick,
@@ -20,8 +24,14 @@ import {
 } from "vue";
 import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
-import { Volume2 } from "lucide-vue-next"; // used in volume control
 import TipContent from "../components/TipContent.vue";
+import PlaylistPopover from "./PlaylistPopover.vue";
+import ContextMenu from "./ContextMenu.vue";
+import { useTrackContextMenu } from "../composables/useTrackContextMenu";
+import "@/styles/popover.css";
+
+const LIST_EL_ID = crypto.randomUUID();
+const VOLUME_POPOVER_ID = crypto.randomUUID();
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
@@ -35,6 +45,13 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 const detailBodyRef = useTemplateRef("detailBodyRef");
+const { contextMenuRef, open: openContextMenu } = useTrackContextMenu();
+
+function handleMoreClick(event: MouseEvent) {
+  const track = playerStore.currentTrack;
+  if (!track) return;
+  openContextMenu(event, track);
+}
 
 // 小屏下 .detail-body 可横向滚动，当滚动到歌词页时封面不可见
 // 此时返回应移除 view-transition-name，避免动画异常
@@ -214,26 +231,6 @@ watch(
         </div>
 
         <div class="detail-controls">
-          <label class="volume-wrap detail-volume">
-            <span class="volume-label">
-              <Volume2 :size="16" />
-            </span>
-            <input
-              class="volume-slider detail-volume-slider"
-              type="range"
-              min="0"
-              max="100"
-              :value="playerStore.volumePercent"
-              :style="{ '--slider-value': playerStore.volumePercent + '%' }"
-              @input="
-                playerStore.setVolume(
-                  Number(($event.target as HTMLInputElement).value),
-                )
-              "
-            />
-            <span class="detail-volume-end" aria-hidden="true"></span>
-          </label>
-
           <div class="detail-progress">
             <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
             <input
@@ -255,63 +252,94 @@ watch(
           </div>
 
           <div class="detail-transport">
-            <button
-              class="icon-button is-active"
-              type="button"
-              :aria-label="playerStore.playbackModeLabel"
-              :title="playerStore.playbackModeLabel"
-              @click="playerStore.nextPlaybackMode()"
-            >
-              <Shuffle
-                v-if="playerStore.playbackMode === 'shuffle'"
-                :size="18"
-              />
-              <Repeat1
-                v-else-if="playerStore.playbackMode === 'one'"
-                :size="18"
-              />
-              <Repeat v-else :size="18" />
-            </button>
-            <button
-              class="icon-button"
-              type="button"
-              aria-label="上一首"
-              @click="playerStore.playByStep(-1)"
-            >
-              <ChevronLeft :size="20" />
-            </button>
-            <button
-              class="icon-button play-toggle"
-              :class="{ 'is-active': playerStore.isPlaying }"
-              type="button"
-              aria-label="播放或暂停"
-              @click="playerStore.togglePlay()"
-            >
-              <Pause v-if="playerStore.isPlaying" :size="24" />
-              <Play v-else :size="24" />
-            </button>
-            <button
-              class="icon-button"
-              type="button"
-              aria-label="下一首"
-              @click="playerStore.playByStep(1)"
-            >
-              <ChevronRight :size="20" />
-            </button>
-            <button
-              class="icon-button favorite-button"
-              :class="{ 'is-active': isCurrentTrackLiked }"
-              type="button"
-              :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
-              @click="
-                favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
-              "
-            >
-              <Heart
-                :size="18"
-                :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
-              />
-            </button>
+            <div class="detail-playback">
+              <button
+                class="icon-button"
+                type="button"
+                aria-label="上一首"
+                @click="playerStore.playByStep(-1)"
+              >
+                <SkipBack :size="26" />
+              </button>
+              <button
+                class="icon-button play-toggle"
+                :class="{ 'is-active': playerStore.isPlaying }"
+                type="button"
+                aria-label="播放或暂停"
+                @click="playerStore.togglePlay()"
+              >
+                <Pause v-if="playerStore.isPlaying" :size="30" />
+                <Play v-else :size="30" />
+              </button>
+              <button
+                class="icon-button"
+                type="button"
+                aria-label="下一首"
+                @click="playerStore.playByStep(1)"
+              >
+                <SkipForward :size="26" />
+              </button>
+            </div>
+            <div class="detail-actions">
+              <button
+                class="icon-button is-active"
+                type="button"
+                :aria-label="playerStore.playbackModeLabel"
+                :title="playerStore.playbackModeLabel"
+                @click="playerStore.nextPlaybackMode()"
+              >
+                <Shuffle
+                  v-if="playerStore.playbackMode === 'shuffle'"
+                  :size="18"
+                />
+                <Repeat1
+                  v-else-if="playerStore.playbackMode === 'one'"
+                  :size="18"
+                />
+                <Repeat v-else :size="18" />
+              </button>
+              <button
+                class="icon-button favorite-button"
+                :class="{ 'is-active': isCurrentTrackLiked }"
+                type="button"
+                :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
+                @click="
+                  favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
+                "
+              >
+                <Heart
+                  :size="18"
+                  :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
+                />
+              </button>
+              <button
+                class="icon-button playlist-button"
+                type="button"
+                title="播放列表"
+                :popovertarget="LIST_EL_ID"
+              >
+                <List :size="20" />
+              </button>
+              <button
+                class="icon-button volume-button"
+                type="button"
+                :aria-label="
+                  playerStore.volumePercent === 0 ? '取消静音' : '音量'
+                "
+                :popovertarget="VOLUME_POPOVER_ID"
+              >
+                <VolumeX v-if="playerStore.volumePercent === 0" :size="18" />
+                <Volume2 v-else :size="18" />
+              </button>
+              <button
+                class="icon-button more-button"
+                type="button"
+                title="更多"
+                @click="handleMoreClick($event)"
+              >
+                <MoreVertical :size="18" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -352,5 +380,30 @@ watch(
         </div>
       </div>
     </div>
+
+    <PlaylistPopover
+      :id="LIST_EL_ID"
+      popover="auto"
+      :tracks="playerStore.playlist"
+      :current-track-id="playerStore.currentTrackId"
+      @play="playerStore.playTrack($event, true)"
+      @remove="playerStore.removeFromPlaylist($event)"
+    />
+    <div class="detail-volume-popover" popover="auto" :id="VOLUME_POPOVER_ID">
+      <input
+        class="detail-volume-slider"
+        type="range"
+        min="0"
+        max="100"
+        :value="playerStore.volumePercent"
+        :style="{ '--slider-value': playerStore.volumePercent + '%' }"
+        @input="
+          playerStore.setVolume(
+            Number(($event.target as HTMLInputElement).value),
+          )
+        "
+      />
+    </div>
+    <ContextMenu ref="contextMenuRef" />
   </section>
 </template>

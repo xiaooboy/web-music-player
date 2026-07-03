@@ -70,6 +70,7 @@ function handleKeydown(event: KeyboardEvent) {
 
   switch (event.key) {
     case "Escape":
+      if (document.querySelector("[popover]:popover-open")) break;
       if (uiStore.currentView === "detail") {
         uiStore.setCurrentView("library");
       }

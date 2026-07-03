@@ -23,11 +23,6 @@ function handleFavoriteTrackSelect(id: string) {
   playerStore.setPlaySourceType("favorites");
   playerStore.playTrackById(id, true);
 }
-
-function handleSetNextTrack(id: string) {
-  const track = favoriteStore.favoriteTracks.find((t) => t.id === id);
-  if (track) playerStore.setNextTrack(track);
-}
 </script>
 
 <template>
@@ -57,7 +52,6 @@ function handleSetNextTrack(id: string) {
         @play="handleFavoriteTrackSelect"
         @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
-        @set-next-track="handleSetNextTrack"
       />
     </div>
   </div>

@@ -61,6 +61,10 @@
 }
 
 @media (max-width: 640px) {
+  .volume-button {
+    display: none;
+  }
+
   .transport {
     flex-wrap: wrap;
   }

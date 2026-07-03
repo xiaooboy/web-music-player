@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ArrowLeft, Disc3, Pause, Play } from "lucide-vue-next";
+import { ArrowLeft, Disc3, MoreVertical, Pause, Play } from "lucide-vue-next";
 import { formatTime } from "../utils/media";
 import { Album } from "@/types";
+import ContextMenu from "./ContextMenu.vue";
+import { useTrackContextMenu } from "../composables/useTrackContextMenu";
+
 interface Props {
   album: Album;
   playingTrackId: string;
@@ -16,6 +19,17 @@ const emit = defineEmits<{
   (e: "playAlbum", albumName: string): void;
   (e: "playTrack", albumName: string, trackId: string): void;
 }>();
+
+const { contextMenuRef, open: openContextMenu } = useTrackContextMenu();
+
+function handleContextMenu(
+  event: MouseEvent,
+  track: (typeof props.album.tracks)[number],
+) {
+  event.preventDefault();
+  event.stopPropagation();
+  openContextMenu(event, track);
+}
 </script>
 
 <template>
@@ -63,6 +77,7 @@ const emit = defineEmits<{
         :class="{ 'is-active': track.id === playingTrackId }"
         type="button"
         @click="emit('playTrack', album.name, track.id)"
+        @contextmenu="handleContextMenu($event, track)"
       >
         <div class="album-song-main">
           <div
@@ -83,10 +98,22 @@ const emit = defineEmits<{
             <span>{{ track.artist || "未知歌手" }}</span>
           </div>
         </div>
-        <span class="album-song-duration">{{
-          formatTime(track.duration)
-        }}</span>
+        <div class="album-song-actions">
+          <span class="album-song-duration">{{
+            formatTime(track.duration)
+          }}</span>
+          <button
+            class="row-more"
+            type="button"
+            title="更多"
+            @click.stop="handleContextMenu($event, track)"
+          >
+            <MoreVertical :size="16" />
+          </button>
+        </div>
       </button>
     </div>
+
+    <ContextMenu ref="contextMenuRef" />
   </section>
 </template>

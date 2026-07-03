@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, nextTick, onBeforeUnmount } from "vue";
+import { ref, nextTick, onBeforeUnmount, type Component } from "vue";
 
 export interface MenuItem {
   label: string;
   action: () => void;
   disabled?: boolean;
+  icon?: Component;
 }
 
 const visible = ref(false);
@@ -123,6 +124,12 @@ defineExpose({ open, close });
         type="button"
         @click="handleItemClick(item)"
       >
+        <component
+          v-if="item.icon"
+          :is="item.icon"
+          :size="16"
+          class="context-menu-icon"
+        />
         {{ item.label }}
       </button>
     </div>

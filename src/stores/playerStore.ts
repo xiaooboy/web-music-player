@@ -284,6 +284,24 @@ export const usePlayerStore = defineStore("player", () => {
     setPlaylist(list);
   }
 
+  /**
+   * 从播放队列中移除指定曲目
+   * - 如果移除的是当前正在播放的曲目，自动播放下一首
+   */
+  function removeFromPlaylist(trackId: string) {
+    const list = [...playlist.value];
+    const index = playlistIndexMap.get(trackId);
+    if (index === undefined) return;
+
+    list.splice(index, 1);
+    setPlaylist(list);
+
+    // 如果移除的是当前播放的曲目，播放下一首
+    if (trackId === currentTrackId.value) {
+      playByStep(1);
+    }
+  }
+
   function seekToLyricsLine(index: number) {
     const line = currentLyricsLines.value[index];
     if (!line || line.time === null) return;
@@ -350,6 +368,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   return {
     // state
+    playlist,
     playbackMode,
     playbackModeLabel,
     playSourceType,
@@ -368,6 +387,7 @@ export const usePlayerStore = defineStore("player", () => {
     playTrack,
     playTrackById,
     setNextTrack,
+    removeFromPlaylist,
     playByStep,
     nextPlaybackMode,
     togglePlay,

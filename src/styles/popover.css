@@ -1,0 +1,29 @@
+/* ── Popover 出现与消失动画 ─────────────────────── */
+
+/* 退场动画终态 */
+[popover] {
+  opacity: 0;
+  transform: scale(0.95) translateY(4px);
+  transition:
+    opacity 180ms ease-in,
+    transform 180ms ease-in,
+    overlay 180ms ease-in allow-discrete,
+    display 180ms ease-in allow-discrete;
+}
+
+/* 进场动画终态 */
+[popover]:popover-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    overlay 200ms ease-out allow-discrete,
+    display 200ms ease-out allow-discrete;
+
+  /* 进场起始帧 */
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.95) translateY(-6px);
+  }
+}

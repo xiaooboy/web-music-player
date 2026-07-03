@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import {
-  ChevronLeft,
-  ChevronRight,
   Heart,
+  List,
   Pause,
   Play,
   Repeat,
   Repeat1,
   Shuffle,
+  SkipBack,
+  SkipForward,
 } from "lucide-vue-next";
 import { computed } from "vue";
 
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { useUIStore } from "../stores/uiStore";
+import PlaylistPopover from "./PlaylistPopover.vue";
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
@@ -25,6 +27,14 @@ const isCurrentTrackLiked = computed(() =>
     : false,
 );
 const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
+
+function handlePlayTrack(index: number) {
+  playerStore.playTrack(index, true);
+}
+
+function handleRemoveTrack(id: string) {
+  playerStore.removeFromPlaylist(id);
+}
 </script>
 
 <template>
@@ -62,7 +72,7 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
 
     <div class="dock-center">
       <button
-        class="mode-button mode-button--icon is-active"
+        class="icon-button playback-mode-button is-active"
         type="button"
         :aria-label="playerStore.playbackModeLabel"
         :title="playerStore.playbackModeLabel"
@@ -78,7 +88,7 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
         aria-label="上一首"
         @click.stop="playerStore.playByStep(-1)"
       >
-        <ChevronLeft :size="20" />
+        <SkipBack :size="20" />
       </button>
       <button
         class="play-toggle"
@@ -96,10 +106,10 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
         aria-label="下一首"
         @click.stop="playerStore.playByStep(1)"
       >
-        <ChevronRight :size="20" />
+        <SkipForward :size="20" />
       </button>
       <button
-        class="mode-button mode-button--icon favorite-button"
+        class="icon-button favorite-button"
         :class="{ 'is-active': isCurrentTrackLiked }"
         type="button"
         :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
@@ -111,6 +121,15 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
           :size="18"
           :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
         />
+      </button>
+      <button
+        class="icon-button playlist-button"
+        type="button"
+        title="播放列表"
+        popovertarget="player-dock-playlist"
+        popovertargetaction="toggle"
+      >
+        <List :size="18" />
       </button>
     </div>
 
@@ -131,5 +150,13 @@ const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
         />
       </div>
     </div>
+
+    <PlaylistPopover
+      id="player-dock-playlist"
+      :tracks="playerStore.playlist"
+      :current-track-id="playerStore.currentTrackId"
+      @play="handlePlayTrack"
+      @remove="handleRemoveTrack"
+    />
   </footer>
 </template>

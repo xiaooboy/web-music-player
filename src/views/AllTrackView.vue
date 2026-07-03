@@ -52,11 +52,6 @@ function handleSelectTrack(id: string) {
   playerStore.setPlaySourceType("all-track");
   playerStore.playTrackById(id, true);
 }
-
-function handleSetNextTrack(id: string) {
-  const track = libraryStore.tracks.find((t) => t.id === id);
-  if (track) playerStore.setNextTrack(track);
-}
 </script>
 
 <template>
@@ -86,7 +81,6 @@ function handleSetNextTrack(id: string) {
         @play="handleSelectTrack"
         @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
-        @set-next-track="handleSetNextTrack"
       />
     </div>
   </div>

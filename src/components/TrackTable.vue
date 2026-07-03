@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { Heart, Pause, Play, LocateFixed } from "lucide-vue-next";
+import { Heart, MoreVertical, Pause, Play, LocateFixed } from "lucide-vue-next";
 import TipContent from "./TipContent.vue";
 import SectionHead from "./SectionHead.vue";
 import ContextMenu from "./ContextMenu.vue";
-import type { MenuItem } from "./ContextMenu.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
+import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 
 const props = defineProps<{
   tracks: Track[];
@@ -24,23 +24,15 @@ const emit = defineEmits<{
   play: [id: string];
   togglePlay: [];
   toggleFavorite: [id: string];
-  setNextTrack: [id: string];
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
+const { contextMenuRef, open: openContextMenu } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
   event.stopPropagation();
-  const items: MenuItem[] = [
-    {
-      label: "下一首播放",
-      action: () => emit("setNextTrack", track.id),
-      disabled: track.id === props.currentTrackId,
-    },
-  ];
-  contextMenuRef.value?.open(event, items);
+  openContextMenu(event, track);
 }
 
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
@@ -181,6 +173,14 @@ function scrollToCurrentTrack() {
                   :size="16"
                   :fill="likedTrackIdSet.has(item.id) ? 'currentColor' : 'none'"
                 />
+              </button>
+              <button
+                class="row-more"
+                type="button"
+                title="更多"
+                @click.stop="handleContextMenu($event, item)"
+              >
+                <MoreVertical :size="16" />
               </button>
             </div>
           </div>

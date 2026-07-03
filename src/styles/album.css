@@ -215,6 +215,12 @@
   color: var(--muted);
 }
 
+.album-song-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .album-song-duration {
   color: var(--muted);
 }

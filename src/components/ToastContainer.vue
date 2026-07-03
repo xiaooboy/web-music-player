@@ -32,7 +32,7 @@ const toastList = toasts;
 .toast-item {
   padding: 10px 20px;
   border-radius: 8px;
-  background: rgba(32, 32, 32, 0.88);
+  background: rgba(32, 32, 32, 0.9);
   backdrop-filter: blur(12px);
   color: #fff;
   font-size: 0.9rem;
