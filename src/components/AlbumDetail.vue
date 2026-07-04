@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowLeft, Disc3, MoreVertical, Pause, Play } from "lucide-vue-next";
+import { ref } from "vue";
 import { formatTime } from "../utils/media";
 import { Album } from "@/types";
 import ContextMenu from "./ContextMenu.vue";
@@ -20,7 +21,8 @@ const emit = defineEmits<{
   (e: "playTrack", albumName: string, trackId: string): void;
 }>();
 
-const { contextMenuRef, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
+const contextMenuHeader = ref("");
 
 function handleContextMenu(
   event: MouseEvent,
@@ -28,6 +30,7 @@ function handleContextMenu(
 ) {
   event.preventDefault();
   event.stopPropagation();
+  contextMenuHeader.value = track.title;
   openContextMenu(event, track);
 }
 </script>
@@ -114,6 +117,6 @@ function handleContextMenu(
       </button>
     </div>
 
-    <ContextMenu ref="contextMenuRef" />
+    <ContextMenu :ref="setRef" v-bind="menuProps" />
   </section>
 </template>

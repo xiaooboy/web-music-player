@@ -1,8 +1,8 @@
-import { ref } from "vue";
+import { nextTick, shallowReactive, shallowRef } from "vue";
 import { Heart, ListPlus, Play } from "lucide-vue-next";
 import { usePlayerStore, useFavoriteStore } from "@/stores";
 import ContextMenu from "@/components/ContextMenu.vue";
-import type { MenuItem } from "@/components/ContextMenu.vue";
+import type { MenuItem, EventPosition } from "@/components/ContextMenu.vue";
 import type { Track } from "@/types";
 
 /**
@@ -11,16 +11,23 @@ import type { Track } from "@/types";
  * - 自动生成"播放"、"下一首播放"和"收藏/取消收藏"菜单项
  */
 export function useTrackContextMenu() {
-  const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
-
   const playerStore = usePlayerStore();
   const favoriteStore = useFavoriteStore();
-
-  function open(event: MouseEvent, track: Track) {
+  const contextMenuRef = shallowRef<InstanceType<typeof ContextMenu> | null>(
+    null,
+  );
+  const menuProps = shallowReactive({
+    title: "",
+    menu: [] as MenuItem[],
+  });
+  let wasOpen = false;
+  function handleToggle(event: ToggleEvent) {
+    wasOpen = event.newState === "open";
+  }
+  function updateMenu(track: Track) {
     const isLiked = favoriteStore.likedTrackIdSet.has(track.id);
     const isCurrentTrack = track.id === playerStore.currentTrackId;
-
-    const items: MenuItem[] = [
+    menuProps.menu = [
       {
         label: "播放",
         icon: Play,
@@ -28,20 +35,40 @@ export function useTrackContextMenu() {
         disabled: isCurrentTrack && playerStore.isPlaying,
       },
       {
+        label: isLiked ? "取消收藏" : "收藏",
+        icon: Heart,
+        action: () => favoriteStore.toggleTrackFavorite(track.id),
+      },
+      {
         label: "下一首播放",
         icon: ListPlus,
         action: () => playerStore.setNextTrack(track),
         disabled: isCurrentTrack,
       },
-      {
-        label: isLiked ? "取消收藏" : "收藏",
-        icon: Heart,
-        action: () => favoriteStore.toggleTrackFavorite(track.id),
-      },
     ];
-
-    contextMenuRef.value?.open(event, items);
+    menuProps.title = track.title;
+  }
+  function open(event: EventPosition, track: Track) {
+    updateMenu(track);
+    nextTick(() => {
+      contextMenuRef.value?.open(event);
+    });
+  }
+  function setRef(ref: InstanceType<typeof ContextMenu> | null) {
+    contextMenuRef.value = ref;
+  }
+  function handleClickTrigger(event: MouseEvent, track: Track) {
+    if (wasOpen) return;
+    updateMenu(track);
+    contextMenuRef.value?.open(event);
   }
 
-  return { contextMenuRef, open };
+  return {
+    menuProps,
+    contextMenuRef,
+    open,
+    setRef,
+    handleClickTrigger,
+    handleToggle,
+  };
 }

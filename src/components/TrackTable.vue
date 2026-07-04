@@ -27,7 +27,7 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const { contextMenuRef, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
@@ -202,6 +202,6 @@ function scrollToCurrentTrack() {
     </button>
 
     <!-- 右键菜单 -->
-    <ContextMenu ref="contextMenuRef" />
+    <ContextMenu :ref="setRef" v-bind="menuProps" />
   </section>
 </template>

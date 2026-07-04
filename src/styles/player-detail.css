@@ -175,7 +175,14 @@ input[type="range"]::-webkit-slider-thumb {
   position-try-fallbacks: bottom center;
   margin-top: 8px;
 }
-
+.more-button {
+  anchor-name: --more-anchor;
+}
+.context-menu {
+  position-anchor: --more-anchor;
+  position-area: top center;
+  position-try-fallbacks: bottom center;
+}
 input[type="range"].detail-volume-slider {
   width: 200px;
   transform: rotate(-90deg);

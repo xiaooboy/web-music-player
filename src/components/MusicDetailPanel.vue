@@ -45,12 +45,13 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 const detailBodyRef = useTemplateRef("detailBodyRef");
-const { contextMenuRef, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, setRef, handleClickTrigger, handleToggle } =
+  useTrackContextMenu();
 
 function handleMoreClick(event: MouseEvent) {
   const track = playerStore.currentTrack;
   if (!track) return;
-  openContextMenu(event, track);
+  handleClickTrigger(undefined, track);
 }
 
 // 小屏下 .detail-body 可横向滚动，当滚动到歌词页时封面不可见
@@ -404,6 +405,6 @@ watch(
         "
       />
     </div>
-    <ContextMenu ref="contextMenuRef" />
+    <ContextMenu :ref="setRef" v-bind="menuProps" @toggle="handleToggle" />
   </section>
 </template>
