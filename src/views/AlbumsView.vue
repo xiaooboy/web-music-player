@@ -69,11 +69,32 @@ function handleStop() {
 <template>
   <section class="main-panel album-browser">
     <SectionHead
-      v-if="!showDetail"
       title="专辑"
       :status="
         albumStore.albums.length ? `${albumStore.albums.length} 张` : '等待扫描'
       "
+      :style="{
+        opacity: showDetail ? 0 : 1,
+      }"
+    />
+
+    <AlbumGrid
+      v-if="albumStore.albums.length"
+      :albums="albumStore.albums"
+      :selectedAlbumName="albumStore.selectedAlbumName"
+      :viewTransitionName="albumViewTransitionName"
+      :transitionTarget="transitionTarget"
+      @selectAlbum="enterAlbum"
+      :style="{
+        gridRow: '2/3',
+        opacity: showDetail ? 0 : 1,
+      }"
+    />
+    <TipContent
+      v-else
+      title="还没有可展示的专辑"
+      content="导入音乐后，这里会按专辑自动整理并展示其中的歌曲。"
+      fill
     />
     <AlbumDetail
       v-if="showDetail"
@@ -88,23 +109,6 @@ function handleStop() {
       @playAlbum="handlePlayAlbum"
       @playTrack="handlePlayTrack"
       @stop="handleStop"
-    />
-    <AlbumGrid
-      v-if="albumStore.albums.length"
-      :albums="albumStore.albums"
-      :selectedAlbumName="albumStore.selectedAlbumName"
-      :viewTransitionName="albumViewTransitionName"
-      :transitionTarget="transitionTarget"
-      @selectAlbum="enterAlbum"
-      :style="{
-        visibility: showDetail ? 'hidden' : 'visible',
-      }"
-    />
-    <TipContent
-      v-else
-      title="还没有可展示的专辑"
-      content="导入音乐后，这里会按专辑自动整理并展示其中的歌曲。"
-      fill
     />
   </section>
 </template>

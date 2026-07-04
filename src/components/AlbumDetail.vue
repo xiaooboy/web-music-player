@@ -51,6 +51,7 @@ function handleContextMenu(
           :src="album.coverUrl"
           :alt="`${album.name} 封面`"
           :style="{ 'view-transition-name': viewTransitionName }"
+          @load="($event.target as HTMLImageElement).classList.add('is-loaded')"
         />
         <Disc3 v-else :size="34" />
       </div>

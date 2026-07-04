@@ -7,9 +7,7 @@
   height: 100%;
   align-content: start;
 }
-.album-browser:has(.album-detail-view) {
-  display: block;
-}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumGrid — 多列网格 + 虚拟滚动
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -43,8 +41,6 @@
   aspect-ratio: 1;
   border-radius: var(--cover-radius);
   overflow: hidden;
-}
-.album-card-cover:empty {
   background: rgba(255, 255, 255, 0.06);
 }
 .album-card-cover img {
@@ -52,6 +48,11 @@
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.album-card-cover img.is-loaded {
+  opacity: 1;
 }
 
 .album-card-placeholder {
@@ -121,6 +122,7 @@
   height: 116px;
   overflow: hidden;
   border-radius: var(--cover-radius);
+  background: rgba(255, 255, 255, 0.06);
 }
 .album-detail-cover:empty {
   background: rgba(255, 255, 255, 0.06);
@@ -130,6 +132,11 @@
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.album-detail-cover img.is-loaded {
+  opacity: 1;
 }
 
 .album-detail-copy h3 {

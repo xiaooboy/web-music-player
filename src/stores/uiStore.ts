@@ -7,10 +7,7 @@ import {
 import { withViewTransition } from "@/utils/viewTransition";
 
 export type SectionName =
-  | "all-track"
-  | "favorites"
-  | "albums"
-  | "library-management";
+  "all-track" | "favorites" | "albums" | "library-management";
 
 export const useUIStore = defineStore("ui", () => {
   const currentView = shallowRef<"library" | "detail">("library");
@@ -22,8 +19,6 @@ export const useUIStore = defineStore("ui", () => {
   function setCurrentView(nextView: "library" | "detail") {
     if (currentView.value === nextView) return;
     // Mutation inside view transition so browsers can capture snapshots
-    // currentView.value = nextView;
-
     withViewTransition(() => {
       currentView.value = nextView;
     });
@@ -43,10 +38,7 @@ export const useUIStore = defineStore("ui", () => {
   }
 
   function setActiveSection(section: SectionName) {
-    // Wrap section change in view transition to animate panel switch consistently
-    withViewTransition(() => {
-      activeSection.value = section;
-    });
+    activeSection.value = section;
   }
 
   return {

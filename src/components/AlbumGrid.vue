@@ -75,7 +75,6 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 
 onMounted(() => {
   if (scrollRef.value) {
-    containerWidth.value = scrollRef.value.clientWidth;
     resizeObserver = new ResizeObserver((entries) => {
       containerWidth.value = entries[0].contentRect.width;
     });
@@ -133,6 +132,9 @@ onBeforeUnmount(() => {
                   : undefined
               "
               loading="lazy"
+              @load="
+                ($event.target as HTMLImageElement).classList.add('is-loaded')
+              "
             />
             <Disc3 v-else :size="32" class="album-card-placeholder" />
           </div>
