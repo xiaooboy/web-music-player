@@ -20,10 +20,6 @@ export function useTrackContextMenu() {
     title: "",
     menu: [] as MenuItem[],
   });
-  let wasOpen = false;
-  function handleToggle(event: ToggleEvent) {
-    wasOpen = event.newState === "open";
-  }
   function updateMenu(track: Track) {
     const isLiked = favoriteStore.likedTrackIdSet.has(track.id);
     const isCurrentTrack = track.id === playerStore.currentTrackId;
@@ -48,19 +44,21 @@ export function useTrackContextMenu() {
     ];
     menuProps.title = track.title;
   }
+  /** 打开菜单，已打开时会关闭再打开 */
   function open(event: EventPosition, track: Track) {
-    updateMenu(track);
-    nextTick(() => {
-      contextMenuRef.value?.open(event);
+    contextMenuRef.value?.open(event, () => {
+      updateMenu(track);
     });
   }
   function setRef(ref: InstanceType<typeof ContextMenu> | null) {
     contextMenuRef.value = ref;
   }
+  /** 点击触发菜单，已打开时无操作，系统默认关闭 */
   function handleClickTrigger(event: MouseEvent, track: Track) {
-    if (wasOpen) return;
-    updateMenu(track);
-    contextMenuRef.value?.open(event);
+    if (contextMenuRef.value.getWasOpen()) return;
+    contextMenuRef.value?.open(event, () => {
+      updateMenu(track);
+    });
   }
 
   return {
@@ -69,6 +67,5 @@ export function useTrackContextMenu() {
     open,
     setRef,
     handleClickTrigger,
-    handleToggle,
   };
 }

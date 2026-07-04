@@ -22,6 +22,10 @@ const emit = defineEmits<{
 
 const scrollRef = ref<HTMLElement | null>(null);
 const containerWidth = shallowRef(800);
+const measureCache = ref({
+  containerWidth: containerWidth.value,
+  rowHeight: -1,
+});
 let resizeObserver: ResizeObserver | null = null;
 
 const columnCount = computed(() =>
@@ -47,8 +51,16 @@ const rowVirtualizer = useVirtualizer(
     getScrollElement: () => scrollRef.value,
     estimateSize: () => ROW_HEIGHT + ROW_GAP,
     overscan: 2,
-    measureElement: (el: HTMLElement | null) =>
-      (el?.offsetHeight ?? 0) + ROW_GAP,
+    measureElement: (el: HTMLElement | null) => {
+      const { containerWidth: cachedWidth, rowHeight: cachedHeight } =
+        measureCache.value;
+      if (cachedHeight !== -1 && cachedWidth === containerWidth.value)
+        return cachedHeight;
+      const height = (el?.offsetHeight ?? 0) + ROW_GAP;
+      measureCache.value.rowHeight = height;
+      measureCache.value.containerWidth = containerWidth.value;
+      return height;
+    },
   })),
 );
 

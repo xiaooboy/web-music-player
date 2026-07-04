@@ -45,8 +45,7 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 const detailBodyRef = useTemplateRef("detailBodyRef");
-const { menuProps, setRef, handleClickTrigger, handleToggle } =
-  useTrackContextMenu();
+const { menuProps, setRef, handleClickTrigger } = useTrackContextMenu();
 
 function handleMoreClick(event: MouseEvent) {
   const track = playerStore.currentTrack;
@@ -405,6 +404,6 @@ watch(
         "
       />
     </div>
-    <ContextMenu :ref="setRef" v-bind="menuProps" @toggle="handleToggle" />
+    <ContextMenu :ref="setRef" v-bind="menuProps" />
   </section>
 </template>

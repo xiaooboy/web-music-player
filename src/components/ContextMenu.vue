@@ -24,21 +24,58 @@ export interface EventPosition {
 const props = defineProps<Props>();
 const menuRef = useTemplateRef("menuRef");
 const menuStyle = ref<Record<string, string>>({});
+const wasOpen = shallowRef(false);
 
-function open(event?: EventPosition) {
+/** 关闭过渡结束后待执行的下次行为 */
+let pendingAction: (() => void) | null = null;
+
+function handleToggle(event: ToggleEvent) {
+  wasOpen.value = event.newState === "open";
+}
+
+/** 监听关闭方向 transitionend，完成后执行 pendingAction */
+function onTransitionEnd(e: TransitionEvent) {
+  if (e.target !== menuRef.value) return;
+  // 只在关闭方向的过渡上触发：关闭时 opacity 从 1→0
+  if (wasOpen.value) return;
+  if (!pendingAction) return;
+  const action = pendingAction;
+  pendingAction = null;
+  // 等一帧确保浏览器已将元素置为 display:none，
+  // 这样 @starting-style 才能正确触发
+  requestAnimationFrame(() => {
+    action();
+  });
+}
+/**
+ * 打开菜单，已打开时会关闭再打开
+ * @param event 位置参数
+ * @param before showPopover 之前的回调
+ */
+function open(event?: EventPosition, before?: () => void) {
   const el = menuRef.value;
+  if (!el) return;
 
-  if (getOpenState()) {
+  const doOpen = () => {
+    before?.();
+    nextTick(() => {
+      el?.showPopover();
+      requestAnimationFrame(() => {
+        computePosition(event);
+      });
+    });
+  };
+  console.log(getWasOpen());
+  if (getWasOpen()) {
+    // 菜单已打开 → 记录下次行为，先关闭
+    pendingAction = doOpen;
     el.hidePopover();
     return;
   }
-  nextTick(() => {
-    // 先显示以获取实际尺寸
-    el?.showPopover();
-    requestAnimationFrame(() => {
-      computePosition(event);
-    });
-  });
+
+  // 菜单已关闭 → 清除残留的 pendingAction，直接打开
+  pendingAction = null;
+  doOpen();
 }
 
 function computePosition(event?: EventPosition) {
@@ -81,8 +118,8 @@ function handleItemClick(item: MenuItem) {
   item.action();
   close();
 }
-function getOpenState() {
-  return menuRef.value?.matches(":popover-open");
+function getWasOpen() {
+  return wasOpen.value;
 }
 function showPopover() {
   menuRef.value?.showPopover();
@@ -91,7 +128,7 @@ function hidePopover() {
   menuRef.value?.hidePopover();
 }
 function togglePopover() {
-  if (getOpenState()) {
+  if (getWasOpen()) {
     hidePopover();
   } else {
     showPopover();
@@ -100,7 +137,7 @@ function togglePopover() {
 defineExpose({
   open,
   close,
-  getOpenState,
+  getWasOpen,
   showPopover,
   hidePopover,
   togglePopover,
@@ -114,6 +151,8 @@ defineExpose({
     popover="auto"
     :style="menuStyle"
     @click.stop
+    @toggle="handleToggle"
+    @transitionend="onTransitionEnd"
   >
     <div v-if="title" class="context-menu-header">
       {{ title }}
