@@ -124,6 +124,13 @@
   .app-shell::-webkit-scrollbar {
     width: 0;
     height: 0;
+    display: none;
+  }
+
+  .app-shell::-webkit-scrollbar-thumb,
+  .app-shell::-webkit-scrollbar-track,
+  .app-shell::-webkit-scrollbar-corner {
+    display: none;
   }
   .main-stage {
     scroll-snap-align: start;
