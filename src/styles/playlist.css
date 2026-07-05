@@ -131,13 +131,11 @@
 }
 
 .playlist-card-title {
-  font-weight: 600;
-  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .playlist-card-count {
   color: var(--muted);
-  font-size: 0.82rem;
   margin-top: 2px;
 }
 
@@ -214,8 +212,8 @@
     align-items: center;
     gap: 12px;
     margin-bottom: 0;
-    padding: 8px 0px;
-    border-radius: 10px;
+    padding: 0;
+    border-radius: 0;
     transition:
       background 0.15s ease,
       opacity 0.15s ease;
@@ -228,9 +226,9 @@
 
   .playlist-card-cover {
     aspect-ratio: initial;
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--cover-radius);
   }
 
   .playlist-card-play {
@@ -240,15 +238,6 @@
   .playlist-card-copy {
     flex: 1;
     min-width: 0;
-  }
-
-  .playlist-card-title {
-    font-size: 0.9rem;
-  }
-
-  .playlist-card-count {
-    margin-top: 1px;
-    font-size: 0.78rem;
   }
 
   .playlist-card-more {

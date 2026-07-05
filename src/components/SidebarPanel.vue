@@ -2,6 +2,7 @@
 import { Disc3, Heart, Library, House, Menu, ListMusic } from "lucide-vue-next";
 import { useUIStore } from "../stores/uiStore";
 import type { SectionName } from "../stores/uiStore";
+import { onMounted } from "vue";
 
 const uiStore = useUIStore();
 
@@ -12,9 +13,18 @@ const navItems: { name: SectionName; title: string; icon: typeof House }[] = [
   { name: "playlists", title: "歌单", icon: ListMusic },
   { name: "library-management", title: "音乐源", icon: Library },
 ];
+let mainStage: HTMLDivElement | null = null;
+const screenWidth = window.screen.width;
 
+onMounted(() => {
+  mainStage = document.querySelector(".main-stage");
+});
 function switchSection(name: SectionName) {
   uiStore.setActiveSection(name);
+  // 小屏下点击导航后滚动到主内容区
+  if (screenWidth <= 480) {
+    mainStage?.scrollIntoView({ behavior: "smooth" });
+  }
 }
 </script>
 
@@ -42,9 +52,7 @@ function switchSection(name: SectionName) {
         @click="switchSection(item.name)"
       >
         <span class="nav-icon"><component :is="item.icon" :size="26" /></span>
-        <span v-if="!uiStore.sidebarCollapsed" class="nav-label">{{
-          item.title
-        }}</span>
+        <span class="nav-label">{{ item.title }}</span>
       </button>
     </div>
   </aside>
