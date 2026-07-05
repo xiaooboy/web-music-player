@@ -138,12 +138,13 @@ onBeforeUnmount(() => {
               "
             />
             <Disc3 v-else :size="32" class="album-card-placeholder" />
-            <span
+            <button
               class="album-card-play"
+              type="button"
               @click.stop="emit('playAlbum', album.name)"
             >
               <Play :size="20" />
-            </span>
+            </button>
           </div>
           <div class="album-card-copy">
             <strong class="album-card-title">{{ album.name }}</strong>

@@ -27,7 +27,6 @@ function handlePlayTrack(albumName: string, id: string) {
 }
 function handlePlayAlbum(albumName: string) {
   albumStore.updatePlayingAlbum(albumName);
-  albumStore.selectedAlbumName = albumName;
   playerStore.setPlaySourceType("albums");
   playerStore.playTrack(0, true);
 }

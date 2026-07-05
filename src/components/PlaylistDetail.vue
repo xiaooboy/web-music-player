@@ -68,7 +68,6 @@ function handleToggleFavorite(id: string) {
       :current-track-id="playingTrackId"
       :is-playing="isPlaying"
       :liked-track-id-set="favoriteStore.likedTrackIdSet"
-      :playlist-id="playlist.id"
       empty-title="歌单为空"
       empty-description="通过右键菜单将歌曲添加到这个歌单。"
       @play="handlePlay"

@@ -15,7 +15,6 @@ const props = defineProps<{
   likedTrackIdSet: Set<string>;
   emptyTitle?: string;
   emptyDescription?: string;
-  playlistId?: string;
 }>();
 
 const emit = defineEmits<{
@@ -25,11 +24,7 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const {
-  menuProps,
-  setRef,
-  open: openContextMenu,
-} = useTrackContextMenu(props.playlistId);
+const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();

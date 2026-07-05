@@ -1,6 +1,12 @@
-import { nextTick, shallowReactive, shallowRef } from "vue";
+import { shallowReactive, shallowRef } from "vue";
 import { Heart, ListPlus, Play, ListMusic, Trash2 } from "lucide-vue-next";
-import { usePlayerStore, useFavoriteStore, usePlaylistStore } from "@/stores";
+import {
+  usePlayerStore,
+  useFavoriteStore,
+  usePlaylistStore,
+  useAlbumStore,
+  useUIStore,
+} from "@/stores";
 import ContextMenu from "@/components/ContextMenu.vue";
 import type { MenuItem, EventPosition } from "@/components/ContextMenu.vue";
 import type { Track } from "@/types";
@@ -9,12 +15,14 @@ import type { Track } from "@/types";
  * 曲目右键菜单 composable
  * - 封装 ContextMenu 的 ref 和菜单项构建逻辑
  * - 自动生成"播放"、"下一首播放"、"收藏/取消收藏"和"加入歌单/从歌单删除"菜单项
- * @param playlistId 当前歌单 ID，提供时进入歌单模式（显示"从歌单删除"而非"加入歌单"）
+ * - 播放源和歌单模式根据当前视图上下文自动推断
  */
-export function useTrackContextMenu(playlistId?: string) {
+export function useTrackContextMenu() {
   const playerStore = usePlayerStore();
   const favoriteStore = useFavoriteStore();
   const playlistStore = usePlaylistStore();
+  const albumStore = useAlbumStore();
+  const uiStore = useUIStore();
   const contextMenuRef = shallowRef<InstanceType<typeof ContextMenu> | null>(
     null,
   );
@@ -22,6 +30,27 @@ export function useTrackContextMenu(playlistId?: string) {
     title: "",
     menu: [] as MenuItem[],
   });
+
+  /** 根据当前视图上下文推断播放源并激活 */
+  function activatePlaySource() {
+    const section = uiStore.activeSection;
+    if (section === "library-management") return;
+    // 详情页场景：沿用当前播放源，不做切换
+    if (uiStore.currentView === "detail") return;
+    playerStore.setPlaySourceType(section);
+    if (section === "albums" && albumStore.selectedAlbumName)
+      albumStore.updatePlayingAlbum(albumStore.selectedAlbumName);
+    if (section === "playlists" && playlistStore.selectedPlaylistId)
+      playlistStore.updatePlayingPlaylist(playlistStore.selectedPlaylistId);
+  }
+
+  /** 是否处于歌单详情视图 */
+  function isInPlaylistDetail() {
+    return (
+      uiStore.activeSection === "playlists" &&
+      !!playlistStore.selectedPlaylistId
+    );
+  }
 
   function updateMenu(track: Track) {
     const isLiked = favoriteStore.likedTrackIdSet.has(track.id);
@@ -31,7 +60,10 @@ export function useTrackContextMenu(playlistId?: string) {
       {
         label: "播放",
         icon: Play,
-        action: () => playerStore.playTrackById(track.id, true),
+        action: () => {
+          activatePlaySource();
+          playerStore.playTrackById(track.id, true);
+        },
         disabled: isCurrentTrack && playerStore.isPlaying,
       },
       {
@@ -47,13 +79,16 @@ export function useTrackContextMenu(playlistId?: string) {
       },
     ];
 
-    if (playlistId) {
-      // 歌单模式：显示"从歌单删除"
+    if (isInPlaylistDetail()) {
+      // 歌单详情模式：显示"从歌单删除"
       items.push({
         label: "从歌单删除",
         icon: Trash2,
         action: () =>
-          playlistStore.removeTrackFromPlaylist(playlistId, track.id),
+          playlistStore.removeTrackFromPlaylist(
+            playlistStore.selectedPlaylistId!,
+            track.id,
+          ),
       });
     } else {
       // 默认模式：显示"加入歌单"子菜单

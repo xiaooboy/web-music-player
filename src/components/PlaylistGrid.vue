@@ -69,7 +69,7 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
 <template>
   <div class="playlist-grid-scroll">
     <div class="playlist-grid">
-      <button
+      <section
         v-for="playlist in playlists"
         :key="playlist.id"
         class="playlist-card"
@@ -89,12 +89,13 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
               ($event.target as HTMLImageElement).classList.add('is-loaded')
             "
           />
-          <span
+          <button
             class="playlist-card-play"
+            type="button"
             @click.stop="emit('playPlaylist', playlist.id)"
           >
             <Play :size="20" />
-          </span>
+          </button>
         </div>
         <div class="playlist-card-copy">
           <strong class="playlist-card-title">
@@ -119,7 +120,7 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
         >
           <MoreVertical :size="14" />
         </button>
-      </button>
+      </section>
     </div>
 
     <ContextMenu :ref="setRef" v-bind="menuProps" />
