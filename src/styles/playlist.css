@@ -211,17 +211,12 @@
     flex-direction: row;
     align-items: center;
     gap: 12px;
-    margin-bottom: 0;
+    margin-bottom: 20px;
     padding: 0;
     border-radius: 0;
     transition:
       background 0.15s ease,
       opacity 0.15s ease;
-  }
-
-  .playlist-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    opacity: 1;
   }
 
   .playlist-card-cover {
