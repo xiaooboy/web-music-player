@@ -70,19 +70,11 @@
   align-self: stretch;
 }
 
-.section-head,
 .dock-track,
 .transport,
 .progress-row,
 .volume-wrap {
   display: flex;
-}
-
-.section-head {
-  height: 42px;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
 }
 
 .search-field {
@@ -143,14 +135,6 @@
   letter-spacing: 0.18em;
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.38);
-}
-
-.section-head h2 {
-  margin: 0;
-  color: var(--accent);
-  font-size: 1.08rem;
-  font-weight: 700;
-  line-height: 1.2;
 }
 
 .library-status {

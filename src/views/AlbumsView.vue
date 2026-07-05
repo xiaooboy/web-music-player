@@ -70,13 +70,20 @@ function handleStop() {
   <section class="main-panel album-browser">
     <SectionHead
       title="专辑"
-      :status="
-        albumStore.albums.length ? `${albumStore.albums.length} 张` : '等待扫描'
-      "
       :style="{
         opacity: showDetail ? 0 : 1,
       }"
-    />
+    >
+      <template #right>
+        <span class="library-status">
+          {{
+            albumStore.albums.length
+              ? `${albumStore.albums.length} 张`
+              : "等待扫描"
+          }}
+        </span>
+      </template>
+    </SectionHead>
 
     <AlbumGrid
       v-if="albumStore.albums.length"
@@ -85,6 +92,7 @@ function handleStop() {
       :viewTransitionName="albumViewTransitionName"
       :transitionTarget="transitionTarget"
       @selectAlbum="enterAlbum"
+      @playAlbum="handlePlayAlbum"
       :style="{
         gridRow: '2/3',
         opacity: showDetail ? 0 : 1,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Disc3, Heart, Library, House, Menu } from "lucide-vue-next";
+import { Disc3, Heart, Library, House, Menu, ListMusic } from "lucide-vue-next";
 import { useUIStore } from "../stores/uiStore";
 import type { SectionName } from "../stores/uiStore";
 
@@ -9,6 +9,7 @@ const navItems: { name: SectionName; title: string; icon: typeof House }[] = [
   { name: "all-track", title: "歌曲", icon: House },
   { name: "favorites", title: "收藏", icon: Heart },
   { name: "albums", title: "专辑", icon: Disc3 },
+  { name: "playlists", title: "歌单", icon: ListMusic },
   { name: "library-management", title: "音乐源", icon: Library },
 ];
 

@@ -1,0 +1,244 @@
+<script setup lang="ts">
+import { ref, useTemplateRef, watch } from "vue";
+
+const props = defineProps<{
+  visible: boolean;
+  mode: "create" | "edit" | "delete";
+  initialName?: string;
+}>();
+
+const emit = defineEmits<{
+  confirm: [name?: string];
+  "update:visible": [value: boolean];
+}>();
+
+const name = ref(props.initialName ?? "");
+const dialogRef = useTemplateRef("dialogRef");
+
+watch(
+  () => props.visible,
+  (val) => {
+    const el = dialogRef.value;
+    if (!el) return;
+    if (val) {
+      name.value = props.initialName ?? "";
+      el.showModal();
+    } else {
+      el.close();
+    }
+  },
+);
+
+function handleConfirm() {
+  if (props.mode === "delete") {
+    emit("confirm");
+  } else {
+    const trimmed = name.value.trim();
+    if (!trimmed) return;
+    emit("confirm", trimmed);
+  }
+  emit("update:visible", false);
+}
+
+/** dialog 原生关闭（ESC、backdrop 点击等）同步状态 */
+function handleClose() {
+  if (props.visible) {
+    emit("update:visible", false);
+  }
+}
+</script>
+
+<template>
+  <dialog ref="dialogRef" class="playlist-dialog" @close="handleClose">
+    <form method="dialog" @submit.prevent="handleConfirm">
+      <h3>
+        {{
+          mode === "create"
+            ? "新建歌单"
+            : mode === "edit"
+              ? "编辑歌单"
+              : "删除歌单"
+        }}
+      </h3>
+      <p v-if="mode === 'delete'" class="playlist-dialog-text">
+        确定删除歌单「{{ initialName }}」吗？
+      </p>
+      <input
+        v-else
+        v-model="name"
+        type="text"
+        placeholder="歌单名称"
+        autofocus
+        class="playlist-dialog-input"
+      />
+      <div class="dialog-actions">
+        <button
+          type="button"
+          class="dialog-btn"
+          @click="emit('update:visible', false)"
+        >
+          取消
+        </button>
+        <button
+          type="submit"
+          class="dialog-btn"
+          :class="
+            mode === 'delete' ? 'dialog-btn--danger' : 'dialog-btn--primary'
+          "
+        >
+          {{ mode === "create" ? "创建" : mode === "edit" ? "保存" : "删除" }}
+        </button>
+      </div>
+    </form>
+  </dialog>
+</template>
+
+<style>
+.playlist-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(32, 32, 32, 0.95);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+  color: var(--text);
+  width: min(360px, calc(100vw - 32px));
+  max-height: 80dvh;
+  transform-origin: center center;
+
+  /* 关闭态：动画起点 */
+  opacity: 0;
+  transform: scale(0.92);
+
+  transition:
+    opacity 120ms ease-in,
+    transform 120ms ease-in,
+    overlay 120ms ease-in allow-discrete,
+    display 120ms ease-in allow-discrete;
+}
+
+/* 打开态 */
+.playlist-dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    overlay 200ms ease-out allow-discrete,
+    display 200ms ease-out allow-discrete;
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+/* ─── backdrop 动画 ──────────────────────────────────────────────────────── */
+.playlist-dialog::backdrop {
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+
+  transition:
+    background 120ms ease-in,
+    backdrop-filter 120ms ease-in,
+    display 120ms ease-in allow-discrete,
+    overlay 120ms ease-in allow-discrete;
+}
+
+.playlist-dialog[open]::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+
+  transition:
+    background 200ms ease-out,
+    backdrop-filter 200ms ease-out,
+    display 200ms ease-out allow-discrete,
+    overlay 200ms ease-out allow-discrete;
+
+  @starting-style {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* ─── 内容样式 ────────────────────────────────────────────────────────────── */
+.playlist-dialog h3 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.playlist-dialog-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.playlist-dialog-input:focus {
+  border-color: var(--accent);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dialog-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.dialog-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dialog-btn--primary {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  color: #000;
+  font-weight: 600;
+}
+
+.dialog-btn--primary:hover {
+  background: var(--accent-bright);
+}
+
+/* ─── 删除确认文本 ─────────────────────────────────────────────────────────── */
+.playlist-dialog-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.dialog-btn--danger {
+  background: rgba(220, 60, 60, 0.85);
+  border-color: rgba(220, 60, 60, 0.85);
+  color: #fff;
+  font-weight: 600;
+}
+
+.dialog-btn--danger:hover {
+  background: rgba(220, 60, 60, 1);
+}
+</style>

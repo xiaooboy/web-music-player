@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PlaylistsView — 歌单浏览器
+   ═══════════════════════════════════════════════════════════════════════════ */
+.playlist-browser {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  min-height: 0;
+  height: 100%;
+  align-content: start;
+}
+
+.playlist-create-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.playlist-create-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PlaylistGrid — 网格布局
+   ═══════════════════════════════════════════════════════════════════════════ */
+.playlist-grid-scroll {
+  overflow-y: auto;
+  height: 100%;
+  padding-bottom: var(--dock-height);
+}
+
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 30px;
+  padding: 0;
+}
+
+/* ─── 歌单卡片 ──────────────────────────────────────────────────────────── */
+.playlist-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+  position: relative;
+  transition: opacity 0.15s ease;
+}
+
+.playlist-card-cover {
+  aspect-ratio: 1;
+  border-radius: var(--cover-radius);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.playlist-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.playlist-card-cover img.is-loaded {
+  opacity: 1;
+}
+
+.playlist-card-play {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  color: #fff;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  transform: translateY(4px);
+}
+
+.playlist-card:hover .playlist-card-play {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.playlist-card-play:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.playlist-card-copy {
+  min-width: 0;
+}
+
+.playlist-card-title,
+.playlist-card-count {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-card-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.playlist-card-count {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+.playlist-card-more {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+
+.playlist-card:hover .playlist-card-more {
+  opacity: 1;
+}
+
+.playlist-card-more:hover {
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ContextMenu — 子菜单
+   ═══════════════════════════════════════════════════════════════════════════ */
+.context-menu-item.has-submenu {
+  cursor: default;
+}
+
+.context-menu-item.has-submenu:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PlaylistDetail — 歌单详情
+   ═══════════════════════════════════════════════════════════════════════════ */
+.playlist-detail-view {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PlaylistGrid — 响应式布局
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 820px) {
+  .playlist-grid {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .playlist-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+    padding: 8px 0px;
+    border-radius: 10px;
+    transition:
+      background 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  .playlist-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    opacity: 1;
+  }
+
+  .playlist-card-cover {
+    aspect-ratio: initial;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+
+  .playlist-card-play {
+    display: none;
+  }
+
+  .playlist-card-copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .playlist-card-title {
+    font-size: 0.9rem;
+  }
+
+  .playlist-card-count {
+    margin-top: 1px;
+    font-size: 0.78rem;
+  }
+
+  .playlist-card-more {
+    position: static;
+    opacity: 0.5;
+    background: transparent;
+    backdrop-filter: none;
+    color: var(--muted);
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .playlist-card:hover .playlist-card-more {
+    opacity: 1;
+    color: var(--text);
+  }
+
+  .playlist-card-more:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}

@@ -25,7 +25,7 @@ import {
 import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import TipContent from "../components/TipContent.vue";
-import PlaylistPopover from "./PlaylistPopover.vue";
+import QueuePopover from "./QueuePopover.vue";
 import ContextMenu from "./ContextMenu.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import "@/styles/popover.css";
@@ -313,9 +313,9 @@ watch(
                 />
               </button>
               <button
-                class="icon-button playlist-button"
+                class="icon-button queue-button"
                 type="button"
-                title="播放列表"
+                title="播放队列"
                 :popovertarget="LIST_EL_ID"
               >
                 <List :size="20" />
@@ -381,13 +381,13 @@ watch(
       </div>
     </div>
 
-    <PlaylistPopover
+    <QueuePopover
       :id="LIST_EL_ID"
       popover="auto"
-      :tracks="playerStore.playlist"
+      :tracks="playerStore.queue"
       :current-track-id="playerStore.currentTrackId"
       @play="playerStore.playTrack($event, true)"
-      @remove="playerStore.removeFromPlaylist($event)"
+      @remove="playerStore.removeFromQueue($event)"
     />
     <div class="detail-volume-popover" popover="auto" :id="VOLUME_POPOVER_ID">
       <input

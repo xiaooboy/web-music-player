@@ -23,7 +23,11 @@
     grid-template-columns: 80px minmax(0, 1fr);
     gap: 14px;
   }
-
+  .track-row {
+    .row-play {
+      display: none;
+    }
+  }
   .album-detail-cover {
     width: 80px;
     height: 80px;
@@ -142,11 +146,11 @@
     display: none;
   }
   .player-dock {
-    .mode-button {
-      display: none;
-    }
     .icon-button {
       display: none;
+    }
+    .play-toggle {
+      display: grid;
     }
   }
 }

@@ -50,3 +50,11 @@ export interface Album {
   coverUrl: string;
   tracks: Track[];
 }
+
+export interface Playlist {
+  id: string;
+  name: string;
+  trackIds: string[];
+  createdAt: number;
+  updatedAt: number;
+}

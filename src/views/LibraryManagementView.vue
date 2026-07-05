@@ -54,51 +54,42 @@ function removeSource(sourceId: string) {
 
 <template>
   <section class="main-panel library-management-panel">
-    <SectionHead
-      title="音乐库管理"
-      :status="
-        libraryStore.musicSources.length
-          ? `${libraryStore.musicSources.length} 个`
-          : '等待添加'
-      "
-    />
+    <SectionHead title="音乐库管理">
+      <template #right>
+        <div class="library-actions-inline">
+          <button
+            v-if="showAddButton"
+            class="icon-btn"
+            type="button"
+            title="添加音乐源"
+            @click="openFolder('picker')"
+          >
+            <FolderPlus :size="18" />
+          </button>
+          <button
+            v-if="showTempButton"
+            class="icon-btn"
+            type="button"
+            title="导入临时文件夹"
+            @click="openFolder('webkitDirectory')"
+          >
+            <FolderSymlink :size="18" />
+          </button>
+          <button
+            v-if="pendingReauthCount"
+            class="icon-btn"
+            type="button"
+            title="重新授权"
+            :disabled="libraryStore.isReauthorizing"
+            @click="libraryStore.reauthorizeAll()"
+          >
+            <RefreshCw :size="18" />
+          </button>
+        </div>
+      </template>
+    </SectionHead>
 
     <p class="library-management-hint">{{ libraryHint }}</p>
-
-    <div class="library-management-actions">
-      <button
-        v-if="showAddButton"
-        class="primary-button library-action-button"
-        type="button"
-        @click="openFolder('picker')"
-      >
-        <FolderPlus :size="18" />
-        <span>添加音乐源</span>
-      </button>
-      <button
-        v-if="showTempButton"
-        class="primary-button library-action-button"
-        type="button"
-        @click="openFolder('webkitDirectory')"
-      >
-        <FolderSymlink :size="18" />
-        <span>导入临时文件夹</span>
-      </button>
-
-      <button
-        v-if="pendingReauthCount"
-        class="primary-button library-action-button"
-        type="button"
-        :disabled="libraryStore.isReauthorizing"
-        @click="libraryStore.reauthorizeAll()"
-      >
-        <RefreshCw :size="18" />
-        <span v-if="!libraryStore.isReauthorizing"
-          >重新授权 ({{ pendingReauthCount }})</span
-        >
-        <span v-else>正在授权…</span>
-      </button>
-    </div>
 
     <div
       v-if="libraryStore.musicSources.length"

@@ -28,7 +28,7 @@ function handleToggle(event: ToggleEvent) {
 </script>
 
 <template>
-  <div class="playlist-popover" popover="auto" @toggle="handleToggle">
+  <div class="queue-popover" popover="auto" @toggle="handleToggle">
     <header class="popover-header">
       <span class="popover-title">播放队列</span>
       <span class="popover-count">({{ tracks.length }}首)</span>
@@ -68,7 +68,7 @@ function handleToggle(event: ToggleEvent) {
 </template>
 
 <style>
-.playlist-popover {
+.queue-popover {
   padding: 0;
   border-radius: 12px;
   background: rgba(32, 32, 32, 0.9);

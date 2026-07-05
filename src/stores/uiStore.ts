@@ -7,7 +7,7 @@ import {
 import { withViewTransition } from "@/utils/viewTransition";
 
 export type SectionName =
-  "all-track" | "favorites" | "albums" | "library-management";
+  "all-track" | "favorites" | "albums" | "playlists" | "library-management";
 
 export const useUIStore = defineStore("ui", () => {
   const currentView = shallowRef<"library" | "detail">("library");

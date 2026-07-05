@@ -5,6 +5,7 @@ import { useFavoriteStore } from "../stores/favoriteStore";
 import { usePlayerStore } from "../stores/playerStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
+import SectionHead from "@/components/SectionHead.vue";
 
 const favoriteStore = useFavoriteStore();
 const playerStore = usePlayerStore();
@@ -39,14 +40,14 @@ function handleFavoriteTrackSelect(id: string) {
       </label>
     </header>
 
+    <SectionHead title="收藏" />
+
     <div class="all-track-scroll">
       <TrackTable
         :tracks="visibleTracks"
         :current-track-id="playerStore.currentTrackId"
         :is-playing="playerStore.isPlaying"
-        :status="status"
         :liked-track-id-set="favoriteStore.likedTrackIdSet"
-        title="收藏"
         empty-title="收藏为空"
         empty-description="点亮心形按钮，这里会自动收集你收藏的音乐。"
         @play="handleFavoriteTrackSelect"

@@ -3,5 +3,6 @@
 @import "./styles/layout.css";
 @import "./styles/library.css";
 @import "./styles/album.css";
+@import "./styles/playlist.css";
 @import "./styles/player-detail.css";
 @import "./styles/responsive.css";

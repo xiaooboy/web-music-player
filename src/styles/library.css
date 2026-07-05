@@ -70,7 +70,7 @@
 
 .library-management-panel {
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
   min-height: 0;
   height: 100%;
@@ -83,27 +83,35 @@
   line-height: 1.5;
 }
 
-.library-management-actions {
+.library-actions-inline {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.library-action-button {
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  height: 40px;
-  min-height: 40px;
-  padding: 0 16px;
-  border-radius: 14px;
-  font-size: 0.92rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .all-track-view {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   min-height: 0;
   height: 100%;
   width: 100%;
@@ -115,11 +123,12 @@
   position: relative;
   z-index: 5;
   width: 100%;
-  padding: 0 0 20px;
   background: transparent;
   backdrop-filter: none;
 }
-
+.all-track-view .all-track-searchbar {
+  margin-bottom: 10px;
+}
 .all-track-scroll {
   width: 100%;
   min-height: 0;
@@ -128,7 +137,7 @@
   padding-right: 0;
 }
 
-.all-track-scroll > .track-table {
+.track-table {
   height: 100%;
   width: 100%;
   justify-self: stretch;
@@ -138,7 +147,7 @@
   padding-right: 0;
 }
 
-.all-track-scroll > .track-table .track-list {
+.track-table .track-list {
   flex: 1;
   min-height: 0;
   height: 100%;
@@ -147,13 +156,13 @@
   justify-items: stretch;
 }
 
-.all-track-scroll > .track-table .track-list--empty {
+.track-table .track-list--empty {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.all-track-scroll > .track-table .track-row {
+.track-table .track-row {
   width: auto;
   /* 行通过 transform 绝对定位，移除 transform 过渡避免滚动抖动 */
   transition: background 160ms ease;
@@ -249,7 +258,7 @@
 
 .scroll-to-current {
   position: absolute;
-  right: 12px;
+  right: 0;
   bottom: calc(var(--dock-height) + 20px);
   display: inline-flex;
   align-items: center;
@@ -281,7 +290,7 @@
 }
 
 .track-header {
-  margin-top: 8px;
+  margin-block: 8px;
   padding: 0 12px 10px 0;
   color: var(--muted);
   font-size: 0.84rem;
@@ -297,8 +306,6 @@
   max-width: 100%;
   justify-self: stretch;
   align-self: start;
-  padding-right: 12px;
-
   transition:
     background 160ms ease,
     transform 160ms ease;

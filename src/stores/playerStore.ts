@@ -12,6 +12,7 @@ import { computed, shallowRef, watch } from "vue";
 import { useLibraryStore } from "./libraryStore";
 import { useFavoriteStore } from "./favoriteStore";
 import { useAlbumStore } from "./albumStore";
+import { usePlaylistStore } from "./playlistStore";
 
 type PlaybackConfig = Array<{
   mode: PlaybackMode;
@@ -32,19 +33,20 @@ export const usePlayerStore = defineStore("player", () => {
       playbackConfig.find((c) => c.mode === playbackMode.value)?.label ?? "",
   );
 
-  // ─── 播放列表 ───────────────────────────────────────────────────────────
-  const playlist = shallowRef<Track[]>([]);
-  const playSourceType = shallowRef<"all-track" | "favorites" | "albums">(
-    "all-track",
-  );
-  let playlistIndexMap = new Map<string, number>();
-  let playlistSourceInitialized = false;
+  // ─── 播放队列 ───────────────────────────────────────────────────────────
+  const queue = shallowRef<Track[]>([]);
+  const playSourceType = shallowRef<
+    "all-track" | "favorites" | "albums" | "playlists"
+  >("all-track");
+  let queueIndexMap = new Map<string, number>();
+  let queueSourceInitialized = false;
 
   // ─── 拉模式：根据 playSourceType 自动拉取对应数据源 ─────────────────────
-  const playlistSource = computed<Track[]>(() => {
+  const queueSource = computed<Track[]>(() => {
     const libraryStore = useLibraryStore();
     const favoriteStore = useFavoriteStore();
     const albumStore = useAlbumStore();
+    const playlistStore = usePlaylistStore();
     switch (playSourceType.value) {
       case "all-track":
         return libraryStore.tracks;
@@ -52,6 +54,8 @@ export const usePlayerStore = defineStore("player", () => {
         return favoriteStore.favoriteTracks;
       case "albums":
         return albumStore.currentAlbumTracks;
+      case "playlists":
+        return playlistStore.currentPlaylistTracks;
       default:
         return [];
     }
@@ -117,7 +121,9 @@ export const usePlayerStore = defineStore("player", () => {
     });
   }
 
-  function setPlaySourceType(type: "all-track" | "favorites" | "albums") {
+  function setPlaySourceType(
+    type: "all-track" | "favorites" | "albums" | "playlists",
+  ) {
     playSourceType.value = type;
   }
 
@@ -126,22 +132,21 @@ export const usePlayerStore = defineStore("player", () => {
     playbackMode.value = playbackConfig[playbackIndex].mode;
   }
 
-  function setPlaylist(newTracks: Track[]) {
-    playlist.value = newTracks;
-    playlistIndexMap.clear();
+  function setQueue(newTracks: Track[]) {
+    queue.value = newTracks;
+    queueIndexMap.clear();
     newTracks.forEach((track, index) => {
-      playlistIndexMap.set(track.id, index);
+      queueIndexMap.set(track.id, index);
     });
     if (!currentTrackId.value) {
-      if (newTracks.length > 0) playlistSourceInitialized = true;
+      if (newTracks.length > 0) queueSourceInitialized = true;
       return;
     }
-    if (playlistIndexMap.has(currentTrackId.value)) {
-      currentTrack.value =
-        newTracks[playlistIndexMap.get(currentTrackId.value)!];
+    if (queueIndexMap.has(currentTrackId.value)) {
+      currentTrack.value = newTracks[queueIndexMap.get(currentTrackId.value)!];
       updateMediaSession(currentTrack.value);
-    } else if (newTracks.length > 0 || playlistSourceInitialized) {
-      // 非空列表中找不到，或数据曾加载过但现在被清空 → 暂停并清除
+    } else if (newTracks.length > 0 || queueSourceInitialized) {
+      // 非空队列中找不到，或数据曾加载过但现在被清空 → 暂停并清除
       audio.pause();
       audio.src = "";
       URL.revokeObjectURL(currentAudioUrl.value);
@@ -153,18 +158,18 @@ export const usePlayerStore = defineStore("player", () => {
       clearMediaSession();
     }
     // 数据尚未加载（首次 immediate 触发空数组），保留 currentTrackId 等待后续更新
-    if (newTracks.length > 0) playlistSourceInitialized = true;
+    if (newTracks.length > 0) queueSourceInitialized = true;
   }
 
-  // 使用 flush:'sync' 确保在 playTrack 等命令式调用前 playlist 已同步
-  // 必须放在 setPlaylist 及其依赖的状态声明之后（immediate:true 会立即执行）
-  watch(playlistSource, (newTracks) => setPlaylist(newTracks), {
+  // 使用 flush:'sync' 确保在 playTrack 等命令式调用前 queue 已同步
+  // 必须放在 setQueue 及其依赖的状态声明之后（immediate:true 会立即执行）
+  watch(queueSource, (newTracks) => setQueue(newTracks), {
     flush: "sync",
     immediate: true,
   });
 
   function getCurrentTrackIndex(): number {
-    const find = playlistIndexMap.get(currentTrackId.value);
+    const find = queueIndexMap.get(currentTrackId.value);
     return find ?? -1;
   }
 
@@ -180,12 +185,12 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function playTrackById(id: string, autoplay = true) {
-    const index = playlistIndexMap.get(id);
+    const index = queueIndexMap.get(id);
     if (index !== undefined) playTrack(index, autoplay);
   }
 
   function playTrack(index: number, autoplay = true) {
-    const track = playlist.value[index];
+    const track = queue.value[index];
     if (!track) return;
     if (!track.file) {
       showToast("无法播放该曲目，音乐未解析完成，或音乐库缓存失效");
@@ -228,18 +233,18 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function getAdjacentIndex(direction: number) {
-    if (!playlist.value.length) return null;
+    if (!queue.value.length) return null;
     const currentIndex = getCurrentTrackIndex();
     if (playbackMode.value === "shuffle")
-      return Math.floor(Math.random() * playlist.value.length);
+      return Math.floor(Math.random() * queue.value.length);
     let targetIndex = currentIndex + direction;
-    if (targetIndex < 0) targetIndex = playlist.value.length - 1;
-    if (targetIndex >= playlist.value.length) targetIndex = 0;
+    if (targetIndex < 0) targetIndex = queue.value.length - 1;
+    if (targetIndex >= queue.value.length) targetIndex = 0;
     return targetIndex;
   }
 
   function playByStep(direction: number) {
-    if (!playlist.value.length) return;
+    if (!queue.value.length) return;
     const targetIndex = getAdjacentIndex(direction);
     if (targetIndex !== null) playTrack(targetIndex, true);
   }
@@ -259,17 +264,17 @@ export const usePlayerStore = defineStore("player", () => {
   /**
    * 将指定曲目插入到当前播放曲目的下一首位置
    * - 如果该曲目就是当前播放的曲目，则不处理
-   * - 如果该曲目已在播放列表中，先移除再插入到当前位置下方
-   * - 如果该曲目不在播放列表中，直接插入到当前位置下方
+   * - 如果该曲目已在播放队列中，先移除再插入到当前位置下方
+   * - 如果该曲目不在播放队列中，直接插入到当前位置下方
    */
   function setNextTrack(track: Track) {
     if (track.id === currentTrackId.value) return;
     if (!currentTrack.value) return;
-    const list = [...playlist.value];
+    const list = [...queue.value];
     const currentIndex = getCurrentTrackIndex();
-    // 从列表中移除该曲目（如果存在）
-    if (playlistIndexMap.has(track.id)) {
-      const existIndex = playlistIndexMap.get(track.id);
+    // 从队列中移除该曲目（如果存在）
+    if (queueIndexMap.has(track.id)) {
+      const existIndex = queueIndexMap.get(track.id);
       list.splice(existIndex, 1);
       // 移除元素在当前曲目之前时，当前曲目的实际索引前移了一位
       if (existIndex < currentIndex) {
@@ -278,23 +283,23 @@ export const usePlayerStore = defineStore("player", () => {
         list.splice(currentIndex + 1, 0, track);
       }
     } else {
-      // 不在列表中，直接插入到当前曲目下方
+      // 不在队列中，直接插入到当前曲目下方
       list.splice(currentIndex + 1, 0, track);
     }
-    setPlaylist(list);
+    setQueue(list);
   }
 
   /**
    * 从播放队列中移除指定曲目
    * - 如果移除的是当前正在播放的曲目，自动播放下一首
    */
-  function removeFromPlaylist(trackId: string) {
-    const list = [...playlist.value];
-    const index = playlistIndexMap.get(trackId);
+  function removeFromQueue(trackId: string) {
+    const list = [...queue.value];
+    const index = queueIndexMap.get(trackId);
     if (index === undefined) return;
 
     list.splice(index, 1);
-    setPlaylist(list);
+    setQueue(list);
 
     // 如果移除的是当前播放的曲目，播放下一首
     if (trackId === currentTrackId.value) {
@@ -368,7 +373,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   return {
     // state
-    playlist,
+    queue,
     playbackMode,
     playbackModeLabel,
     playSourceType,
@@ -387,7 +392,7 @@ export const usePlayerStore = defineStore("player", () => {
     playTrack,
     playTrackById,
     setNextTrack,
-    removeFromPlaylist,
+    removeFromQueue,
     playByStep,
     nextPlaybackMode,
     togglePlay,

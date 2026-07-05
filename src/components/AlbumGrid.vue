@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { Disc3 } from "lucide-vue-next";
+import { Disc3, Play } from "lucide-vue-next";
 import type { Album } from "../types";
 
 interface Props {
@@ -18,6 +18,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   (e: "selectAlbum", albumName: string): void;
+  (e: "playAlbum", albumName: string): void;
 }>();
 
 const scrollRef = ref<HTMLElement | null>(null);
@@ -137,6 +138,12 @@ onBeforeUnmount(() => {
               "
             />
             <Disc3 v-else :size="32" class="album-card-placeholder" />
+            <span
+              class="album-card-play"
+              @click.stop="emit('playAlbum', album.name)"
+            >
+              <Play :size="20" />
+            </span>
           </div>
           <div class="album-card-copy">
             <strong class="album-card-title">{{ album.name }}</strong>

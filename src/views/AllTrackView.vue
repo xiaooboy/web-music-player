@@ -6,6 +6,7 @@ import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
+import SectionHead from "@/components/SectionHead.vue";
 
 const libraryStore = useLibraryStore();
 const playerStore = usePlayerStore();
@@ -67,11 +68,10 @@ function handleSelectTrack(id: string) {
         />
       </label>
     </header>
+    <SectionHead title="歌曲" />
 
     <div class="all-track-scroll">
       <TrackTable
-        title="歌曲"
-        :status="playlistStatus"
         :tracks="visibleTracks"
         :current-track-id="playerStore.currentTrackId"
         :is-playing="playerStore.isPlaying"

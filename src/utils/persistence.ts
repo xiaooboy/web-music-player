@@ -1,4 +1,4 @@
-import { MusicSource, Track } from "@/types";
+import { MusicSource, Playlist, Track } from "@/types";
 
 const DB_NAME = "local-music";
 const DB_VERSION = 2;
@@ -6,6 +6,7 @@ const STORE_NAME = "settings";
 const SOURCES_KEY = "music-sources";
 const TRACK_CACHE_KEY = "track-cache";
 const LIKED_TRACK_IDS_KEY = "liked-track-ids";
+const PLAYLISTS_KEY = "playlists";
 const CURRENT_TRACK_ID_KEY = "current-track-id";
 const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
 
@@ -159,6 +160,21 @@ export function loadLikedTrackIds() {
     return Array.isArray(parsed)
       ? parsed.filter((item): item is string => typeof item === "string")
       : [];
+  } catch {
+    return [];
+  }
+}
+
+export function savePlaylists(playlists: Playlist[]) {
+  localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
+}
+
+export function loadPlaylists(): Playlist[] {
+  try {
+    const raw = localStorage.getItem(PLAYLISTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }

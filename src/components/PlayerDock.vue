@@ -15,7 +15,7 @@ import { computed } from "vue";
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { useUIStore } from "../stores/uiStore";
-import PlaylistPopover from "./PlaylistPopover.vue";
+import QueuePopover from "./QueuePopover.vue";
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
@@ -33,7 +33,7 @@ function handlePlayTrack(index: number) {
 }
 
 function handleRemoveTrack(id: string) {
-  playerStore.removeFromPlaylist(id);
+  playerStore.removeFromQueue(id);
 }
 </script>
 
@@ -91,7 +91,7 @@ function handleRemoveTrack(id: string) {
         <SkipBack :size="20" />
       </button>
       <button
-        class="play-toggle"
+        class="icon-button play-toggle"
         :class="{ 'is-active': playerStore.isPlaying }"
         type="button"
         aria-label="播放或暂停"
@@ -123,10 +123,10 @@ function handleRemoveTrack(id: string) {
         />
       </button>
       <button
-        class="icon-button playlist-button"
+        class="icon-button queue-button"
         type="button"
-        title="播放列表"
-        popovertarget="player-dock-playlist"
+        title="播放队列"
+        popovertarget="player-dock-queue"
         popovertargetaction="toggle"
       >
         <List :size="18" />
@@ -151,9 +151,9 @@ function handleRemoveTrack(id: string) {
       </div>
     </div>
 
-    <PlaylistPopover
-      id="player-dock-playlist"
-      :tracks="playerStore.playlist"
+    <QueuePopover
+      id="player-dock-queue"
+      :tracks="playerStore.queue"
       :current-track-id="playerStore.currentTrackId"
       @play="handlePlayTrack"
       @remove="handleRemoveTrack"

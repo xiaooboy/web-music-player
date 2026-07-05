@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "lucide-vue-next";
 import TipContent from "./TipContent.vue";
-import SectionHead from "./SectionHead.vue";
 import ContextMenu from "./ContextMenu.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
@@ -13,11 +12,10 @@ const props = defineProps<{
   tracks: Track[];
   currentTrackId: string;
   isPlaying: boolean;
-  status: string;
   likedTrackIdSet: Set<string>;
-  title?: string;
   emptyTitle?: string;
   emptyDescription?: string;
+  playlistId?: string;
 }>();
 
 const emit = defineEmits<{
@@ -27,7 +25,11 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
+const {
+  menuProps,
+  setRef,
+  open: openContextMenu,
+} = useTrackContextMenu(props.playlistId);
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
@@ -81,10 +83,8 @@ function scrollToCurrentTrack() {
 
 <template>
   <section class="track-table">
-    <SectionHead :title="title || '歌曲'" :status="status" />
-
     <div v-if="tracks.length" class="track-header">
-      <span>歌曲</span>
+      <span>{{ tracks.length }} 首</span>
       <span>专辑</span>
       <span>时长</span>
       <span>操作</span>

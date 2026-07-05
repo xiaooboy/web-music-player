@@ -7,6 +7,7 @@ import PlayerDock from "./components/PlayerDock.vue";
 import SidebarPanel from "./components/SidebarPanel.vue";
 import FavoritesView from "./views/FavoritesView.vue";
 import AlbumsView from "./views/AlbumsView.vue";
+import PlaylistsView from "./views/PlaylistsView.vue";
 import LibraryManagementView from "./views/LibraryManagementView.vue";
 import { storeToRefs } from "pinia";
 import AllTrackView from "./views/AllTrackView.vue";
@@ -108,6 +109,7 @@ function handleContextMenuBlock(event: MouseEvent) {
       <AllTrackView v-if="activeSection === 'all-track'" />
       <FavoritesView v-else-if="activeSection === 'favorites'" />
       <AlbumsView v-else-if="activeSection === 'albums'" />
+      <PlaylistsView v-else-if="activeSection === 'playlists'" />
       <LibraryManagementView v-else />
     </main>
 
