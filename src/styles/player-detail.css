@@ -280,9 +280,7 @@ input[type="range"].detail-volume-slider {
 }
 
 .primary-button:hover,
-.play-toggle:hover,
-.row-play.is-playing,
-.row-play:hover {
+.row-play.is-playing {
   color: var(--accent-deep);
 }
 

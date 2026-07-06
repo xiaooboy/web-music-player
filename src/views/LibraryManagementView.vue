@@ -113,12 +113,12 @@ function removeSource(sourceId: string) {
           }}</span>
         </div>
         <button
-          class="source-remove"
+          class="source-remove icon-btn"
           type="button"
+          title="移除"
           @click="removeSource(source.id)"
         >
-          <Trash2 :size="16" />
-          <span>移除</span>
+          <Trash2 :size="18" />
         </button>
       </div>
     </div>
