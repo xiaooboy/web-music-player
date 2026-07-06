@@ -129,3 +129,12 @@ svg {
   display: block;
   flex-shrink: 0;
 }
+
+/* PWA 模式下统一使用 default 光标 */
+@media (display-mode: standalone), (display-mode: window-controls-overlay) {
+  *,
+  *::before,
+  *::after {
+    cursor: default !important;
+  }
+}

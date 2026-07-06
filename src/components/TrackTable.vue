@@ -140,6 +140,9 @@ function scrollToCurrentTrack() {
                   'is-playing': item.id === currentTrackId && isPlaying,
                 }"
                 type="button"
+                :title="
+                  item.id === currentTrackId && isPlaying ? '暂停' : '播放'
+                "
                 :aria-label="
                   item.id === currentTrackId && isPlaying ? '暂停' : '播放'
                 "
@@ -159,6 +162,7 @@ function scrollToCurrentTrack() {
                 class="row-like"
                 :class="{ 'is-active': likedTrackIdSet.has(item.id) }"
                 type="button"
+                :title="likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'"
                 :aria-label="
                   likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'
                 "
@@ -173,6 +177,7 @@ function scrollToCurrentTrack() {
                 class="row-more"
                 type="button"
                 title="更多"
+                aria-label="更多"
                 @click.stop="handleContextMenu($event, item)"
               >
                 <MoreVertical :size="16" />
@@ -191,6 +196,7 @@ function scrollToCurrentTrack() {
       class="scroll-to-current"
       type="button"
       aria-label="滚动到当前播放音乐"
+      title="滚动到当前播放音乐"
       @click="scrollToCurrentTrack"
     >
       <LocateFixed :size="20" />
