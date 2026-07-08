@@ -1,5 +1,5 @@
-import { shallowReactive, shallowRef } from "vue";
-import { Heart, ListPlus, Play, ListMusic, Trash2 } from "lucide-vue-next";
+import { shallowReactive, useTemplateRef } from "vue";
+import { Heart, ListPlus, Play, ListMusic, Trash2 } from "@lucide/vue";
 import {
   usePlayerStore,
   useFavoriteStore,
@@ -23,9 +23,8 @@ export function useTrackContextMenu() {
   const playlistStore = usePlaylistStore();
   const albumStore = useAlbumStore();
   const uiStore = useUIStore();
-  const contextMenuRef = shallowRef<InstanceType<typeof ContextMenu> | null>(
-    null,
-  );
+  const contextMenuRef =
+    useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
   const menuProps = shallowReactive({
     title: "",
     menu: [] as MenuItem[],
@@ -116,18 +115,14 @@ export function useTrackContextMenu() {
   }
 
   /** 打开菜单，已打开时会关闭再打开 */
-  function open(event: EventPosition, track: Track) {
+  function open(track: Track, event?: EventPosition) {
     contextMenuRef.value?.open(event, () => {
       updateMenu(track);
     });
   }
 
-  function setRef(ref: InstanceType<typeof ContextMenu> | null) {
-    contextMenuRef.value = ref;
-  }
-
   /** 点击触发菜单，已打开时无操作，系统默认关闭 */
-  function handleClickTrigger(event: MouseEvent, track: Track) {
+  function handleClickTrigger(track: Track, event?: MouseEvent) {
     if (contextMenuRef.value!.getWasOpen()) return;
     contextMenuRef.value?.open(event, () => {
       updateMenu(track);
@@ -136,9 +131,7 @@ export function useTrackContextMenu() {
 
   return {
     menuProps,
-    contextMenuRef,
     open,
-    setRef,
     handleClickTrigger,
   };
 }

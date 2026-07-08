@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { Heart, MoreVertical, Pause, Play, LocateFixed } from "lucide-vue-next";
+import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
 import TipContent from "./TipContent.vue";
 import ContextMenu from "./ContextMenu.vue";
 import type { Track } from "../types";
@@ -24,12 +24,12 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
   event.stopPropagation();
-  openContextMenu(event, track);
+  openContextMenu(track, event);
 }
 
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
@@ -203,6 +203,6 @@ function scrollToCurrentTrack() {
     </button>
 
     <!-- 右键菜单 -->
-    <ContextMenu :ref="setRef" v-bind="menuProps" />
+    <ContextMenu ref="contextMenu" v-bind="menuProps" />
   </section>
 </template>

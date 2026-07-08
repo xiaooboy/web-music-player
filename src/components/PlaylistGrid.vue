@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, shallowReactive, shallowRef } from "vue";
-import { MoreVertical, Pencil, Play, Trash2 } from "lucide-vue-next";
+import { computed, shallowReactive, useTemplateRef } from "vue";
+import { MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
 import ContextMenu from "./ContextMenu.vue";
@@ -35,17 +35,12 @@ const coverUrlMap = computed(() => {
 });
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const contextMenuRef = shallowRef<InstanceType<typeof ContextMenu> | null>(
-  null,
-);
+const contextMenuRef =
+  useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
 const menuProps = shallowReactive({
   title: "",
   menu: [] as MenuItem[],
 });
-
-function setRef(ref: InstanceType<typeof ContextMenu> | null) {
-  contextMenuRef.value = ref;
-}
 
 function openMenu(event: MouseEvent, playlist: Playlist) {
   event.stopPropagation();
@@ -123,6 +118,6 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
       </section>
     </div>
 
-    <ContextMenu :ref="setRef" v-bind="menuProps" />
+    <ContextMenu ref="contextMenu" v-bind="menuProps" />
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Play } from "lucide-vue-next";
+import { ArrowLeft, Play } from "@lucide/vue";
 import { computed } from "vue";
 import { useFavoriteStore, usePlayerStore, usePlaylistStore } from "@/stores";
 import TrackTable from "./TrackTable.vue";

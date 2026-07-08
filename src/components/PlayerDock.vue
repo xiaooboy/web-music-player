@@ -9,7 +9,7 @@ import {
   Shuffle,
   SkipBack,
   SkipForward,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { computed } from "vue";
 
 import { usePlayerStore } from "../stores/playerStore";

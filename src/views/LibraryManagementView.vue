@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "lucide-vue-next";
+import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "@lucide/vue";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
