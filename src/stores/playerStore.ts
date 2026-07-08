@@ -208,7 +208,7 @@ export const usePlayerStore = defineStore("player", () => {
       currentTrack.value = track;
     }
 
-    updateMediaSession(currentTrack.value);
+    updateMediaSession(track);
     syncProgress();
 
     if (!autoplay) {
@@ -273,8 +273,8 @@ export const usePlayerStore = defineStore("player", () => {
     const list = [...queue.value];
     const currentIndex = getCurrentTrackIndex();
     // 从队列中移除该曲目（如果存在）
-    if (queueIndexMap.has(track.id)) {
-      const existIndex = queueIndexMap.get(track.id);
+    const existIndex = queueIndexMap.get(track.id);
+    if (existIndex !== undefined) {
       list.splice(existIndex, 1);
       // 移除元素在当前曲目之前时，当前曲目的实际索引前移了一位
       if (existIndex < currentIndex) {
@@ -326,7 +326,7 @@ export const usePlayerStore = defineStore("player", () => {
       track.duration = audio.duration;
     }
     syncProgress();
-    updateMediaSession(currentTrack.value);
+    updateMediaSession(track);
   }
 
   function handleAudioPlay() {

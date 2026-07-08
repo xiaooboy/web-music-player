@@ -21,7 +21,7 @@ const emit = defineEmits<{
   (e: "playTrack", albumName: string, trackId: string): void;
 }>();
 
-const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu } = useTrackContextMenu();
 const contextMenuHeader = ref("");
 
 function handleContextMenu(
@@ -31,7 +31,7 @@ function handleContextMenu(
   event.preventDefault();
   event.stopPropagation();
   contextMenuHeader.value = track.title;
-  openContextMenu(event, track);
+  openContextMenu(track, event);
 }
 </script>
 
@@ -118,6 +118,6 @@ function handleContextMenu(
       </button>
     </div>
 
-    <ContextMenu :ref="setRef" v-bind="menuProps" />
+    <ContextMenu ref="contextMenu" v-bind="menuProps" />
   </section>
 </template>

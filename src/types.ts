@@ -8,7 +8,7 @@ export interface FileEntry {
 export type TrackMap = Map<string, Track>;
 export interface Track {
   id: string;
-  file: File;
+  file: File | null;
   lastModified: number;
   relativePath: string;
   title: string;

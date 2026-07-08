@@ -24,12 +24,12 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const { menuProps, setRef, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
   event.stopPropagation();
-  openContextMenu(event, track);
+  openContextMenu(track, event);
 }
 
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
@@ -203,6 +203,6 @@ function scrollToCurrentTrack() {
     </button>
 
     <!-- 右键菜单 -->
-    <ContextMenu :ref="setRef" v-bind="menuProps" />
+    <ContextMenu ref="contextMenu" v-bind="menuProps" />
   </section>
 </template>

@@ -1,4 +1,3 @@
-import type { Track } from "@/types";
 import { loadLikedTrackIds, saveLikedTrackIds } from "@/utils/persistence";
 import { defineStore } from "pinia";
 import { computed, shallowRef } from "vue";

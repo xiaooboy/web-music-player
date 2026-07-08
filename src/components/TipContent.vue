@@ -4,8 +4,8 @@ const {
   content = "",
   fill = false,
 } = defineProps<{
-  title: string;
-  content: string;
+  title?: string;
+  content?: string;
   fill?: boolean;
 }>();
 </script>
