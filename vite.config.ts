@@ -97,6 +97,22 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "src"),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        chunkFileNames: "assets/[name]-[hash].js",
+        codeSplitting: {
+          groups: [
+            {
+              name: "vue",
+              test: /node_modules[\\/]@?vue[\\/]/,
+              priority: 30,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 8080,
   },
