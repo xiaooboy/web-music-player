@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { Heart, MoreVertical, Pause, Play, LocateFixed } from "lucide-vue-next";
+import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
 import TipContent from "./TipContent.vue";
 import ContextMenu from "./ContextMenu.vue";
 import type { Track } from "../types";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, shallowReactive, shallowRef } from "vue";
-import { MoreVertical, Pencil, Play, Trash2 } from "lucide-vue-next";
+import { MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
 import ContextMenu from "./ContextMenu.vue";

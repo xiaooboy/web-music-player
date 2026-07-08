@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, shallowRef } from "vue";
-import { Search } from "lucide-vue-next";
+import { Search } from "@lucide/vue";
 import { useLibraryStore } from "../stores/libraryStore";
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";

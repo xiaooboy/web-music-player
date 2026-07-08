@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
-import { Disc3, Play } from "lucide-vue-next";
+import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
 
 interface Props {
@@ -52,12 +52,12 @@ const rowVirtualizer = useVirtualizer(
     getScrollElement: () => scrollRef.value,
     estimateSize: () => ROW_HEIGHT + ROW_GAP,
     overscan: 2,
-    measureElement: (el: HTMLElement | null) => {
+    measureElement: (el: Element) => {
       const { containerWidth: cachedWidth, rowHeight: cachedHeight } =
         measureCache.value;
       if (cachedHeight !== -1 && cachedWidth === containerWidth.value)
         return cachedHeight;
-      const height = (el?.offsetHeight ?? 0) + ROW_GAP;
+      const height = ((el as HTMLElement).offsetHeight ?? 0) + ROW_GAP;
       measureCache.value.rowHeight = height;
       measureCache.value.containerWidth = containerWidth.value;
       return height;

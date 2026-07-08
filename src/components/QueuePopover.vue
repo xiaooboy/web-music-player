@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Track } from "@/types";
-import { X } from "lucide-vue-next";
+import { X } from "@lucide/vue";
 import { ref } from "vue";
 import "@/styles/popover.css";
 

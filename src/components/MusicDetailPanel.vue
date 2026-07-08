@@ -13,7 +13,7 @@ import {
   SkipForward,
   Volume2,
   VolumeX,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import {
   nextTick,
   onBeforeUnmount,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Disc3, MoreVertical, Pause, Play } from "lucide-vue-next";
+import { ArrowLeft, Disc3, MoreVertical, Pause, Play } from "@lucide/vue";
 import { ref } from "vue";
 import { formatTime } from "../utils/media";
 import { Album } from "@/types";

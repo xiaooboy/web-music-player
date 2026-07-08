@@ -1,5 +1,5 @@
 import { shallowReactive, shallowRef } from "vue";
-import { Heart, ListPlus, Play, ListMusic, Trash2 } from "lucide-vue-next";
+import { Heart, ListPlus, Play, ListMusic, Trash2 } from "@lucide/vue";
 import {
   usePlayerStore,
   useFavoriteStore,

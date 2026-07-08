@@ -33,13 +33,13 @@ function handlePlayAlbum(albumName: string) {
 async function handleBack() {
   detailViewTransitionName.value = VIEW_TRANSITION_NAME;
   nextTick(async () => {
-    const { support, transition } = withViewTransition(() => {
+    const { transition } = withViewTransition(() => {
       detailViewTransitionName.value = ""; // 不能同时出现同名的元素
       transitionTarget.value = albumStore.selectedAlbumName;
       albumViewTransitionName.value = VIEW_TRANSITION_NAME;
       albumStore.clearSelection();
     });
-    if (!support) return;
+    if (!transition) return;
     await transition.finished;
     albumViewTransitionName.value = "";
     transitionTarget.value = "";
@@ -49,12 +49,12 @@ function enterAlbum(albumName: string) {
   transitionTarget.value = albumName;
   albumViewTransitionName.value = VIEW_TRANSITION_NAME;
   nextTick(async () => {
-    const { support, transition } = withViewTransition(() => {
+    const { transition } = withViewTransition(() => {
       albumViewTransitionName.value = ""; // 不能同时出现同名的元素
       detailViewTransitionName.value = VIEW_TRANSITION_NAME;
       albumStore.selectAlbum(albumName);
     });
-    if (!support) return;
+    if (!transition) return;
     await transition.finished;
     detailViewTransitionName.value = "";
     transitionTarget.value = "";
@@ -105,7 +105,7 @@ function handleStop() {
     />
     <AlbumDetail
       v-if="showDetail"
-      :album="albumStore.selectedAlbum"
+      :album="albumStore.selectedAlbum!"
       :playingTrackId="playingTrackId"
       :viewTransitionName="detailViewTransitionName"
       :style="{

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Disc3, Heart, Library, House, Menu, ListMusic } from "lucide-vue-next";
+import { Disc3, Heart, Library, House, Menu, ListMusic } from "@lucide/vue";
 import { useUIStore } from "../stores/uiStore";
 import type { SectionName } from "../stores/uiStore";
 import { onMounted } from "vue";
