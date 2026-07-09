@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Track } from "@/types";
-import { X } from "@lucide/vue";
+import { X, Minus } from "@lucide/vue";
 import { ref } from "vue";
 import "@/styles/popover.css";
 
@@ -35,6 +35,7 @@ function handleToggle(event: ToggleEvent) {
       <button
         class="popover-close"
         type="button"
+        aria-label="关闭播放队列"
         :popovertarget="($attrs.id as string) || undefined"
         popovertargetaction="hide"
       >
@@ -48,17 +49,20 @@ function handleToggle(event: ToggleEvent) {
         :key="track.id"
         class="popover-item"
         :class="{ 'is-playing': track.id === currentTrackId }"
+        tabindex="0"
+        :aria-label="`${track.title}，${track.artist}`"
         @click="emit('play', index)"
+        @keydown.enter="emit('play', index)"
       >
         <span class="track-title">{{ track.title }}</span>
         <span class="track-artist">{{ track.artist }}</span>
         <button
           class="track-remove"
           type="button"
-          title="从队列移除"
+          aria-label="从队列移除"
           @click.stop="emit('remove', track.id)"
         >
-          <X :size="14" />
+          <Minus :size="14" />
         </button>
       </li>
 
@@ -163,14 +167,11 @@ function handleToggle(event: ToggleEvent) {
   border-radius: 4px;
   background: transparent;
   color: var(--muted, #888);
-  opacity: 0;
   transition: opacity 100ms ease;
   cursor: pointer;
 }
 
-.popover-item:hover .track-remove {
-  opacity: 1;
-}
+
 
 .track-remove:hover {
   background: rgba(255, 255, 255, 0.1);

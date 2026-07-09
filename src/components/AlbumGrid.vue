@@ -141,6 +141,7 @@ onBeforeUnmount(() => {
             <button
               class="album-card-play"
               type="button"
+              :aria-label="`播放专辑 ${album.name}`"
               @click.stop="emit('playAlbum', album.name)"
             >
               <Play :size="20" />

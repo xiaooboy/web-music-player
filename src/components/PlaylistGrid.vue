@@ -59,6 +59,16 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
   ];
   contextMenuRef.value?.open(event, () => {});
 }
+
+function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
+  if (event.key === 'F10' && event.shiftKey) {
+    event.preventDefault();
+    openMenu(event as unknown as MouseEvent, playlist);
+  } else if (event.key === 'ContextMenu') {
+    event.preventDefault();
+    openMenu(event as unknown as MouseEvent, playlist);
+  }
+}
 </script>
 
 <template>
@@ -71,8 +81,10 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
         :class="{
           'is-active': playlist.id === selectedPlaylistId,
         }"
-        type="button"
+        tabindex="0"
+        :aria-label="`${playlist.name}，${playlist.trackIds.length} 首`"
         @click="emit('selectPlaylist', playlist.id)"
+        @keydown.enter="emit('selectPlaylist', playlist.id)"
       >
         <div class="playlist-card-cover">
           <img
@@ -87,6 +99,7 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
           <button
             class="playlist-card-play"
             type="button"
+            aria-label="播放歌单"
             @click.stop="emit('playPlaylist', playlist.id)"
           >
             <Play :size="20" />
@@ -110,8 +123,10 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
         <button
           class="playlist-card-more"
           type="button"
-          title="更多"
+          aria-label="更多操作"
+          aria-haspopup="menu"
           @click="openMenu($event, playlist)"
+          @keydown="handleMoreKeydown($event, playlist)"
         >
           <MoreVertical :size="14" />
         </button>

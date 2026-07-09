@@ -67,6 +67,7 @@ function handleClose() {
         v-else
         v-model="name"
         type="text"
+        aria-label="歌单名称"
         placeholder="歌单名称"
         autofocus
         class="playlist-dialog-input"

@@ -29,10 +29,11 @@ function switchSection(name: SectionName) {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'is-collapsed': uiStore.sidebarCollapsed }">
+  <aside class="sidebar" :class="{ 'is-collapsed': uiStore.sidebarCollapsed }" role="navigation" aria-label="主导航">
     <div class="brand brand--placeholder" aria-hidden="true">
       <button
         class="collapse-btn"
+        :aria-label="uiStore.sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'"
         :title="uiStore.sidebarCollapsed ? '展开' : '折叠'"
         type="button"
         @click="uiStore.toggleSidebar()"
@@ -46,6 +47,7 @@ function switchSection(name: SectionName) {
         v-for="item in navItems"
         :key="item.name"
         class="nav-item"
+        :aria-label="item.title"
         :title="item.title"
         :class="{ 'is-active': uiStore.activeSection === item.name }"
         type="button"

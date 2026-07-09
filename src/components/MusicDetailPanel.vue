@@ -238,6 +238,7 @@ watch(
               type="range"
               min="0"
               max="100"
+              aria-label="播放进度"
               :value="playerStore.progressPercent"
               :style="{ '--slider-value': playerStore.progressPercent + '%' }"
               @input="
@@ -315,6 +316,7 @@ watch(
               <button
                 class="icon-button queue-button"
                 type="button"
+                aria-label="播放队列"
                 title="播放队列"
                 :popovertarget="LIST_EL_ID"
               >
@@ -334,7 +336,9 @@ watch(
               <button
                 class="icon-button more-button"
                 type="button"
-                title="更多"
+                aria-label="更多操作"
+                aria-haspopup="menu"
+                title="更多操作"
                 @click="handleMoreClick($event)"
               >
                 <MoreVertical :size="18" />
@@ -348,12 +352,13 @@ watch(
         <div
           ref="lyricsScrollRef"
           class="lyrics-scroll"
+          aria-label="歌词"
           :class="{
             'not-overflowed': playerStore.currentLyricsLines.length < 5,
           }"
           @wheel="handleLyricsWheel"
         >
-          <div class="lyrics-list">
+          <div class="lyrics-list" role="list">
             <template v-if="playerStore.currentLyricsLines.length">
               <div
                 v-for="(line, index) in playerStore.currentLyricsLines"
@@ -363,8 +368,15 @@ watch(
                   'is-active': index === playerStore.activeLyricsIndex,
                   'is-clickable': line.time !== null,
                 }"
+                :tabindex="line.time !== null ? 0 : undefined"
+                :role="line.time !== null ? 'button' : 'listitem'"
+                :aria-label="displayLyricsText(line.text)"
+                :aria-current="index === playerStore.activeLyricsIndex ? 'true' : undefined"
                 :data-line-index="index"
                 @click="
+                  line.time !== null && playerStore.seekToLyricsLine(index)
+                "
+                @keydown.enter="
                   line.time !== null && playerStore.seekToLyricsLine(index)
                 "
               >
@@ -395,6 +407,7 @@ watch(
         type="range"
         min="0"
         max="100"
+        aria-label="音量"
         :value="playerStore.volumePercent"
         :style="{ '--slider-value': playerStore.volumePercent + '%' }"
         @input="

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, watch } from "vue";
 import { usePlayerStore, useLibraryStore, useUIStore } from "./stores";
 
 import MusicDetailPanel from "./components/MusicDetailPanel.vue";
@@ -17,6 +17,35 @@ const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
 const uiStore = useUIStore();
 const { currentView, activeSection } = storeToRefs(uiStore);
+
+// ─── 无障碍：视图切换时自动转移焦点 ────────────────────────────────────────────
+let previouslyFocusedElement: HTMLElement | null = null;
+
+watch(currentView, (view) => {
+  if (view === 'detail') {
+    previouslyFocusedElement = document.activeElement as HTMLElement;
+    nextTick(() => {
+      const backBtn = document.querySelector<HTMLButtonElement>(
+        '.detail-head .icon-button',
+      );
+      backBtn?.focus();
+    });
+  } else {
+    // 返回列表时将焦点还给之前的元素
+    nextTick(() => {
+      previouslyFocusedElement?.focus();
+      previouslyFocusedElement = null;
+    });
+  }
+});
+
+// ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────
+const screenReaderAnnouncement = computed(() => {
+  const track = playerStore.currentTrack;
+  if (!track) return "";
+  const state = playerStore.isPlaying ? "正在播放" : "已暂停";
+  return `${state}：${track.title} - ${track.artist}`;
+});
 
 onBeforeUnmount(() => {
   playerStore.dispose();
@@ -102,10 +131,12 @@ function handleContextMenuBlock(event: MouseEvent) {
   <div
     class="app-shell"
     :class="{ 'sidebar-collapsed': uiStore.sidebarCollapsed }"
+    role="application"
+    aria-label="LocalMusic 本地音乐播放器"
   >
     <SidebarPanel />
 
-    <main class="main-stage">
+    <main class="main-stage" aria-label="音乐库">
       <AllTrackView v-if="activeSection === 'all-track'" />
       <FavoritesView v-else-if="activeSection === 'favorites'" />
       <AlbumsView v-else-if="activeSection === 'albums'" />
@@ -116,9 +147,14 @@ function handleContextMenuBlock(event: MouseEvent) {
     <PlayerDock />
   </div>
   <div v-show="currentView === 'detail'" class="detail-shell">
-    <main class="detail-stage">
+    <main class="detail-stage" aria-label="播放详情">
       <MusicDetailPanel />
     </main>
   </div>
   <ToastContainer />
+  <div aria-live="polite" aria-atomic="true" class="sr-only">
+    {{ screenReaderAnnouncement }}
+  </div>
 </template>
+
+
