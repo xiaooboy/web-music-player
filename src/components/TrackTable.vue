@@ -21,6 +21,7 @@ const emit = defineEmits<{
   play: [id: string];
   togglePlay: [];
   toggleFavorite: [id: string];
+  navigateToAlbum: [albumName: string];
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ const rowVirtualizer = useVirtualizer(
   computed(() => ({
     count: props.tracks.length,
     getScrollElement: () => listRef.value,
-    estimateSize: () => 62, // padding(10+10) + thumb(42) = 62px
+    estimateSize: () => 64, // padding(10+10) + thumb(44) = 64px
     overscan: 5,
   })),
 );
@@ -89,7 +90,7 @@ function scrollToCurrentTrack() {
 <template>
   <section class="track-table" role="grid" aria-label="歌曲列表">
     <div v-if="tracks.length" class="track-header" role="row">
-      <span role="columnheader">歌曲</span>
+      <span role="columnheader">{{ tracks.length }} 首</span>
       <span role="columnheader">专辑</span>
       <span role="columnheader">时长</span>
       <span role="columnheader">操作</span>
@@ -148,7 +149,14 @@ function scrollToCurrentTrack() {
               </div>
             </div>
             <div class="track-album">
-              <strong>{{ item.album }}</strong>
+              <strong
+                class="album-link"
+                role="link"
+                tabindex="0"
+                :aria-label="`查看专辑：${item.album}`"
+                @click.stop="emit('navigateToAlbum', item.album)"
+                @keydown.enter.stop="emit('navigateToAlbum', item.album)"
+              >{{ item.album }}</strong>
             </div>
             <span class="track-duration">{{ formatTime(item.duration) }}</span>
             <div class="row-action">
@@ -194,6 +202,7 @@ function scrollToCurrentTrack() {
               <button
                 class="row-more"
                 type="button"
+                title="更多操作"
                 aria-label="更多操作"
                 aria-haspopup="menu"
                 @click.stop="handleContextMenu($event, item)"

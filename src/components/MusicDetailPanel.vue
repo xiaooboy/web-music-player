@@ -191,6 +191,7 @@ watch(
         class="icon-button"
         type="button"
         aria-label="返回列表"
+        title="返回列表"
         @click="uiStore.closeDetail()"
       >
         <ArrowLeft :size="18" />
@@ -258,6 +259,7 @@ watch(
                 class="icon-button"
                 type="button"
                 aria-label="上一首"
+                title="上一首"
                 @click="playerStore.playByStep(-1)"
               >
                 <SkipBack :size="26" />
@@ -267,6 +269,7 @@ watch(
                 :class="{ 'is-active': playerStore.isPlaying }"
                 type="button"
                 aria-label="播放或暂停"
+                title="播放或暂停"
                 @click="playerStore.togglePlay()"
               >
                 <Pause v-if="playerStore.isPlaying" :size="30" />
@@ -276,6 +279,7 @@ watch(
                 class="icon-button"
                 type="button"
                 aria-label="下一首"
+                title="下一首"
                 @click="playerStore.playByStep(1)"
               >
                 <SkipForward :size="26" />
@@ -304,6 +308,7 @@ watch(
                 :class="{ 'is-active': isCurrentTrackLiked }"
                 type="button"
                 :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
+                :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
                 @click="
                   favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
                 "
@@ -328,6 +333,7 @@ watch(
                 :aria-label="
                   playerStore.volumePercent === 0 ? '取消静音' : '音量'
                 "
+                :title="playerStore.volumePercent === 0 ? '取消静音' : '音量'"
                 :popovertarget="VOLUME_POPOVER_ID"
               >
                 <VolumeX v-if="playerStore.volumePercent === 0" :size="18" />

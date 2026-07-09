@@ -33,7 +33,7 @@ const slots = useSlots();
   /*gap: 18px;*/
 }
 .section-head-left {
-  margin-right: 20px;
+  margin-right: 12px;
 }
 .section-head h2 {
   margin: 0;

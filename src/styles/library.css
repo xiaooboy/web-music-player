@@ -107,7 +107,7 @@
 
 .all-track-searchbar {
   position: relative;
-  z-index: 5;
+  z-index: var(--z-sticky);
   width: 100%;
   background: transparent;
   backdrop-filter: none;
@@ -163,7 +163,7 @@
 .context-menu {
   position: fixed;
   inset: auto;
-  z-index: 50;
+  z-index: var(--z-dropdown);
   min-width: 160px;
   padding: 6px;
   border-radius: 12px;
@@ -266,20 +266,21 @@
 .track-header,
 .track-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.2fr) minmax(160px, 1.4fr) 82px 112px;
+  grid-template-columns: minmax(0, 2.2fr) minmax(160px, 1.4fr) 82px 148px;
   align-items: center;
   gap: 12px;
 }
 
 .track-header {
-  margin-block: 8px;
-  padding: 0 12px 10px 0;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
   color: var(--muted);
   font-size: 0.84rem;
   border-bottom: 1px solid var(--line);
 }
 
 .track-header span:last-child {
+  padding-right: 20px;
   justify-self: end;
 }
 
@@ -316,7 +317,7 @@
 }
 
 .track-thumb {
-  width: 42px;
+  width: 44px;
   aspect-ratio: 1;
   border-radius: var(--cover-radius);
   overflow: hidden;
@@ -351,6 +352,21 @@
 .dock-copy span,
 .track-duration {
   color: var(--muted);
+}
+
+.track-album .album-link {
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.track-album .album-link:hover {
+  color: var(--accent);
+}
+
+.track-album .album-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .row-action {

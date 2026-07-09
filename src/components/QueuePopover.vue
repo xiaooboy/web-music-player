@@ -35,11 +35,12 @@ function handleToggle(event: ToggleEvent) {
       <button
         class="popover-close"
         type="button"
+        title="关闭播放队列"
         aria-label="关闭播放队列"
         :popovertarget="($attrs.id as string) || undefined"
         popovertargetaction="hide"
       >
-        <X :size="16" />
+        <X :size="16"/>
       </button>
     </header>
 
@@ -59,6 +60,7 @@ function handleToggle(event: ToggleEvent) {
         <button
           class="track-remove"
           type="button"
+          title="从队列移除"
           aria-label="从队列移除"
           @click.stop="emit('remove', track.id)"
         >

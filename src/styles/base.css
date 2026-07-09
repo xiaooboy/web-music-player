@@ -27,6 +27,19 @@
   --font-body: system-ui;
   --window-safe-top: 0px;
   --dock-height: 70px;
+  /* z-index 层级 — 间隔 10，留出插入空间 */
+  --z-base: 1;            /* 组件内部相对层级（detail-head/body） */
+  --z-sticky: 10;         /* 吸顶/置顶元素（搜索栏） */
+  --z-float: 20;          /* 浮动装饰（折叠品牌图标） */
+  --z-overlay: 30;        /* 全屏遮罩层（详情页降级） */
+  --z-dropdown: 40;       /* 下拉菜单（右键菜单降级） */
+  --z-toast: 50;          /* Toast 通知 */
+  --z-drag-region: 9999;  /* 窗口拖拽区 */
+  /*
+   * 注意：dialog / popover 元素在浏览器 top layer 中渲染，
+   * 不受 z-index 影响，无需 token。
+   * 以上 --z-overlay / --z-dropdown 仅为不支持 top layer 的降级场景保留。
+   */
   --gradient-bg: radial-gradient(
       circle at top left,
       var(--accent-dim),

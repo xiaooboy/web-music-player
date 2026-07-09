@@ -3,12 +3,16 @@ import { computed } from "vue";
 import { Search } from "@lucide/vue";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { usePlayerStore } from "../stores/playerStore";
+import { useAlbumStore } from "../stores/albumStore";
+import { useUIStore } from "../stores/uiStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
 import SectionHead from "@/components/SectionHead.vue";
 
 const favoriteStore = useFavoriteStore();
 const playerStore = usePlayerStore();
+const albumStore = useAlbumStore();
+const uiStore = useUIStore();
 
 const { searchQuery, visibleTracks } = useTrackSearch(
   () => favoriteStore.favoriteTracks,
@@ -23,6 +27,11 @@ const status = computed(() =>
 function handleFavoriteTrackSelect(id: string) {
   playerStore.setPlaySourceType("favorites");
   playerStore.playTrackById(id, true);
+}
+
+function handleNavigateToAlbum(albumName: string) {
+  uiStore.setActiveSection("albums");
+  albumStore.selectAlbum(albumName);
 }
 </script>
 
@@ -53,6 +62,7 @@ function handleFavoriteTrackSelect(id: string) {
         @play="handleFavoriteTrackSelect"
         @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
+        @navigate-to-album="handleNavigateToAlbum"
       />
     </div>
   </div>

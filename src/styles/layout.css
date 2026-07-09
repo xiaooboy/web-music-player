@@ -5,7 +5,7 @@
   right: 0;
   height: var(--window-safe-top);
   app-region: drag;
-  z-index: calc(infinity);
+  z-index: var(--z-drag-region);
 }
 .app-shell {
   display: grid;
@@ -27,7 +27,7 @@
 .detail-shell {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: var(--z-overlay);
   /* 重置 dialog 默认样式 */
   border: 0;
   padding: 0;
