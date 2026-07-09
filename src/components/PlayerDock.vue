@@ -38,7 +38,7 @@ function handleRemoveTrack(id: string) {
 </script>
 
 <template>
-  <footer class="player-dock">
+  <footer class="player-dock" aria-label="播放控制栏">
     <button
       class="dock-track detail-trigger"
       type="button"
@@ -125,6 +125,7 @@ function handleRemoveTrack(id: string) {
       <button
         class="icon-button queue-button"
         type="button"
+        aria-label="播放队列"
         title="播放队列"
         popovertarget="player-dock-queue"
         popovertargetaction="toggle"
@@ -140,6 +141,7 @@ function handleRemoveTrack(id: string) {
           type="range"
           min="0"
           max="100"
+          aria-label="播放进度"
           :value="playerStore.progressPercent"
           :style="{ '--slider-value': playerStore.progressPercent + '%' }"
           @input="

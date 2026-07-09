@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch } from "vue";
 import { usePlayerStore, useLibraryStore, useUIStore } from "./stores";
 
 import MusicDetailPanel from "./components/MusicDetailPanel.vue";
@@ -17,6 +17,32 @@ const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
 const uiStore = useUIStore();
 const { currentView, activeSection } = storeToRefs(uiStore);
+const detailDialogRef = useTemplateRef<HTMLDialogElement>('detailDialogRef');
+
+// ─── 详情页 dialog 开关 ────────────────────────────────────────────────────────
+watch(currentView, (view) => {
+  const dialog = detailDialogRef.value;
+  if (!dialog) return;
+  if (view === 'detail' && !dialog.open) {
+    dialog.showModal();
+  } else if (view === 'library' && dialog.open) {
+    dialog.close();
+  }
+});
+
+function handleDialogCancel(event: Event) {
+  // 阻止浏览器原生关闭，由状态驱动关闭
+  event.preventDefault();
+  uiStore.closeDetail();
+}
+
+// ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────
+const screenReaderAnnouncement = computed(() => {
+  const track = playerStore.currentTrack;
+  if (!track) return "";
+  const state = playerStore.isPlaying ? "正在播放" : "已暂停";
+  return `${state}：${track.title} - ${track.artist}`;
+});
 
 onBeforeUnmount(() => {
   playerStore.dispose();
@@ -70,12 +96,6 @@ function handleKeydown(event: KeyboardEvent) {
   }
 
   switch (event.key) {
-    case "Escape":
-      if (document.querySelector("[popover]:popover-open")) break;
-      if (uiStore.currentView === "detail") {
-        uiStore.setCurrentView("library");
-      }
-      break;
     case " ":
       event.preventDefault();
       playerStore.togglePlay();
@@ -102,10 +122,12 @@ function handleContextMenuBlock(event: MouseEvent) {
   <div
     class="app-shell"
     :class="{ 'sidebar-collapsed': uiStore.sidebarCollapsed }"
+    role="application"
+    aria-label="LocalMusic 本地音乐播放器"
   >
     <SidebarPanel />
 
-    <main class="main-stage">
+    <main class="main-stage" aria-label="音乐库">
       <AllTrackView v-if="activeSection === 'all-track'" />
       <FavoritesView v-else-if="activeSection === 'favorites'" />
       <AlbumsView v-else-if="activeSection === 'albums'" />
@@ -115,10 +137,18 @@ function handleContextMenuBlock(event: MouseEvent) {
 
     <PlayerDock />
   </div>
-  <div v-show="currentView === 'detail'" class="detail-shell">
-    <main class="detail-stage">
-      <MusicDetailPanel />
-    </main>
-  </div>
+  <dialog
+    ref="detailDialogRef"
+    class="detail-shell"
+    aria-label="播放详情"
+    @cancel="handleDialogCancel"
+  >
+    <MusicDetailPanel />
+  </dialog>
   <ToastContainer />
+  <div aria-live="polite" aria-atomic="true" class="sr-only">
+    {{ screenReaderAnnouncement }}
+  </div>
 </template>
+
+

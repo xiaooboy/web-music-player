@@ -6,7 +6,7 @@ const toastList = toasts;
 
 <template>
   <Teleport to="body">
-    <div class="toast-container">
+    <div class="toast-container" role="status" aria-live="polite" aria-atomic="true">
       <TransitionGroup name="toast">
         <div v-for="item in toastList" :key="item.id" class="toast-item">
           {{ item.message }}

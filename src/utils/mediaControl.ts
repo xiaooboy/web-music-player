@@ -27,6 +27,17 @@ export function updateMediaSession(track: Track) {
         ]
       : [],
   });
+
+  // 补充位置状态，让系统媒体控件显示进度条
+  if (
+    track.duration &&
+    Number.isFinite(track.duration) &&
+    "setPositionState" in navigator.mediaSession
+  ) {
+    navigator.mediaSession.setPositionState({
+      duration: track.duration,
+    });
+  }
 }
 /** 设置媒体控件的操作处理函数 */
 export function setMediaSectionControls({

@@ -32,6 +32,16 @@ function handleContextMenu(event: MouseEvent, track: Track) {
   openContextMenu(track, event);
 }
 
+function handleMoreKeydown(event: KeyboardEvent, track: Track) {
+  if (event.key === 'F10' && event.shiftKey) {
+    event.preventDefault();
+    openContextMenu(track);
+  } else if (event.key === 'ContextMenu') {
+    event.preventDefault();
+    openContextMenu(track);
+  }
+}
+
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
 // 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
 // 挂载和切换面板的耗时是 O(1) 而非 O(n)。
@@ -77,12 +87,12 @@ function scrollToCurrentTrack() {
 </script>
 
 <template>
-  <section class="track-table">
-    <div v-if="tracks.length" class="track-header">
-      <span>{{ tracks.length }} 首</span>
-      <span>专辑</span>
-      <span>时长</span>
-      <span>操作</span>
+  <section class="track-table" role="grid" aria-label="歌曲列表">
+    <div v-if="tracks.length" class="track-header" role="row">
+      <span role="columnheader">歌曲</span>
+      <span role="columnheader">专辑</span>
+      <span role="columnheader">时长</span>
+      <span role="columnheader">操作</span>
     </div>
 
     <div
@@ -104,6 +114,9 @@ function scrollToCurrentTrack() {
             :key="item.id"
             class="track-row"
             :class="{ 'is-active': item.id === currentTrackId }"
+            tabindex="0"
+            role="row"
+            :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
             :style="{
               position: 'absolute',
               top: 0,
@@ -112,6 +125,11 @@ function scrollToCurrentTrack() {
               transform: `translateY(${vRow.start}px)`,
             }"
             @click="$emit('play', item.id)"
+            @keydown.enter="
+              ($event.target as HTMLElement).closest('button')
+                ? undefined
+                : $emit('play', item.id)
+            "
             @contextmenu="handleContextMenu($event, item)"
           >
             <div class="track-song">
@@ -176,9 +194,10 @@ function scrollToCurrentTrack() {
               <button
                 class="row-more"
                 type="button"
-                title="更多"
-                aria-label="更多"
+                aria-label="更多操作"
+                aria-haspopup="menu"
                 @click.stop="handleContextMenu($event, item)"
+                @keydown="handleMoreKeydown($event, item)"
               >
                 <MoreVertical :size="16" />
               </button>

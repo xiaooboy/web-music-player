@@ -14,6 +14,7 @@ export interface MenuItem {
   disabled?: boolean;
   icon?: Component;
   children?: MenuItem[];
+  ariaLabel?: string;
 }
 export interface Props {
   menu: MenuItem[];
@@ -104,6 +105,7 @@ function open(
       el?.showPopover();
       requestAnimationFrame(() => {
         computePosition(anchorOrEvent);
+        focusFirstItem();
       });
     });
   };
@@ -177,8 +179,8 @@ function handleChildSelect() {
   emit("select");
 }
 
-// ─── 子菜单悬停交互 ───────────────────────────────────────────────────────────
-function handleSubmenuEnter(index: number, event: MouseEvent) {
+// ─── 子菜单悬停 / 键盘交互 ────────────────────────────────────────────────────
+function handleSubmenuEnter(index: number, event: MouseEvent | KeyboardEvent) {
   cancelCloseSubmenu();
   activeSub.value = index;
   const anchorEl = event.currentTarget as HTMLElement;
@@ -204,6 +206,65 @@ function getWasOpen() {
   return wasOpen.value;
 }
 
+// ─── 键盘导航 ──────────────────────────────────────────────────────────────────
+/** 获取当前菜单中所有可聚焦的菜单项 */
+function getFocusableItems(): HTMLElement[] {
+  const el = menuRef.value;
+  if (!el) return [];
+  return Array.from(
+    el.querySelectorAll<HTMLElement>(
+      ':scope > .context-menu-item:not(.is-disabled)',
+    ),
+  );
+}
+
+/** 将焦点移到指定索引的菜单项 */
+function focusItem(index: number) {
+  const items = getFocusableItems();
+  if (!items.length) return;
+  const wrapped = ((index % items.length) + items.length) % items.length;
+  items[wrapped]?.focus();
+}
+
+function handleMenuKeydown(event: KeyboardEvent) {
+  const items = getFocusableItems();
+  if (!items.length) return;
+
+  const currentIdx = items.indexOf(document.activeElement as HTMLElement);
+
+  switch (event.key) {
+    case 'ArrowDown':
+      event.preventDefault();
+      focusItem(currentIdx + 1);
+      break;
+    case 'ArrowUp':
+      event.preventDefault();
+      focusItem(currentIdx - 1);
+      break;
+    case 'Home':
+      event.preventDefault();
+      focusItem(0);
+      break;
+    case 'End':
+      event.preventDefault();
+      focusItem(items.length - 1);
+      break;
+    case 'Escape':
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+      break;
+  }
+}
+
+/** 打开菜单后自动聚焦第一项 */
+function focusFirstItem() {
+  nextTick(() => {
+    const items = getFocusableItems();
+    items[0]?.focus();
+  });
+}
+
 defineExpose({ open, close, getWasOpen });
 </script>
 
@@ -212,10 +273,13 @@ defineExpose({ open, close, getWasOpen });
     ref="menuRef"
     class="context-menu"
     popover="auto"
+    role="menu"
+    :aria-label="title || '上下文菜单'"
     :style="menuStyle"
     @click.stop
     @toggle="handleToggle"
     @transitionend="onTransitionEnd"
+    @keydown="handleMenuKeydown"
   >
     <div v-if="title" class="context-menu-header">
       {{ title }}
@@ -225,8 +289,14 @@ defineExpose({ open, close, getWasOpen });
       <div
         v-if="item.children?.length"
         class="context-menu-item has-submenu"
+        role="menuitem"
+        :aria-label="item.ariaLabel || item.label"
+        aria-haspopup="menu"
+        tabindex="-1"
         @mouseenter="handleSubmenuEnter(i, $event)"
         @mouseleave="scheduleCloseSubmenu"
+        @keydown.enter="handleSubmenuEnter(i, $event)"
+        @keydown.arrow-right="handleSubmenuEnter(i, $event)"
       >
         <component
           v-if="item.icon"
@@ -255,7 +325,11 @@ defineExpose({ open, close, getWasOpen });
       <button
         v-else
         class="context-menu-item"
+        role="menuitem"
         :class="{ 'is-disabled': item.disabled }"
+        :aria-disabled="item.disabled || undefined"
+        :aria-label="item.ariaLabel || item.label"
+        tabindex="-1"
         type="button"
         @click="handleItemClick(item)"
       >
