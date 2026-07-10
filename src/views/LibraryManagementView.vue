@@ -85,7 +85,7 @@ function handleDialogClose() {
 
 <template>
   <section class="main-panel library-management-panel">
-    <SectionHead title="音乐库管理">
+    <SectionHead title="音乐源">
       <template #right>
         <div class="library-actions-inline">
           <button
