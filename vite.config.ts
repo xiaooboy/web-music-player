@@ -16,7 +16,7 @@ export default defineConfig({
   base,
   plugins: [
     vue(),
-    cloudflare(),
+    ...(!isProjectPage ? [cloudflare()] : []),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
