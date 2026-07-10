@@ -4,6 +4,10 @@
 
 **在线访问：** [GitHub](https://xiaooboy.github.io/web-music-player/) | [Cloudflare](https://web-music-player.xiaooboy.workers.dev/)
 
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/370251ff-b9b1-4f46-8090-0f3b1c926c14" />
+
+<img width="2560" height="1504" alt="image" src="https://github.com/user-attachments/assets/b4368aaa-9bfa-4aca-9a65-5bff6bd715c0" />
+
 
 
 ## 技术栈
