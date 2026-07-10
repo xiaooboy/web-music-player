@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Disc3, Heart, Library, House, Menu, ListMusic } from "@lucide/vue";
+import { Disc3, Heart, House, Menu, ListMusic, Folder } from "@lucide/vue";
 import { useUIStore } from "../stores/uiStore";
 import type { SectionName } from "../stores/uiStore";
 import { onMounted } from "vue";
@@ -11,7 +11,7 @@ const navItems: { name: SectionName; title: string; icon: typeof House }[] = [
   { name: "favorites", title: "收藏", icon: Heart },
   { name: "albums", title: "专辑", icon: Disc3 },
   { name: "playlists", title: "歌单", icon: ListMusic },
-  { name: "library-management", title: "音乐源", icon: Library },
+  { name: "library-management", title: "音乐源", icon: Folder },
 ];
 let mainStage: HTMLDivElement | null = null;
 const screenWidth = window.screen.width;
