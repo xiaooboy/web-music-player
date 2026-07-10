@@ -21,7 +21,7 @@
   --line: rgba(255, 255, 255, 0.08);
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
   --radius-xl: 24px;
-  --cover-radius: 20%;
+  --cover-radius: 10%;
   --cover-radius-circled: 50%;
   --font-display: system-ui;
   --font-body: system-ui;
@@ -146,6 +146,16 @@ button {
 img {
   display: block;
   max-width: 100%;
+}
+
+/* ─── 工具类：图片淡入 ─────────────────────────────────────────────────────── */
+.img-fadein {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.img-fadein.is-loaded {
+  opacity: 1;
 }
 
 svg {

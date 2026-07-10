@@ -13,6 +13,14 @@ const props = defineProps<{
   viewTransitionName?: string;
 }>();
 
+// ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
+function handleImgLoad(event: Event) {
+  const target = event.target as HTMLElement;
+  if (target.tagName === "IMG") {
+    target.classList.add("is-loaded");
+  }
+}
+
 const emit = defineEmits<{
   (e: "selectPlaylist", id: string): void;
   (e: "playPlaylist", id: string): void;
@@ -72,7 +80,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
 </script>
 
 <template>
-  <div class="playlist-grid-scroll">
+  <div class="playlist-grid-scroll" @load.capture="handleImgLoad">
     <div class="playlist-grid">
       <section
         v-for="playlist in playlists"
@@ -89,18 +97,17 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
         <div class="playlist-card-cover">
           <img
             v-if="coverUrlMap[playlist.id]"
+            class="img-fadein"
             :src="coverUrlMap[playlist.id]"
             :alt="`${playlist.name} 封面`"
             loading="lazy"
-            @load="
-              ($event.target as HTMLImageElement).classList.add('is-loaded')
-            "
           />
           <button
             class="playlist-card-play"
             type="button"
             aria-label="播放歌单"
             @click.stop="emit('playPlaylist', playlist.id)"
+            @keydown.enter.stop
           >
             <Play :size="20" />
           </button>
@@ -127,6 +134,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
           aria-haspopup="menu"
           @click="openMenu($event, playlist)"
           @keydown="handleMoreKeydown($event, playlist)"
+          @keydown.enter.stop
         >
           <MoreVertical :size="14" />
         </button>

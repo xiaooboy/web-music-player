@@ -84,28 +84,47 @@ export const usePlayerStore = defineStore("player", () => {
   const hasTimedLyrics = computed(() =>
     currentLyricsLines.value.some((line) => line.time !== null),
   );
-  const activeLyricsIndex = computed(() => {
-    if (!currentLyricsLines.value.length || !hasTimedLyrics.value) {
-      return -1;
-    }
-    // 歌词已按 time 升序排列，二分查找最后一个 time <= target 的行
-    const lines = currentLyricsLines.value;
-    const target = currentTimeSeconds.value + 0.05;
-    let lo = 0;
-    let hi = lines.length - 1;
-    let result = -1;
-    while (lo <= hi) {
-      const mid = (lo + hi) >>> 1;
-      const time = lines[mid].time;
-      if (time !== null && time <= target) {
-        result = mid;
-        lo = mid + 1;
-      } else {
-        hi = mid - 1;
+  // ─── 歌词高亮索引（利用播放时索引单调递增的局部性优化） ──────────────
+  const activeLyricsIndex = shallowRef(-1);
+  let lastLyricsTrackId = "";
+
+  watch(
+    [currentTimeSeconds, currentLyricsLines],
+    ([targetTime, lines]) => {
+      if (!lines.length || !hasTimedLyrics.value) {
+        activeLyricsIndex.value = -1;
+        return;
       }
-    }
-    return result;
-  });
+
+      // 切歌时重置起点
+      const trackId = currentTrackId.value;
+      if (trackId !== lastLyricsTrackId) {
+        lastLyricsTrackId = trackId;
+        activeLyricsIndex.value = -1;
+      }
+
+      const target = targetTime + 0.05;
+      let i = activeLyricsIndex.value;
+
+      // 正向：从上次索引向后扫描（正常播放时 O(1)）
+      if (i < 0) i = 0;
+      while (i + 1 < lines.length) {
+        const t = lines[i + 1].time;
+        if (t !== null && t <= target) i++;
+        else break;
+      }
+
+      // 回退：seek 导致当前行已超过 target，向前回溯
+      while (i >= 0) {
+        const t = lines[i].time;
+        if (t !== null && t <= target) break;
+        i--;
+      }
+
+      activeLyricsIndex.value = i;
+    },
+    { flush: "sync" },
+  )
 
   // ─── 方法 ─────────────────────────────────────────────────────────────
   let mediaSessionInitialized = false;

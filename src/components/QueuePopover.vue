@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Track } from "@/types";
 import { X, Minus } from "@lucide/vue";
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import "@/styles/popover.css";
 
 const props = defineProps<{
@@ -14,17 +15,42 @@ const emit = defineEmits<{
   remove: [id: string];
 }>();
 
+const ITEM_HEIGHT = 40;
 const listRef = ref<HTMLElement | null>(null);
 
+const rowVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: props.tracks.length,
+    getScrollElement: () => listRef.value,
+    estimateSize: () => ITEM_HEIGHT,
+    overscan: 3,
+  })),
+);
+
+const virtualItems = computed(() =>
+  rowVirtualizer.value.getVirtualItems().map((vRow) => ({
+    vRow,
+    item: props.tracks[vRow.index],
+  })),
+);
+
+const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+
+// 打开时滚动到当前播放曲目
 function handleToggle(event: ToggleEvent) {
   if (event.newState !== "open") return;
-  if (!props.currentTrackId || !listRef.value) return;
-
-  const playingItem = listRef.value.querySelector<HTMLLIElement>(".is-playing");
-  if (playingItem) {
-    playingItem.scrollIntoView({ block: "start" });
+  if (!props.currentTrackId) return;
+  const idx = props.tracks.findIndex((t) => t.id === props.currentTrackId);
+  if (idx >= 0) {
+    rowVirtualizer.value.scrollToIndex(idx, { align: "start" });
   }
 }
+
+// 队列变化时重新测量虚拟行
+watch(
+  () => props.tracks.length,
+  () => rowVirtualizer.value.measure(),
+);
 </script>
 
 <template>
@@ -45,30 +71,49 @@ function handleToggle(event: ToggleEvent) {
     </header>
 
     <ul ref="listRef" class="popover-list">
-      <li
-        v-for="(track, index) in tracks"
-        :key="track.id"
-        class="popover-item"
-        :class="{ 'is-playing': track.id === currentTrackId }"
-        tabindex="0"
-        :aria-label="`${track.title}，${track.artist}`"
-        @click="emit('play', index)"
-        @keydown.enter="emit('play', index)"
-      >
-        <span class="track-title">{{ track.title }}</span>
-        <span class="track-artist">{{ track.artist }}</span>
-        <button
-          class="track-remove"
-          type="button"
-          title="从队列移除"
-          aria-label="从队列移除"
-          @click.stop="emit('remove', track.id)"
+      <template v-if="tracks.length">
+        <div
+          :style="{
+            height: `${totalSize}px`,
+            width: '100%',
+            position: 'relative',
+          }"
         >
-          <Minus :size="14" />
-        </button>
-      </li>
+          <li
+            v-for="{ vRow, item } in virtualItems"
+            :key="item.id"
+            class="popover-item"
+            :class="{ 'is-playing': item.id === currentTrackId }"
+            :data-index="vRow.index"
+            tabindex="0"
+            :aria-label="`${item.title}，${item.artist}`"
+            :style="{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: `${vRow.size}px`,
+              transform: `translateY(${vRow.start}px)`,
+            }"
+            @click="emit('play', vRow.index)"
+            @keydown.enter="emit('play', vRow.index)"
+          >
+            <span class="track-title">{{ item.title }}</span>
+            <span class="track-artist">{{ item.artist }}</span>
+            <button
+              class="track-remove"
+              type="button"
+              title="从队列移除"
+              aria-label="从队列移除"
+              @click.stop="emit('remove', item.id)"
+            >
+              <Minus :size="14" />
+            </button>
+          </li>
+        </div>
+      </template>
 
-      <li v-if="!tracks.length" class="popover-empty">播放队列为空</li>
+      <li v-else class="popover-empty">播放队列为空</li>
     </ul>
   </div>
 </template>
@@ -121,6 +166,7 @@ function handleToggle(event: ToggleEvent) {
 .popover-list {
   overflow-y: auto;
   max-height: 260px;
+  min-height: 80px;
   padding: 6px;
   margin: 0;
   list-style: none;
@@ -130,7 +176,7 @@ function handleToggle(event: ToggleEvent) {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 0 10px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -172,8 +218,6 @@ function handleToggle(event: ToggleEvent) {
   transition: opacity 100ms ease;
   cursor: pointer;
 }
-
-
 
 .track-remove:hover {
   background: rgba(255, 255, 255, 0.1);

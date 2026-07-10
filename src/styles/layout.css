@@ -101,14 +101,20 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   padding: 8px 10px;
+  transition: border-color 0.15s ease;
 }
 
 .search-field input {
   width: 100%;
   border: 0;
   outline: none;
+  box-shadow: none;
   background: transparent;
   color: var(--text);
+}
+
+.search-field:focus-within {
+  border-color: var(--accent-muted);
 }
 
 .search-field span,

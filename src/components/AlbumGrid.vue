@@ -4,13 +4,21 @@ import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
 
+// ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
+function handleImgLoad(event: Event) {
+  const target = event.target as HTMLElement;
+  if (target.tagName === "IMG") {
+    target.classList.add("is-loaded");
+  }
+}
+
 interface Props {
   albums: Album[];
   selectedAlbumName: string;
   transitionTarget?: string;
   viewTransitionName?: string;
 }
-const MIN_COL_WIDTH = 120;
+const MIN_COL_WIDTH = 150;
 const ROW_GAP = 30;
 const ROW_HEIGHT = 190;
 const PADDING_RIGHT = 4;
@@ -89,12 +97,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="scrollRef" class="album-grid-scroll">
+  <div ref="scrollRef" class="album-grid-scroll" @load.capture="handleImgLoad">
     <div
       :style="{
         height: `${totalSize}px`,
         position: 'relative',
         width: '100%',
+        '--min-col-width': `${MIN_COL_WIDTH}px`,
       }"
     >
       <div
@@ -125,17 +134,17 @@ onBeforeUnmount(() => {
           <div class="album-card-cover">
             <img
               v-if="album.coverUrl"
+              class="img-fadein"
               :src="album.coverUrl"
               :alt="`${album.name} 封面`"
+              :width="MIN_COL_WIDTH"
+              :height="MIN_COL_WIDTH"
               :style="
                 album.name === transitionTarget
                   ? { 'view-transition-name': viewTransitionName }
                   : undefined
               "
               loading="lazy"
-              @load="
-                ($event.target as HTMLImageElement).classList.add('is-loaded')
-              "
             />
             <Disc3 v-else :size="32" class="album-card-placeholder" />
             <button
