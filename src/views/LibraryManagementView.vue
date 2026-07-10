@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "@lucide/vue";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
@@ -43,12 +43,43 @@ async function openFolder(type: "picker" | "webkitDirectory") {
   if (!nextSource) return;
   libraryStore.addSource(nextSource);
 }
-function removeSource(sourceId: string) {
+
+// ─── 删除确认对话框 ──────────────────────────────────────────────────────────────
+const confirmVisible = ref(false);
+const removingSourceId = ref("");
+const removingSourceName = ref("");
+const confirmDialogRef = useTemplateRef<HTMLDialogElement>("confirmDialogRef");
+
+watch(confirmVisible, (val) => {
+  const el = confirmDialogRef.value;
+  if (!el) return;
+  if (val) {
+    el.showModal();
+  } else {
+    el.close();
+  }
+});
+
+function requestRemoveSource(sourceId: string) {
   if (libraryStore.isFileLaunch) {
     showToast("本地文件启动，不支持移除");
     return;
   }
-  libraryStore.removeSource(sourceId);
+  const source = libraryStore.musicSources.find((s) => s.id === sourceId);
+  removingSourceId.value = sourceId;
+  removingSourceName.value = source?.name ?? "";
+  confirmVisible.value = true;
+}
+
+function confirmRemove() {
+  libraryStore.removeSource(removingSourceId.value);
+  confirmVisible.value = false;
+}
+
+function handleDialogClose() {
+  if (confirmVisible.value) {
+    confirmVisible.value = false;
+  }
 }
 </script>
 
@@ -116,7 +147,7 @@ function removeSource(sourceId: string) {
           class="source-remove icon-btn"
           type="button"
           title="移除"
-          @click="removeSource(source.id)"
+          @click="requestRemoveSource(source.id)"
         >
           <Trash2 :size="18" />
         </button>
@@ -128,5 +159,31 @@ function removeSource(sourceId: string) {
       title="还没有添加音乐源"
       content="添加一个或多个本地文件夹后，播放器会合并生成统一播放列表。"
     />
+
+    <!-- 删除确认对话框 -->
+    <dialog
+      ref="confirmDialogRef"
+      class="playlist-dialog"
+      @close="handleDialogClose"
+    >
+      <form method="dialog" @submit.prevent="confirmRemove">
+        <h3>移除音乐源</h3>
+        <p class="playlist-dialog-text">
+          确定移除「{{ removingSourceName }}」吗？移除后该目录中的歌曲将从播放列表中消失。
+        </p>
+        <div class="dialog-actions">
+          <button
+            type="button"
+            class="dialog-btn"
+            @click="confirmVisible = false"
+          >
+            取消
+          </button>
+          <button type="submit" class="dialog-btn dialog-btn--danger">
+            移除
+          </button>
+        </div>
+      </form>
+    </dialog>
   </section>
 </template>

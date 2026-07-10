@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowLeft, Play } from "@lucide/vue";
 import { computed } from "vue";
-import { useFavoriteStore, usePlayerStore, usePlaylistStore } from "@/stores";
+import { useFavoriteStore, usePlayerStore, usePlaylistStore, useAlbumStore, useUIStore } from "@/stores";
 import TrackTable from "./TrackTable.vue";
 import SectionHead from "./SectionHead.vue";
 import type { Playlist, Track } from "@/types";
@@ -22,6 +22,8 @@ const emit = defineEmits<{
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const playlistStore = usePlaylistStore();
+const albumStore = useAlbumStore();
+const uiStore = useUIStore();
 
 const isPlaying = computed(() => playerStore.isPlaying);
 
@@ -43,6 +45,11 @@ function handleTogglePlay() {
 
 function handleToggleFavorite(id: string) {
   favoriteStore.toggleTrackFavorite(id);
+}
+
+function handleNavigateToAlbum(albumName: string) {
+  uiStore.setActiveSection("albums");
+  albumStore.selectAlbum(albumName);
 }
 </script>
 
@@ -73,6 +80,7 @@ function handleToggleFavorite(id: string) {
       @play="handlePlay"
       @toggle-play="handleTogglePlay"
       @toggle-favorite="handleToggleFavorite"
+      @navigate-to-album="handleNavigateToAlbum"
     />
   </section>
 </template>

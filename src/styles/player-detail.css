@@ -47,8 +47,8 @@
 }
 
 .dock-cover {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--cover-radius);
   flex-shrink: 0;
   display: flex;
@@ -348,14 +348,19 @@ input[type="range"].detail-volume-slider {
 
 .detail-head {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   align-items: center;
-  padding: calc(18px + var(--window-safe-top)) 24px 8px;
+  padding: 16px 24px 8px;
+  app-region: drag;
+}
+
+.detail-head .icon-button {
+  app-region: no-drag;
 }
 
 .detail-body {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -381,7 +386,7 @@ input[type="range"].detail-volume-slider {
 .detail-meta::after {
   content: "";
   position: absolute;
-  top: 20px;
+  top: 0;
   right: 0;
   bottom: 28px;
   width: 1px;
@@ -573,4 +578,9 @@ input[type="range"].detail-volume-slider {
 ::view-transition-new(active-cover-art) {
   animation-duration: 420ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (display-mode: window-controls-overlay) {
+  .detail-head {
+    padding-top: 0;
+  }
 }

@@ -40,7 +40,7 @@
   top: calc(18px + var(--window-safe-top));
   left: 16px;
   width: 50px;
-  z-index: 20;
+  z-index: var(--z-float);
   pointer-events: none;
 }
 

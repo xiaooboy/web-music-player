@@ -42,6 +42,7 @@ function handleRemoveTrack(id: string) {
     <button
       class="dock-track detail-trigger"
       type="button"
+      title="查看播放详情"
       @click="playerStore.currentTrack && uiStore.openDetail()"
     >
       <div class="cover-art dock-cover">
@@ -86,6 +87,7 @@ function handleRemoveTrack(id: string) {
         class="icon-button"
         type="button"
         aria-label="上一首"
+        title="上一首"
         @click.stop="playerStore.playByStep(-1)"
       >
         <SkipBack :size="20" />
@@ -95,6 +97,7 @@ function handleRemoveTrack(id: string) {
         :class="{ 'is-active': playerStore.isPlaying }"
         type="button"
         aria-label="播放或暂停"
+        title="播放或暂停"
         @click.stop="playerStore.togglePlay()"
       >
         <Pause v-if="playerStore.isPlaying" :size="22" />
@@ -104,6 +107,7 @@ function handleRemoveTrack(id: string) {
         class="icon-button"
         type="button"
         aria-label="下一首"
+        title="下一首"
         @click.stop="playerStore.playByStep(1)"
       >
         <SkipForward :size="20" />
@@ -113,6 +117,7 @@ function handleRemoveTrack(id: string) {
         :class="{ 'is-active': isCurrentTrackLiked }"
         type="button"
         :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
+        :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
         @click.stop="
           favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
         "

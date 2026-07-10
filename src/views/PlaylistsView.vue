@@ -94,7 +94,7 @@ function handlePlayPlaylist(playlistId: string) {
 
 <template>
   <section class="main-panel playlist-browser">
-    <SectionHead :style="{ opacity: showDetail ? 0 : 1 }">
+    <SectionHead v-show="!showDetail">
       <template #title>
         <h2>歌单</h2>
       </template>
@@ -111,7 +111,7 @@ function handlePlayPlaylist(playlistId: string) {
     </SectionHead>
 
     <PlaylistGrid
-      v-if="playlistStore.playlists.length"
+      v-show="playlistStore.playlists.length && !showDetail"
       :playlists="playlistStore.playlists"
       :selectedPlaylistId="playlistStore.selectedPlaylistId"
       :viewTransitionName="gridViewTransitionName"
@@ -120,12 +120,9 @@ function handlePlayPlaylist(playlistId: string) {
       @playPlaylist="handlePlayPlaylist"
       @editPlaylist="openEditDialog"
       @deletePlaylist="handleDeletePlaylist"
-      :style="{
-        opacity: showDetail ? 0 : 1,
-      }"
     />
     <TipContent
-      v-else
+      v-if="!playlistStore.playlists?.length"
       title="还没有歌单"
       content="创建一个歌单，开始整理你的音乐。"
       fill

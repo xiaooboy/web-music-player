@@ -4,6 +4,8 @@ import { Search } from "@lucide/vue";
 import { useLibraryStore } from "../stores/libraryStore";
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
+import { useAlbumStore } from "../stores/albumStore";
+import { useUIStore } from "../stores/uiStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
 import SectionHead from "@/components/SectionHead.vue";
@@ -11,6 +13,8 @@ import SectionHead from "@/components/SectionHead.vue";
 const libraryStore = useLibraryStore();
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
+const albumStore = useAlbumStore();
+const uiStore = useUIStore();
 
 const launchTimerId = setTimeout(() => {
   launchTimer.value = false;
@@ -53,6 +57,11 @@ function handleSelectTrack(id: string) {
   playerStore.setPlaySourceType("all-track");
   playerStore.playTrackById(id, true);
 }
+
+function handleNavigateToAlbum(albumName: string) {
+  uiStore.setActiveSection("albums");
+  albumStore.selectAlbum(albumName);
+}
 </script>
 
 <template>
@@ -81,6 +90,7 @@ function handleSelectTrack(id: string) {
         @play="handleSelectTrack"
         @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
+        @navigate-to-album="handleNavigateToAlbum"
       />
     </div>
   </div>

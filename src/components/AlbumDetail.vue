@@ -49,7 +49,7 @@ function handleContextMenu(
         <img
           v-if="album.coverUrl"
           :src="album.coverUrl"
-          class="is-loaded"
+          class="img-fadein is-loaded"
           :alt="`${album.name} 封面`"
           :style="{ 'view-transition-name': viewTransitionName }"
         />
