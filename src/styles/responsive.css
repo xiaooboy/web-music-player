@@ -123,7 +123,7 @@
   .app-shell {
     overflow-x: auto;
     scrollbar-width: none;
-    grid-template-columns: 140px 100%;
+    grid-template-columns: auto 100%;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
   }

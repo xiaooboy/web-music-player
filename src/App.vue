@@ -121,7 +121,6 @@ function handleContextMenuBlock(event: MouseEvent) {
   <div class="region-bar"></div>
   <div
     class="app-shell"
-    :class="{ 'sidebar-collapsed': uiStore.sidebarCollapsed }"
     role="application"
     aria-label="LocalMusic 本地音乐播放器"
   >

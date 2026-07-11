@@ -27,6 +27,7 @@
   --font-body: system-ui;
   --window-safe-top: 0px;
   --dock-height: 70px;
+  --shell-gap: 16px;
   /* z-index 层级 — 间隔 10，留出插入空间 */
   --z-base: 1;            /* 组件内部相对层级（detail-head/body） */
   --z-sticky: 10;         /* 吸顶/置顶元素（搜索栏） */
