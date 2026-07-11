@@ -142,7 +142,7 @@ function handlePlayPlaylist(playlistId: string) {
     />
 
     <PlaylistDialog
-      v-model:visible="dialogVisible"
+      v-model="dialogVisible"
       :mode="dialogMode"
       :initial-name="
         dialogMode === 'edit' || dialogMode === 'delete'

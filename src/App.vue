@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted } from "vue";
 import { usePlayerStore, useLibraryStore, useUIStore } from "./stores";
 
 import MusicDetailPanel from "./components/MusicDetailPanel.vue";
 import PlayerDock from "./components/PlayerDock.vue";
 import SidebarPanel from "./components/SidebarPanel.vue";
+import BaseDialog from "./components/BaseDialog.vue";
 import FavoritesView from "./views/FavoritesView.vue";
 import AlbumsView from "./views/AlbumsView.vue";
 import PlaylistsView from "./views/PlaylistsView.vue";
@@ -17,26 +18,13 @@ const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
 const uiStore = useUIStore();
 const { currentView, activeSection } = storeToRefs(uiStore);
-const detailDialogRef = useTemplateRef<HTMLDialogElement>('detailDialogRef');
 
-// ─── 详情页 dialog 开关 ────────────────────────────────────────────────────────
-watch(currentView, (view) => {
-  const dialog = detailDialogRef.value;
-  if (!dialog) return;
-  if (view === 'detail' && !dialog.open) {
-    dialog.showModal();
-  } else if (view === 'library' && dialog.open) {
-    dialog.close();
-  }
+const detailOpen = computed({
+  get: () => currentView.value === 'detail',
+  set: (val) => uiStore.setCurrentView(val ? 'detail' : 'library'),
 });
 
-function handleDialogCancel(event: Event) {
-  // 阻止浏览器原生关闭，由状态驱动关闭
-  event.preventDefault();
-  uiStore.closeDetail();
-}
-
-// ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────
+// ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────────
 const screenReaderAnnouncement = computed(() => {
   const track = playerStore.currentTrack;
   if (!track) return "";
@@ -136,14 +124,13 @@ function handleContextMenuBlock(event: MouseEvent) {
 
     <PlayerDock />
   </div>
-  <dialog
-    ref="detailDialogRef"
+  <BaseDialog
+    v-model="detailOpen"
     class="detail-shell"
     aria-label="播放详情"
-    @cancel="handleDialogCancel"
   >
     <MusicDetailPanel />
-  </dialog>
+  </BaseDialog>
   <ToastContainer />
   <div aria-live="polite" aria-atomic="true" class="sr-only">
     {{ screenReaderAnnouncement }}

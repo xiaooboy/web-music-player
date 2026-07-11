@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from "vue";
+import { computed, ref } from "vue";
 import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "@lucide/vue";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
@@ -7,6 +7,7 @@ import { useLibraryStore } from "../stores/libraryStore";
 import { showToast } from "../composables/useToast";
 import TipContent from "../components/TipContent.vue";
 import SectionHead from "../components/SectionHead.vue";
+import BaseDialog from "../components/BaseDialog.vue";
 
 const libraryStore = useLibraryStore();
 
@@ -48,17 +49,6 @@ async function openFolder(type: "picker" | "webkitDirectory") {
 const confirmVisible = ref(false);
 const removingSourceId = ref("");
 const removingSourceName = ref("");
-const confirmDialogRef = useTemplateRef<HTMLDialogElement>("confirmDialogRef");
-
-watch(confirmVisible, (val) => {
-  const el = confirmDialogRef.value;
-  if (!el) return;
-  if (val) {
-    el.showModal();
-  } else {
-    el.close();
-  }
-});
 
 function requestRemoveSource(sourceId: string) {
   if (libraryStore.isFileLaunch) {
@@ -74,12 +64,6 @@ function requestRemoveSource(sourceId: string) {
 function confirmRemove() {
   libraryStore.removeSource(removingSourceId.value);
   confirmVisible.value = false;
-}
-
-function handleDialogClose() {
-  if (confirmVisible.value) {
-    confirmVisible.value = false;
-  }
 }
 </script>
 
@@ -161,10 +145,9 @@ function handleDialogClose() {
     />
 
     <!-- 删除确认对话框 -->
-    <dialog
-      ref="confirmDialogRef"
+    <BaseDialog
+      v-model="confirmVisible"
       class="playlist-dialog"
-      @close="handleDialogClose"
     >
       <form method="dialog" @submit.prevent="confirmRemove">
         <h3>移除音乐源</h3>
@@ -184,6 +167,6 @@ function handleDialogClose() {
           </button>
         </div>
       </form>
-    </dialog>
+    </BaseDialog>
   </section>
 </template>
