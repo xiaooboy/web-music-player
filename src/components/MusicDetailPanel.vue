@@ -194,7 +194,7 @@ watch(
         title="返回列表"
         @click="uiStore.closeDetail()"
       >
-        <ArrowLeft :size="18" />
+        <ArrowLeft :size="20" />
       </button>
     </header>
 
@@ -294,14 +294,14 @@ watch(
                 @click="playerStore.nextPlaybackMode()"
               >
                 <Shuffle
-                  v-if="playerStore.playbackMode === 'shuffle'"
-                  :size="18"
-                />
-                <Repeat1
-                  v-else-if="playerStore.playbackMode === 'one'"
-                  :size="18"
-                />
-                <Repeat v-else :size="18" />
+                                  v-if="playerStore.playbackMode === 'shuffle'"
+                                  :size="20"
+                                />
+                                <Repeat1
+                                  v-else-if="playerStore.playbackMode === 'one'"
+                                  :size="20"
+                                />
+                                <Repeat v-else :size="20" />
               </button>
               <button
                 class="icon-button favorite-button"
@@ -314,7 +314,7 @@ watch(
                 "
               >
                 <Heart
-                  :size="18"
+                                  :size="20"
                   :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
                 />
               </button>
@@ -336,8 +336,8 @@ watch(
                 :title="playerStore.volumePercent === 0 ? '取消静音' : '音量'"
                 :popovertarget="VOLUME_POPOVER_ID"
               >
-                <VolumeX v-if="playerStore.volumePercent === 0" :size="18" />
-                <Volume2 v-else :size="18" />
+                <VolumeX v-if="playerStore.volumePercent === 0" :size="20" />
+                                <Volume2 v-else :size="20" />
               </button>
               <button
                 class="icon-button more-button"
@@ -347,9 +347,9 @@ watch(
                 title="更多操作"
                 @click="handleMoreClick($event)"
               >
-                <MoreVertical :size="18" />
-              </button>
-            </div>
+                <MoreVertical :size="20" />
+                              </button>
+                            </div>
           </div>
         </div>
       </div>

@@ -179,10 +179,10 @@ function scrollToCurrentTrack() {
                 "
               >
                 <Pause
-                  v-if="item.id === currentTrackId && isPlaying"
-                  :size="18"
-                />
-                <Play v-else :size="18" />
+                                  v-if="item.id === currentTrackId && isPlaying"
+                                  :size="20"
+                                />
+                                <Play v-else :size="20" />
               </button>
               <button
                 class="row-like"
@@ -195,7 +195,7 @@ function scrollToCurrentTrack() {
                 @click.stop="$emit('toggleFavorite', item.id)"
               >
                 <Heart
-                  :size="16"
+                                  :size="20"
                   :fill="likedTrackIdSet.has(item.id) ? 'currentColor' : 'none'"
                 />
               </button>
@@ -208,7 +208,7 @@ function scrollToCurrentTrack() {
                 @click.stop="handleContextMenu($event, item)"
                 @keydown="handleMoreKeydown($event, item)"
               >
-                <MoreVertical :size="16" />
+                <MoreVertical :size="20" />
               </button>
             </div>
           </div>

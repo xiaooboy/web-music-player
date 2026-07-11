@@ -136,7 +136,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
           @keydown="handleMoreKeydown($event, playlist)"
           @keydown.enter.stop
         >
-          <MoreVertical :size="14" />
+          <MoreVertical :size="20" />
         </button>
       </section>
     </div>

@@ -79,9 +79,9 @@ function handleRemoveTrack(id: string) {
         :title="playerStore.playbackModeLabel"
         @click.stop="playerStore.nextPlaybackMode()"
       >
-        <Shuffle v-if="playerStore.playbackMode === 'shuffle'" :size="18" />
-        <Repeat1 v-else-if="playerStore.playbackMode === 'one'" :size="18" />
-        <Repeat v-else :size="18" />
+        <Shuffle v-if="playerStore.playbackMode === 'shuffle'" :size="20" />
+                <Repeat1 v-else-if="playerStore.playbackMode === 'one'" :size="20" />
+                <Repeat v-else :size="20" />
       </button>
       <button
         class="icon-button"
@@ -123,7 +123,7 @@ function handleRemoveTrack(id: string) {
         "
       >
         <Heart
-          :size="18"
+                  :size="20"
           :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
         />
       </button>
@@ -135,7 +135,7 @@ function handleRemoveTrack(id: string) {
         popovertarget="player-dock-queue"
         popovertargetaction="toggle"
       >
-        <List :size="18" />
+        <List :size="20" />
       </button>
     </div>
 

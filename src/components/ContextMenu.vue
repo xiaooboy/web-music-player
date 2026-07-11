@@ -301,7 +301,7 @@ defineExpose({ open, close, getWasOpen });
         <component
           v-if="item.icon"
           :is="item.icon"
-          :size="16"
+          :size="20"
           class="context-menu-icon"
         />
         {{ item.label }}
@@ -336,7 +336,7 @@ defineExpose({ open, close, getWasOpen });
         <component
           v-if="item.icon"
           :is="item.icon"
-          :size="16"
+          :size="20"
           class="context-menu-icon"
         />
         {{ item.label }}

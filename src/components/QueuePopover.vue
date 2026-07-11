@@ -66,7 +66,7 @@ watch(
         :popovertarget="($attrs.id as string) || undefined"
         popovertargetaction="hide"
       >
-        <X :size="16"/>
+        <X :size="20"/>
       </button>
     </header>
 
@@ -107,7 +107,7 @@ watch(
               aria-label="从队列移除"
               @click.stop="emit('remove', item.id)"
             >
-              <Minus :size="14" />
+              <Minus :size="20" />
             </button>
           </li>
         </div>

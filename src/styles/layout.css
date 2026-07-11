@@ -39,7 +39,6 @@
 
 .detail-shell::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
 }
 
 .detail-stage {

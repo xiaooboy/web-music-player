@@ -90,31 +90,31 @@ function handleDialogClose() {
         <div class="library-actions-inline">
           <button
             v-if="showAddButton"
-            class="icon-btn"
+            class="icon-button"
             type="button"
             title="添加音乐源"
             @click="openFolder('picker')"
           >
-            <FolderPlus :size="18" />
+            <FolderPlus :size="20" />
           </button>
           <button
             v-if="showTempButton"
-            class="icon-btn"
+            class="icon-button"
             type="button"
             title="导入临时文件夹"
             @click="openFolder('webkitDirectory')"
           >
-            <FolderSymlink :size="18" />
+            <FolderSymlink :size="20" />
           </button>
           <button
             v-if="pendingReauthCount"
-            class="icon-btn"
+            class="icon-button"
             type="button"
             title="重新授权"
             :disabled="libraryStore.isReauthorizing"
             @click="libraryStore.reauthorizeAll()"
           >
-            <RefreshCw :size="18" />
+            <RefreshCw :size="20" />
           </button>
         </div>
       </template>
@@ -144,12 +144,12 @@ function handleDialogClose() {
           }}</span>
         </div>
         <button
-          class="source-remove icon-btn"
+          class="source-remove icon-button"
           type="button"
           title="移除"
           @click="requestRemoveSource(source.id)"
         >
-          <Trash2 :size="18" />
+          <Trash2 :size="20" />
         </button>
       </div>
     </div>

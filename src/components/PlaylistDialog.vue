@@ -141,28 +141,23 @@ function handleClose() {
 /* ─── backdrop 动画 ──────────────────────────────────────────────────────── */
 .playlist-dialog::backdrop {
   background: rgba(0, 0, 0, 0);
-  backdrop-filter: blur(0px);
 
   transition:
     background 120ms ease-in,
-    backdrop-filter 120ms ease-in,
     display 120ms ease-in allow-discrete,
     overlay 120ms ease-in allow-discrete;
 }
 
 .playlist-dialog[open]::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
 
   transition:
     background 200ms ease-out,
-    backdrop-filter 200ms ease-out,
     display 200ms ease-out allow-discrete,
     overlay 200ms ease-out allow-discrete;
 
   @starting-style {
     background: rgba(0, 0, 0, 0);
-    backdrop-filter: blur(0px);
   }
 }
 
