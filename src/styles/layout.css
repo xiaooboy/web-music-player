@@ -9,7 +9,7 @@
 }
 .app-shell {
   display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   min-height: 100dvh;
   max-height: 100dvh;
   height: 100dvh;
@@ -17,12 +17,8 @@
 
   gap: 20px;
   overflow: hidden;
-  transition: grid-template-columns 0.25s ease;
 }
 
-.app-shell.sidebar-collapsed {
-  grid-template-columns: 50px minmax(0, 1fr);
-}
 
 .detail-shell {
   position: fixed;
