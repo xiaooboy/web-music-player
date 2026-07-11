@@ -40,12 +40,7 @@
    * 不受 z-index 影响，无需 token。
    * 以上 --z-overlay / --z-dropdown 仅为不支持 top layer 的降级场景保留。
    */
-  --gradient-bg: radial-gradient(
-      circle at top left,
-      var(--accent-dim),
-      transparent 22%
-    )
-    #0b0f0c;
+  --gradient-bg: #0b0f0c;
 }
 
 @supports (top: env(titlebar-area-height)) {

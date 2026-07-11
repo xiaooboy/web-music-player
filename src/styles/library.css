@@ -273,10 +273,8 @@
 
 .track-header {
   margin-bottom: 12px;
-  padding-bottom: 12px;
   color: var(--muted);
   font-size: 0.84rem;
-  border-bottom: 1px solid var(--line);
 }
 
 .track-header span:last-child {

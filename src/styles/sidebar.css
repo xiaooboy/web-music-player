@@ -1,21 +1,15 @@
-.main-panel,
-.player-dock {
-  box-shadow: var(--shadow);
-}
-
 .sidebar {
-  position: sticky;
-  top: 0;
   height: 100%;
   color: var(--text);
-  padding-block: 2px 24px;
+  padding-block: 0 var(--dock-height);
   display: flex;
   flex-direction: column;
   gap: 26px;
   overflow: auto;
   width: 140px;
-  transition: width 0.25s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 .sidebar.is-collapsed {
   width: 50px;

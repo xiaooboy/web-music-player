@@ -102,6 +102,9 @@
   .detail-cover {
     width: min(100%, clamp(180px, 90vw, 300px));
   }
+  .detail-meta::after {
+    display: none;
+  }
   .detail-meta,
   .detail-lyrics {
     width: 100%;
