@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from "vue";
+import { computed, ref } from "vue";
 import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "@lucide/vue";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
@@ -7,6 +7,7 @@ import { useLibraryStore } from "../stores/libraryStore";
 import { showToast } from "../composables/useToast";
 import TipContent from "../components/TipContent.vue";
 import SectionHead from "../components/SectionHead.vue";
+import BaseDialog from "../components/BaseDialog.vue";
 
 const libraryStore = useLibraryStore();
 
@@ -48,17 +49,6 @@ async function openFolder(type: "picker" | "webkitDirectory") {
 const confirmVisible = ref(false);
 const removingSourceId = ref("");
 const removingSourceName = ref("");
-const confirmDialogRef = useTemplateRef<HTMLDialogElement>("confirmDialogRef");
-
-watch(confirmVisible, (val) => {
-  const el = confirmDialogRef.value;
-  if (!el) return;
-  if (val) {
-    el.showModal();
-  } else {
-    el.close();
-  }
-});
 
 function requestRemoveSource(sourceId: string) {
   if (libraryStore.isFileLaunch) {
@@ -75,12 +65,6 @@ function confirmRemove() {
   libraryStore.removeSource(removingSourceId.value);
   confirmVisible.value = false;
 }
-
-function handleDialogClose() {
-  if (confirmVisible.value) {
-    confirmVisible.value = false;
-  }
-}
 </script>
 
 <template>
@@ -90,31 +74,31 @@ function handleDialogClose() {
         <div class="library-actions-inline">
           <button
             v-if="showAddButton"
-            class="icon-btn"
+            class="icon-button"
             type="button"
             title="添加音乐源"
             @click="openFolder('picker')"
           >
-            <FolderPlus :size="18" />
+            <FolderPlus :size="20" />
           </button>
           <button
             v-if="showTempButton"
-            class="icon-btn"
+            class="icon-button"
             type="button"
             title="导入临时文件夹"
             @click="openFolder('webkitDirectory')"
           >
-            <FolderSymlink :size="18" />
+            <FolderSymlink :size="20" />
           </button>
           <button
             v-if="pendingReauthCount"
-            class="icon-btn"
+            class="icon-button"
             type="button"
             title="重新授权"
             :disabled="libraryStore.isReauthorizing"
             @click="libraryStore.reauthorizeAll()"
           >
-            <RefreshCw :size="18" />
+            <RefreshCw :size="20" />
           </button>
         </div>
       </template>
@@ -124,7 +108,7 @@ function handleDialogClose() {
 
     <div
       v-if="libraryStore.musicSources.length"
-      class="source-list source-list--panel"
+      class="source-list source-list--panel scroll-borrow"
     >
       <div
         v-for="source in libraryStore.musicSources"
@@ -144,12 +128,12 @@ function handleDialogClose() {
           }}</span>
         </div>
         <button
-          class="source-remove icon-btn"
+          class="source-remove icon-button"
           type="button"
           title="移除"
           @click="requestRemoveSource(source.id)"
         >
-          <Trash2 :size="18" />
+          <Trash2 :size="20" />
         </button>
       </div>
     </div>
@@ -161,10 +145,9 @@ function handleDialogClose() {
     />
 
     <!-- 删除确认对话框 -->
-    <dialog
-      ref="confirmDialogRef"
+    <BaseDialog
+      v-model="confirmVisible"
       class="playlist-dialog"
-      @close="handleDialogClose"
     >
       <form method="dialog" @submit.prevent="confirmRemove">
         <h3>移除音乐源</h3>
@@ -184,6 +167,6 @@ function handleDialogClose() {
           </button>
         </div>
       </form>
-    </dialog>
+    </BaseDialog>
   </section>
 </template>

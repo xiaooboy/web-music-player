@@ -10,8 +10,6 @@
   min-height: 0;
   overflow: auto;
   align-content: start;
-  padding-left: 0;
-  padding-right: 12px;
 }
 
 .source-item,
@@ -74,27 +72,6 @@
   gap: 4px;
 }
 
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.icon-btn:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
 .all-track-view {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
@@ -102,7 +79,6 @@
   height: 100%;
   width: 100%;
   justify-self: stretch;
-  overflow: hidden;
 }
 
 .all-track-searchbar {
@@ -119,7 +95,6 @@
   width: 100%;
   min-height: 0;
   height: 100%;
-  overflow: hidden;
   padding-right: 0;
 }
 
@@ -137,7 +112,6 @@
   flex: 1;
   min-height: 0;
   height: 100%;
-  width: 100%;
   overflow: auto;
   justify-items: stretch;
 }
@@ -244,7 +218,7 @@
 
 .scroll-to-current {
   position: absolute;
-  right: 0;
+  right: 3px;
   bottom: calc(var(--dock-height) + 20px);
   display: inline-flex;
   align-items: center;

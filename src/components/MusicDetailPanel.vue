@@ -27,15 +27,17 @@ import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import TipContent from "../components/TipContent.vue";
 import QueuePopover from "./QueuePopover.vue";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import "@/styles/popover.css";
 
-const LIST_EL_ID = crypto.randomUUID();
 const VOLUME_POPOVER_ID = crypto.randomUUID();
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const uiStore = useUIStore();
+
+const queueRef = useTemplateRef<InstanceType<typeof QueuePopover>>("queueRef");
 
 const isCurrentTrackLiked = computed(() =>
   playerStore.currentTrack
@@ -45,7 +47,7 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 const detailBodyRef = useTemplateRef("detailBodyRef");
-const { menuProps, handleClickTrigger } = useTrackContextMenu();
+const { menuProps, handleClickTrigger, isSmallScreen } = useTrackContextMenu();
 
 function handleMoreClick(event: MouseEvent) {
   const track = playerStore.currentTrack;
@@ -194,7 +196,7 @@ watch(
         title="返回列表"
         @click="uiStore.closeDetail()"
       >
-        <ArrowLeft :size="18" />
+        <ArrowLeft :size="20" />
       </button>
     </header>
 
@@ -233,25 +235,27 @@ watch(
 
         <div class="detail-controls">
           <div class="detail-progress">
-            <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
-            <input
-              class="progress-slider"
-              type="range"
-              min="0"
-              max="100"
-              aria-label="播放进度"
-              :value="playerStore.progressPercent"
-              :style="{ '--slider-value': playerStore.progressPercent + '%' }"
-              @input="
-                playerStore.seekToPercent(
-                  Number(($event.target as HTMLInputElement).value),
-                )
-              "
-            />
-            <span>{{
-              formatTime(playerStore.currentTrack?.duration || 0)
-            }}</span>
-          </div>
+                      <input
+                        class="progress-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        aria-label="播放进度"
+                        :value="playerStore.progressPercent"
+                        :style="{ '--slider-value': playerStore.progressPercent + '%' }"
+                        @input="
+                          playerStore.seekToPercent(
+                            Number(($event.target as HTMLInputElement).value),
+                          )
+                        "
+                      />
+                      <div class="detail-progress-times">
+                        <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
+                        <span>{{
+                          formatTime(playerStore.currentTrack?.duration || 0)
+                        }}</span>
+                      </div>
+                    </div>
 
           <div class="detail-transport">
             <div class="detail-playback">
@@ -294,14 +298,14 @@ watch(
                 @click="playerStore.nextPlaybackMode()"
               >
                 <Shuffle
-                  v-if="playerStore.playbackMode === 'shuffle'"
-                  :size="18"
-                />
-                <Repeat1
-                  v-else-if="playerStore.playbackMode === 'one'"
-                  :size="18"
-                />
-                <Repeat v-else :size="18" />
+                                  v-if="playerStore.playbackMode === 'shuffle'"
+                                  :size="20"
+                                />
+                                <Repeat1
+                                  v-else-if="playerStore.playbackMode === 'one'"
+                                  :size="20"
+                                />
+                                <Repeat v-else :size="20" />
               </button>
               <button
                 class="icon-button favorite-button"
@@ -314,7 +318,7 @@ watch(
                 "
               >
                 <Heart
-                  :size="18"
+                                  :size="20"
                   :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
                 />
               </button>
@@ -323,7 +327,7 @@ watch(
                 type="button"
                 aria-label="播放队列"
                 title="播放队列"
-                :popovertarget="LIST_EL_ID"
+                @click="queueRef?.open()"
               >
                 <List :size="20" />
               </button>
@@ -336,8 +340,8 @@ watch(
                 :title="playerStore.volumePercent === 0 ? '取消静音' : '音量'"
                 :popovertarget="VOLUME_POPOVER_ID"
               >
-                <VolumeX v-if="playerStore.volumePercent === 0" :size="18" />
-                <Volume2 v-else :size="18" />
+                <VolumeX v-if="playerStore.volumePercent === 0" :size="20" />
+                                <Volume2 v-else :size="20" />
               </button>
               <button
                 class="icon-button more-button"
@@ -347,9 +351,9 @@ watch(
                 title="更多操作"
                 @click="handleMoreClick($event)"
               >
-                <MoreVertical :size="18" />
-              </button>
-            </div>
+                <MoreVertical :size="20" />
+                              </button>
+                            </div>
           </div>
         </div>
       </div>
@@ -400,8 +404,7 @@ watch(
     </div>
 
     <QueuePopover
-      :id="LIST_EL_ID"
-      popover="auto"
+      ref="queueRef"
       :tracks="playerStore.queue"
       :current-track-id="playerStore.currentTrackId"
       @play="playerStore.playTrack($event, true)"
@@ -423,6 +426,7 @@ watch(
         "
       />
     </div>
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </section>
 </template>

@@ -65,7 +65,7 @@ function handleNavigateToAlbum(albumName: string) {
       </template>
       <template #left>
         <button class="icon-button back-button" @click="emit('back')">
-          <ArrowLeft :size="18" />
+          <ArrowLeft :size="20" />
         </button>
       </template>
     </SectionHead>

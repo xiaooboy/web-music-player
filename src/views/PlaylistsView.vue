@@ -100,12 +100,12 @@ function handlePlayPlaylist(playlistId: string) {
       </template>
       <template #right>
         <button
-          class="playlist-create-btn"
+          class="icon-button"
           type="button"
           title="新建歌单"
           @click="openCreateDialog"
         >
-          <Plus :size="18" />
+          <Plus :size="20" />
         </button>
       </template>
     </SectionHead>
@@ -142,7 +142,7 @@ function handlePlayPlaylist(playlistId: string) {
     />
 
     <PlaylistDialog
-      v-model:visible="dialogVisible"
+      v-model="dialogVisible"
       :mode="dialogMode"
       :initial-name="
         dialogMode === 'edit' || dialogMode === 'delete'

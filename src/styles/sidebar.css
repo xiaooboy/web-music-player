@@ -1,18 +1,18 @@
 .sidebar {
-  height: 100%;
-  color: var(--text);
-  padding-block: 0 var(--dock-height);
   display: flex;
+  overflow: auto;
+  height: 100%;
+  padding: calc(var(--shell-gap) + var(--window-safe-top)) var(--shell-gap) var(--dock-height);
   flex-direction: column;
   gap: 26px;
-  overflow: auto;
-  width: 140px;
+  color: var(--text);
+  width: 172px;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
 .sidebar.is-collapsed {
-  width: 50px;
+  width: 82px;
 }
 
 .brand {
@@ -94,11 +94,6 @@
     width 0.2s ease,
     color 0.15s ease;
   overflow: hidden;
-}
-
-.sidebar.is-collapsed .nav-label {
-  opacity: 0;
-  width: 0;
 }
 
 .collapse-btn {

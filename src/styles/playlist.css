@@ -28,7 +28,6 @@
 }
 
 .playlist-create-btn:hover {
-  background: var(--accent-soft);
   color: var(--accent);
 }
 
@@ -112,9 +111,7 @@
   transform: translateY(0);
 }
 
-.playlist-card-play:hover {
-  background: rgba(0, 0, 0, 0.65);
-}
+
 
 .playlist-card-copy {
   min-width: 0;
@@ -164,10 +161,7 @@
   opacity: 1;
 }
 
-.playlist-card-more:hover {
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ContextMenu — 子菜单
@@ -237,12 +231,12 @@
 
   .playlist-card-more {
     position: static;
-    opacity: 0.5;
+    opacity: 1;
     background: transparent;
     backdrop-filter: none;
     color: var(--muted);
-    width: 28px;
-    height: 28px;
+    height: 42px;
+    width: 42px;
     flex-shrink: 0;
   }
 
@@ -253,7 +247,5 @@
     color: var(--text);
   }
 
-  .playlist-card-more:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
+
 }

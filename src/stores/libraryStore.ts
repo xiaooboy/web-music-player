@@ -75,6 +75,7 @@ export const useLibraryStore = defineStore("library", () => {
    * 构建开始，流程：sources->entries->tracks
    */
   async function startBuild() {
+    loading.value = true;
     const buildToken = updateBuildToken();
     const buildVersion = `build_verison${buildToken}`;
     console.time(buildVersion);

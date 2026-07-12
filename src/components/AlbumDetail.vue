@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { formatTime } from "../utils/media";
 import { Album } from "@/types";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 
 interface Props {
@@ -21,7 +22,7 @@ const emit = defineEmits<{
   (e: "playTrack", albumName: string, trackId: string): void;
 }>();
 
-const { menuProps, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 const contextMenuHeader = ref("");
 
 function handleContextMenu(
@@ -43,7 +44,7 @@ function handleContextMenu(
         type="button"
         @click="emit('back')"
       >
-        <ArrowLeft :size="18" />
+        <ArrowLeft :size="20" />
       </button>
       <div class="album-detail-cover">
         <img
@@ -68,7 +69,7 @@ function handleContextMenu(
         type="button"
         @click="emit('playAlbum', album.name)"
       >
-        <Play :size="16" />
+        <Play :size="20" />
         <span>播放专辑</span>
       </button>
     </div>
@@ -93,9 +94,9 @@ function handleContextMenu(
             <Pause
               v-if="track.id === playingTrackId"
               @click.stop="emit('stop', track.id)"
-              :size="16"
+              :size="20"
             />
-            <Play v-else :size="16" />
+            <Play v-else :size="20" />
           </div>
           <div class="album-song-copy">
             <strong>{{ songOrder + 1 }}. {{ track.title }}</strong>
@@ -112,12 +113,13 @@ function handleContextMenu(
             title="更多"
             @click.stop="handleContextMenu($event, track)"
           >
-            <MoreVertical :size="16" />
+            <MoreVertical :size="20" />
           </button>
         </div>
       </button>
     </div>
 
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </section>
 </template>

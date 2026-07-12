@@ -18,10 +18,11 @@ interface Props {
   transitionTarget?: string;
   viewTransitionName?: string;
 }
-const MIN_COL_WIDTH = 150;
 const ROW_GAP = 30;
+const PADDING_RIGHT = 0;
 const ROW_HEIGHT = 190;
-const PADDING_RIGHT = 4;
+// 最少两列
+const MIN_COL_WIDTH = Math.min(150, (screen.width - ROW_GAP - PADDING_RIGHT - 2 * 16) / 2);
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
@@ -97,7 +98,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="scrollRef" class="album-grid-scroll" @load.capture="handleImgLoad">
+  <div ref="scrollRef" class="album-grid-scroll scroll-borrow" @load.capture="handleImgLoad">
     <div
       :style="{
         height: `${totalSize}px`,

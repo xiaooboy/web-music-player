@@ -4,6 +4,7 @@ import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
 import TipContent from "./TipContent.vue";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
@@ -25,7 +26,7 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const { menuProps, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
@@ -98,7 +99,7 @@ function scrollToCurrentTrack() {
 
     <div
       ref="listRef"
-      class="track-list"
+      class="track-list scroll-borrow"
       :class="{ 'track-list--empty': !tracks.length }"
     >
       <template v-if="tracks.length">
@@ -179,10 +180,10 @@ function scrollToCurrentTrack() {
                 "
               >
                 <Pause
-                  v-if="item.id === currentTrackId && isPlaying"
-                  :size="18"
-                />
-                <Play v-else :size="18" />
+                                  v-if="item.id === currentTrackId && isPlaying"
+                                  :size="20"
+                                />
+                                <Play v-else :size="20" />
               </button>
               <button
                 class="row-like"
@@ -195,7 +196,7 @@ function scrollToCurrentTrack() {
                 @click.stop="$emit('toggleFavorite', item.id)"
               >
                 <Heart
-                  :size="16"
+                                  :size="20"
                   :fill="likedTrackIdSet.has(item.id) ? 'currentColor' : 'none'"
                 />
               </button>
@@ -208,7 +209,7 @@ function scrollToCurrentTrack() {
                 @click.stop="handleContextMenu($event, item)"
                 @keydown="handleMoreKeydown($event, item)"
               >
-                <MoreVertical :size="16" />
+                <MoreVertical :size="20" />
               </button>
             </div>
           </div>
@@ -230,7 +231,8 @@ function scrollToCurrentTrack() {
       <LocateFixed :size="20" />
     </button>
 
-    <!-- 右键菜单 -->
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <!-- 右键菜单 / 小屏 ActionSheet -->
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </section>
 </template>

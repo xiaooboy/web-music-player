@@ -1,31 +1,24 @@
 <script setup lang="ts">
-import { ref, useTemplateRef, watch } from "vue";
+import { ref, watch } from "vue";
+import BaseDialog from "./BaseDialog.vue";
+
+const visible = defineModel<boolean>();
 
 const props = defineProps<{
-  visible: boolean;
   mode: "create" | "edit" | "delete";
   initialName?: string;
 }>();
 
 const emit = defineEmits<{
   confirm: [name?: string];
-  "update:visible": [value: boolean];
 }>();
 
 const name = ref(props.initialName ?? "");
-const dialogRef = useTemplateRef("dialogRef");
 
 watch(
-  () => props.visible,
+  () => props.initialName,
   (val) => {
-    const el = dialogRef.value;
-    if (!el) return;
-    if (val) {
-      name.value = props.initialName ?? "";
-      el.showModal();
-    } else {
-      el.close();
-    }
+    name.value = val ?? "";
   },
 );
 
@@ -37,19 +30,15 @@ function handleConfirm() {
     if (!trimmed) return;
     emit("confirm", trimmed);
   }
-  emit("update:visible", false);
-}
-
-/** dialog 原生关闭（ESC、backdrop 点击等）同步状态 */
-function handleClose() {
-  if (props.visible) {
-    emit("update:visible", false);
-  }
+  visible.value = false;
 }
 </script>
 
 <template>
-  <dialog ref="dialogRef" class="playlist-dialog" @close="handleClose">
+  <BaseDialog
+    v-model="visible"
+    class="playlist-dialog"
+  >
     <form method="dialog" @submit.prevent="handleConfirm">
       <h3>
         {{
@@ -76,7 +65,7 @@ function handleClose() {
         <button
           type="button"
           class="dialog-btn"
-          @click="emit('update:visible', false)"
+          @click="visible = false"
         >
           取消
         </button>
@@ -91,7 +80,7 @@ function handleClose() {
         </button>
       </div>
     </form>
-  </dialog>
+  </BaseDialog>
 </template>
 
 <style>
@@ -141,28 +130,23 @@ function handleClose() {
 /* ─── backdrop 动画 ──────────────────────────────────────────────────────── */
 .playlist-dialog::backdrop {
   background: rgba(0, 0, 0, 0);
-  backdrop-filter: blur(0px);
 
   transition:
     background 120ms ease-in,
-    backdrop-filter 120ms ease-in,
     display 120ms ease-in allow-discrete,
     overlay 120ms ease-in allow-discrete;
 }
 
 .playlist-dialog[open]::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
 
   transition:
     background 200ms ease-out,
-    backdrop-filter 200ms ease-out,
     display 200ms ease-out allow-discrete,
     overlay 200ms ease-out allow-discrete;
 
   @starting-style {
     background: rgba(0, 0, 0, 0);
-    backdrop-filter: blur(0px);
   }
 }
 

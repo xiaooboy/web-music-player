@@ -121,12 +121,20 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid var(--accent);
-  box-shadow: 0 6px 14px rgba(211, 58, 49, 0.24);
+  width: 6px;
+  height: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  appearance: none;
+  width: 6px;
+  height: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .progress-slider {
@@ -447,20 +455,21 @@ input[type="range"].detail-volume-slider {
 }
 
 .detail-progress {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px;
-  align-items: center;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   width: 100%;
 }
 
-.detail-progress span {
-  width: 42px;
-  min-width: 42px;
+.detail-progress-times {
+  display: flex;
+  justify-content: space-between;
+}
+
+.detail-progress-times span {
   color: var(--muted);
   font-size: 0.84rem;
   font-variant-numeric: tabular-nums;
-  text-align: center;
 }
 
 .detail-transport {

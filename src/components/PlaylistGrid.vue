@@ -4,7 +4,9 @@ import { MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import type { MenuItem, EventPosition } from "./ContextMenu.vue";
+import { useMediaQuery } from "../composables/useMediaQuery";
 
 const props = defineProps<{
   playlists: Playlist[];
@@ -43,8 +45,11 @@ const coverUrlMap = computed(() => {
 });
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
+const isSmallScreen = useMediaQuery("(max-width: 640px)");
 const contextMenuRef =
   useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
+const actionSheetRef =
+  useTemplateRef<InstanceType<typeof ActionSheet>>("actionSheet");
 const menuProps = shallowReactive({
   title: "",
   menu: [] as MenuItem[],
@@ -65,7 +70,11 @@ function openMenu(event: MouseEvent, playlist: Playlist) {
       action: () => emit("deletePlaylist", playlist.id),
     },
   ];
-  contextMenuRef.value?.open(event, () => {});
+  if (isSmallScreen.value) {
+    actionSheetRef.value?.open();
+  } else {
+    contextMenuRef.value?.open(event, () => {});
+  }
 }
 
 function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
@@ -136,11 +145,12 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
           @keydown="handleMoreKeydown($event, playlist)"
           @keydown.enter.stop
         >
-          <MoreVertical :size="14" />
+          <MoreVertical :size="20" />
         </button>
       </section>
     </div>
 
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </div>
 </template>
