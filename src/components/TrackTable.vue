@@ -98,7 +98,7 @@ function scrollToCurrentTrack() {
 
     <div
       ref="listRef"
-      class="track-list"
+      class="track-list scroll-borrow"
       :class="{ 'track-list--empty': !tracks.length }"
     >
       <template v-if="tracks.length">

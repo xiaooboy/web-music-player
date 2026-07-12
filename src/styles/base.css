@@ -42,6 +42,8 @@
    * 以上 --z-overlay / --z-dropdown 仅为不支持 top layer 的降级场景保留。
    */
   --gradient-bg: #0b0f0c;
+  --scrollbar-size: 10px;
+  --scrollbar-compensation: var(--scrollbar-size); /* JS 运行时测量后会覆盖 */
 }
 
 @supports (top: env(titlebar-area-height)) {
@@ -76,8 +78,8 @@ body {
 }
 
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
 }
 
 *::-webkit-scrollbar-track {
@@ -142,6 +144,13 @@ button {
 img {
   display: block;
   max-width: 100%;
+}
+
+/* ─── 工具类：借用空间滚动条（gutter 不压缩内容） ─────────────────────────── */
+.scroll-borrow {
+  scrollbar-gutter: stable;
+  width: calc(100% + var(--scrollbar-compensation));
+  margin-right: calc(var(--scrollbar-compensation) * -1);
 }
 
 /* ─── 工具类：图片淡入 ─────────────────────────────────────────────────────── */

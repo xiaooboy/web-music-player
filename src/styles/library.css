@@ -79,7 +79,6 @@
   height: 100%;
   width: 100%;
   justify-self: stretch;
-  overflow: hidden;
 }
 
 .all-track-searchbar {
@@ -96,7 +95,6 @@
   width: 100%;
   min-height: 0;
   height: 100%;
-  overflow: hidden;
   padding-right: 0;
 }
 
@@ -114,7 +112,6 @@
   flex: 1;
   min-height: 0;
   height: 100%;
-  width: 100%;
   overflow: auto;
   justify-items: stretch;
 }
