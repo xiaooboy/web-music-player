@@ -235,25 +235,27 @@ watch(
 
         <div class="detail-controls">
           <div class="detail-progress">
-            <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
-            <input
-              class="progress-slider"
-              type="range"
-              min="0"
-              max="100"
-              aria-label="播放进度"
-              :value="playerStore.progressPercent"
-              :style="{ '--slider-value': playerStore.progressPercent + '%' }"
-              @input="
-                playerStore.seekToPercent(
-                  Number(($event.target as HTMLInputElement).value),
-                )
-              "
-            />
-            <span>{{
-              formatTime(playerStore.currentTrack?.duration || 0)
-            }}</span>
-          </div>
+                      <input
+                        class="progress-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        aria-label="播放进度"
+                        :value="playerStore.progressPercent"
+                        :style="{ '--slider-value': playerStore.progressPercent + '%' }"
+                        @input="
+                          playerStore.seekToPercent(
+                            Number(($event.target as HTMLInputElement).value),
+                          )
+                        "
+                      />
+                      <div class="detail-progress-times">
+                        <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
+                        <span>{{
+                          formatTime(playerStore.currentTrack?.duration || 0)
+                        }}</span>
+                      </div>
+                    </div>
 
           <div class="detail-transport">
             <div class="detail-playback">
