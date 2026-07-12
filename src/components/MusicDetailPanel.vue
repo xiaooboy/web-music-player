@@ -27,15 +27,17 @@ import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import TipContent from "../components/TipContent.vue";
 import QueuePopover from "./QueuePopover.vue";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import "@/styles/popover.css";
 
-const LIST_EL_ID = crypto.randomUUID();
 const VOLUME_POPOVER_ID = crypto.randomUUID();
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const uiStore = useUIStore();
+
+const queueRef = useTemplateRef<InstanceType<typeof QueuePopover>>("queueRef");
 
 const isCurrentTrackLiked = computed(() =>
   playerStore.currentTrack
@@ -45,7 +47,7 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 const detailBodyRef = useTemplateRef("detailBodyRef");
-const { menuProps, handleClickTrigger } = useTrackContextMenu();
+const { menuProps, handleClickTrigger, isSmallScreen } = useTrackContextMenu();
 
 function handleMoreClick(event: MouseEvent) {
   const track = playerStore.currentTrack;
@@ -323,7 +325,7 @@ watch(
                 type="button"
                 aria-label="播放队列"
                 title="播放队列"
-                :popovertarget="LIST_EL_ID"
+                @click="queueRef?.open()"
               >
                 <List :size="20" />
               </button>
@@ -400,8 +402,7 @@ watch(
     </div>
 
     <QueuePopover
-      :id="LIST_EL_ID"
-      popover="auto"
+      ref="queueRef"
       :tracks="playerStore.queue"
       :current-track-id="playerStore.currentTrackId"
       @play="playerStore.playTrack($event, true)"
@@ -423,6 +424,7 @@ watch(
         "
       />
     </div>
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </section>
 </template>

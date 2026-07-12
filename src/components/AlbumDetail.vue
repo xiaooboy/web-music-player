@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { formatTime } from "../utils/media";
 import { Album } from "@/types";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 
 interface Props {
@@ -21,7 +22,7 @@ const emit = defineEmits<{
   (e: "playTrack", albumName: string, trackId: string): void;
 }>();
 
-const { menuProps, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 const contextMenuHeader = ref("");
 
 function handleContextMenu(
@@ -118,6 +119,7 @@ function handleContextMenu(
       </button>
     </div>
 
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </section>
 </template>

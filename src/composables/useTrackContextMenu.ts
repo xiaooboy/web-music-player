@@ -8,8 +8,10 @@ import {
   useUIStore,
 } from "@/stores";
 import ContextMenu from "@/components/ContextMenu.vue";
+import ActionSheet from "@/components/ActionSheet.vue";
 import type { MenuItem, EventPosition } from "@/components/ContextMenu.vue";
 import type { Track } from "@/types";
+import { useMediaQuery } from "./useMediaQuery";
 
 /**
  * 曲目右键菜单 composable
@@ -23,8 +25,11 @@ export function useTrackContextMenu() {
   const playlistStore = usePlaylistStore();
   const albumStore = useAlbumStore();
   const uiStore = useUIStore();
+  const isSmallScreen = useMediaQuery("(max-width: 640px)");
   const contextMenuRef =
     useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
+  const actionSheetRef =
+    useTemplateRef<InstanceType<typeof ActionSheet>>("actionSheet");
   const menuProps = shallowReactive({
     title: "",
     menu: [] as MenuItem[],
@@ -116,22 +121,29 @@ export function useTrackContextMenu() {
 
   /** 打开菜单，已打开时会关闭再打开 */
   function open(track: Track, event?: EventPosition) {
-    contextMenuRef.value?.open(event, () => {
-      updateMenu(track);
-    });
+    const before = () => updateMenu(track);
+    if (isSmallScreen.value) {
+      before();
+      actionSheetRef.value?.open();
+    } else {
+      contextMenuRef.value?.open(event, before);
+    }
   }
 
   /** 点击触发菜单，已打开时无操作，系统默认关闭 */
   function handleClickTrigger(track: Track, event?: MouseEvent) {
+    if (isSmallScreen.value) {
+      open(track);
+      return;
+    }
     if (contextMenuRef.value!.getWasOpen()) return;
-    contextMenuRef.value?.open(event, () => {
-      updateMenu(track);
-    });
+    contextMenuRef.value?.open(event, () => updateMenu(track));
   }
 
   return {
     menuProps,
     open,
     handleClickTrigger,
+    isSmallScreen,
   };
 }

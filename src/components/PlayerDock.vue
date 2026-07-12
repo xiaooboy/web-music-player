@@ -10,7 +10,7 @@ import {
   SkipBack,
   SkipForward,
 } from "@lucide/vue";
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
@@ -27,6 +27,7 @@ const isCurrentTrackLiked = computed(() =>
     : false,
 );
 const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
+const queueRef = useTemplateRef<InstanceType<typeof QueuePopover>>("queueRef");
 
 function handlePlayTrack(index: number) {
   playerStore.playTrack(index, true);
@@ -132,8 +133,7 @@ function handleRemoveTrack(id: string) {
         type="button"
         aria-label="播放队列"
         title="播放队列"
-        popovertarget="player-dock-queue"
-        popovertargetaction="toggle"
+        @click="queueRef?.open()"
       >
         <List :size="20" />
       </button>
@@ -159,7 +159,7 @@ function handleRemoveTrack(id: string) {
     </div>
 
     <QueuePopover
-      id="player-dock-queue"
+      ref="queueRef"
       :tracks="playerStore.queue"
       :current-track-id="playerStore.currentTrackId"
       @play="handlePlayTrack"

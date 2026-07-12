@@ -4,6 +4,7 @@ import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
 import TipContent from "./TipContent.vue";
 import ContextMenu from "./ContextMenu.vue";
+import ActionSheet from "./ActionSheet.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
@@ -25,7 +26,7 @@ const emit = defineEmits<{
 }>();
 
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
-const { menuProps, open: openContextMenu } = useTrackContextMenu();
+const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
@@ -230,7 +231,8 @@ function scrollToCurrentTrack() {
       <LocateFixed :size="20" />
     </button>
 
-    <!-- 右键菜单 -->
-    <ContextMenu ref="contextMenu" v-bind="menuProps" />
+    <!-- 右键菜单 / 小屏 ActionSheet -->
+    <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
+    <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
   </section>
 </template>
