@@ -6,7 +6,7 @@ const props = withDefaults(
     title?: string;
     /**
      * 锚点比例数组（基于视口高度），如 [0.5, 1] 表示半屏和全屏
-     * - 多个锚点：可上拉/下拉切换高度，下拉超限关闭
+     * - 多个锚点：可上拉切换到更大锚点，下拉关闭
      * - 单个锚点：高度适应内容，不可上拉扩展，只可下拉关闭
      * - 空数组或不传：高度适应内容，不可拖拽调整
      * 默认 [0.5, 1]
@@ -29,7 +29,7 @@ const hasResizableSnaps = () => props.snapPoints.length >= 2;
 
 // ─── Snap points ─────────────────────────────────────────────────────────
 let currentSnapIndex = 0;
-let dragStartHeight = 0;
+let dragStartTranslateY = 0;
 let dragStartY = 0;
 let isDragging = false;
 let dragOpacity = 1;
@@ -39,13 +39,30 @@ function snapToHeight(ratio: number) {
   return Math.round(ratio * window.innerHeight);
 }
 
-function nearestSnapIndex(heightPx: number) {
-  const dvh = window.innerHeight;
+/** 最大锚点对应的高度（即 Sheet 的固定总高度） */
+function maxSnapHeight() {
+  return snapToHeight(sortedSnaps()[sortedSnaps().length - 1]);
+}
+
+/** 给定锚点比例，计算对应的 translateY（向下偏移 = 隐藏底部内容） */
+function snapToTranslateY(ratio: number) {
+  return maxSnapHeight() - snapToHeight(ratio);
+}
+
+/** 从 body 的 style 中读取当前 translateY 值 */
+function getCurrentTranslateY(): number {
+  if (!bodyRef.value) return 0;
+  const match = bodyRef.value.style.transform.match(/translateY\((.+)px\)/);
+  return match ? parseFloat(match[1]) : 0;
+}
+
+/** 根据 translateY 值找到最近的锚点索引 */
+function nearestSnapIndex(translateY: number) {
+  const snaps = sortedSnaps();
   let best = 0;
   let bestDist = Infinity;
-  const snaps = sortedSnaps();
   for (let i = 0; i < snaps.length; i++) {
-    const dist = Math.abs(heightPx - snaps[i] * dvh);
+    const dist = Math.abs(translateY - snapToTranslateY(snaps[i]));
     if (dist < bestDist) {
       bestDist = dist;
       best = i;
@@ -58,9 +75,9 @@ function snapTo(index: number, animate = true) {
   const body = bodyRef.value;
   if (!body) return;
   currentSnapIndex = index;
-  const height = snapToHeight(sortedSnaps()[index]);
+  const ty = snapToTranslateY(sortedSnaps()[index]);
   if (animate) {
-    body.style.transition = "height 300ms cubic-bezier(0.32, 0.72, 0, 1)";
+    body.style.transition = "transform 300ms cubic-bezier(0.32, 0.72, 0, 1)";
     body.addEventListener(
       "transitionend",
       () => {
@@ -69,7 +86,7 @@ function snapTo(index: number, animate = true) {
       { once: true },
     );
   }
-  body.style.height = `${height}px`;
+  body.style.transform = `translateY(${ty}px)`;
 }
 
 // ─── 拖拽（触摸 + 鼠标） ────────────────────────────────────────────────────
@@ -87,7 +104,7 @@ function shouldIgnoreDragStart(target: EventTarget | null) {
 
 function handleDragStart(clientY: number) {
   dragStartY = clientY;
-  dragStartHeight = bodyRef.value?.offsetHeight ?? 0;
+  dragStartTranslateY = getCurrentTranslateY();
   isDragging = true;
 }
 
@@ -107,24 +124,36 @@ function handleDragMove(clientY: number) {
     return;
   }
 
-  // ─── 锚点模式：拖拽调整高度 ──────────────────────────────
-  const newHeight = dragStartHeight - deltaY;
-  const minSnapHeight = snapToHeight(sortedSnaps()[0]);
+  // ─── 锚点模式：translateY 拖拽（原生风格） ──────────────
+  const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
 
-  if (newHeight < minSnapHeight) {
-    const overflow = minSnapHeight - newHeight;
-    const damped = minSnapHeight - overflow * 0.4;
+  if (deltaY > 0) {
+    // 下拉 → 关闭方向，阻尼
+    const overflow = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
-    bodyRef.value.style.height = `${damped}px`;
-    const progress = Math.min(overflow / 80, 1);
+    bodyRef.value.style.transform = `translateY(${currentSnapTranslateY + overflow}px)`;
+    const progress = Math.min(overflow / 120, 1);
     dragOpacity = 1 - progress * 0.6;
     updateBackdropOpacity();
     return;
   }
 
-  const clampedHeight = Math.min(newHeight, window.innerHeight);
+  // 上拉 → 自由移动到更大锚点
+  let newTranslateY = dragStartTranslateY + deltaY;
+
+  if (newTranslateY < 0) {
+    // 超过最大锚点 → 阻尼回弹
+    const overscroll = -newTranslateY;
+    const damped = -overscroll * 0.4;
+    bodyRef.value.style.transition = "none";
+    bodyRef.value.style.transform = `translateY(${damped}px)`;
+    dragOpacity = 1;
+    updateBackdropOpacity();
+    return;
+  }
+
   bodyRef.value.style.transition = "none";
-  bodyRef.value.style.height = `${clampedHeight}px`;
+  bodyRef.value.style.transform = `translateY(${newTranslateY}px)`;
   dragOpacity = 1;
   updateBackdropOpacity();
 }
@@ -135,9 +164,7 @@ function handleDragEnd() {
 
   // ─── 适应内容模式：translateY 拖拽 ───────────────────────
   if (!hasResizableSnaps()) {
-    const currentY = parseFloat(
-      bodyRef.value.style.transform.match(/translateY\((.+)px\)/)?.[1] ?? "0",
-    );
+    const currentY = getCurrentTranslateY();
     if (currentY > 48) {
       close();
       return;
@@ -157,22 +184,24 @@ function handleDragEnd() {
     return;
   }
 
-  // ─── 锚点模式：height 拖拽 ───────────────────────────────
-  const currentHeight = bodyRef.value.offsetHeight;
-  const minSnapHeight = snapToHeight(sortedSnaps()[0]);
+  // ─── 锚点模式：translateY 拖拽 ───────────────────────────
+  const currentTranslateY = getCurrentTranslateY();
+  const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
 
-  if (currentHeight < minSnapHeight) {
-    const overflow = minSnapHeight - currentHeight;
+  if (currentTranslateY > currentSnapTranslateY) {
+    // 被下拉 → 检查是否关闭
+    const overflow = currentTranslateY - currentSnapTranslateY;
     if (overflow > 60) {
       close();
       return;
     }
-    snapTo(0);
+    snapTo(currentSnapIndex);
     resetBackdrop();
     return;
   }
 
-  const idx = nearestSnapIndex(currentHeight);
+  // 被上拉 → 吸附到最近锚点
+  const idx = nearestSnapIndex(currentTranslateY);
   snapTo(idx);
   resetBackdrop();
 }
@@ -198,6 +227,7 @@ function handleMouseDown(e: MouseEvent) {
   if (shouldIgnoreDragStart(e.target)) return;
   // 只响应左键
   if (e.button !== 0) return;
+  e.preventDefault(); // 防止拖拽时选中文字
   handleDragStart(e.clientY);
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
@@ -226,10 +256,6 @@ function updateBackdropOpacity() {
 // ─── 非被动触摸事件（阻止默认滚动） ──────────────────────────────────────
 onMounted(() => {
   bodyRef.value?.addEventListener("touchmove", handleTouchMove, { passive: false });
-  // 防止鼠标拖拽时选中文字
-  bodyRef.value?.addEventListener("mousedown", (e: Event) => {
-    if (isDragging) (e as MouseEvent).preventDefault();
-  });
 });
 onBeforeUnmount(() => {
   bodyRef.value?.removeEventListener("touchmove", handleTouchMove);
@@ -246,8 +272,13 @@ function open() {
   dialogRef.value?.showModal();
 
   if (hasResizableSnaps()) {
-    // 锚点模式：打开后设置初始锚点高度
-    requestAnimationFrame(() => snapTo(0, false));
+    // 锚点模式：设置固定总高度，再通过 translateY 显示初始锚点
+    requestAnimationFrame(() => {
+      if (bodyRef.value) {
+        bodyRef.value.style.height = `${maxSnapHeight()}px`;
+      }
+      snapTo(0, false);
+    });
   }
   // 适应内容模式：不设 height，内容自适应
 }
@@ -295,7 +326,7 @@ defineExpose({ open, close });
   border: none;
   border-radius: 16px 16px 0 0;
   background: transparent;
-  overflow: visible;
+  overflow: hidden;
   color: var(--text);
 
   /* 关闭态 */
@@ -354,7 +385,7 @@ defineExpose({ open, close });
   padding: 8px 0 env(safe-area-inset-bottom, 0);
   display: flex;
   flex-direction: column;
-  will-change: height, transform;
+  will-change: transform;
 }
 
 .bottom-sheet-handle {
