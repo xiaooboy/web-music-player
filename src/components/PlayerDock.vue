@@ -39,7 +39,15 @@ function handleRemoveTrack(id: string) {
 </script>
 
 <template>
-  <footer class="player-dock" aria-label="播放控制栏">
+  <footer
+    class="player-dock"
+    aria-label="播放控制栏"
+    :style="
+      playerStore.currentTrack && enableCoverTransition
+        ? { 'view-transition-name': 'dock-detail' }
+        : undefined
+    "
+  >
     <button
       class="dock-track detail-trigger"
       type="button"
@@ -81,8 +89,8 @@ function handleRemoveTrack(id: string) {
         @click.stop="playerStore.nextPlaybackMode()"
       >
         <Shuffle v-if="playerStore.playbackMode === 'shuffle'" :size="20" />
-                <Repeat1 v-else-if="playerStore.playbackMode === 'one'" :size="20" />
-                <Repeat v-else :size="20" />
+        <Repeat1 v-else-if="playerStore.playbackMode === 'one'" :size="20" />
+        <Repeat v-else :size="20" />
       </button>
       <button
         class="icon-button"
@@ -124,7 +132,7 @@ function handleRemoveTrack(id: string) {
         "
       >
         <Heart
-                  :size="20"
+          :size="20"
           :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
         />
       </button>

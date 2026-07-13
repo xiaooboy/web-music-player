@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  ArrowLeft,
+  ChevronDown,
   Heart,
   List,
   MoreVertical,
@@ -175,7 +175,14 @@ watch(
 </script>
 
 <template>
-  <section class="detail-page">
+  <section class="detail-page"
+  :style="
+    playerStore.currentTrack &&
+    uiStore.currentView === 'detail'
+      ? { 'view-transition-name': 'dock-detail' }
+      : undefined
+  "
+  >
     <Transition name="backdrop-fade">
       <div
         class="detail-backdrop"
@@ -196,7 +203,7 @@ watch(
         title="返回列表"
         @click="uiStore.closeDetail()"
       >
-        <ArrowLeft :size="20" />
+        <ChevronDown :size="20" />
       </button>
     </header>
 

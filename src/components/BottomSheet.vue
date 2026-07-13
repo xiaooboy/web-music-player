@@ -16,6 +16,10 @@ const props = withDefaults(
   { snapPoints: () => [0.5, 1] },
 );
 
+const emit = defineEmits<{
+  close: [];
+}>();
+
 const dialogRef = useTemplateRef("dialogRef");
 const bodyRef = useTemplateRef("bodyRef");
 
@@ -26,7 +30,7 @@ const hasResizableSnaps = () => props.snapPoints.length >= 2;
 // ─── Snap points ─────────────────────────────────────────────────────────
 let currentSnapIndex = 0;
 let dragStartHeight = 0;
-let touchStartY = 0;
+let dragStartY = 0;
 let isDragging = false;
 let dragOpacity = 1;
 
@@ -68,30 +72,32 @@ function snapTo(index: number, animate = true) {
   body.style.height = `${height}px`;
 }
 
-// ─── 触摸拖拽 ─────────────────────────────────────────────────────────────
-function handleTouchStart(e: TouchEvent) {
-  // 触摸在可滚动内容内部且未到顶时，不拦截
+// ─── 拖拽（触摸 + 鼠标） ────────────────────────────────────────────────────
+function shouldIgnoreDragStart(target: EventTarget | null) {
+  // 可滚动内容内部且未到顶时，不拦截
   const scrollEl = bodyRef.value?.querySelector(".bottom-sheet-content");
   if (
     scrollEl instanceof HTMLElement &&
     scrollEl.scrollTop > 0 &&
-    scrollEl.contains(e.target as Node)
+    scrollEl.contains(target as Node)
   )
-    return;
+    return true;
+  return false;
+}
 
-  touchStartY = e.touches[0].clientY;
+function handleDragStart(clientY: number) {
+  dragStartY = clientY;
   dragStartHeight = bodyRef.value?.offsetHeight ?? 0;
   isDragging = true;
 }
 
-function handleTouchMove(e: TouchEvent) {
+function handleDragMove(clientY: number) {
   if (!isDragging || !bodyRef.value || !dialogRef.value) return;
-  const deltaY = e.touches[0].clientY - touchStartY;
+  const deltaY = clientY - dragStartY;
 
   // ─── 适应内容模式（单锚点或无锚点）：只允许下拉关闭 ────
   if (!hasResizableSnaps()) {
-    if (deltaY <= 0) return; // 上拉不处理
-    e.preventDefault();
+    if (deltaY <= 0) return;
     const damped = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
     bodyRef.value.style.transform = `translateY(${damped}px)`;
@@ -106,7 +112,6 @@ function handleTouchMove(e: TouchEvent) {
   const minSnapHeight = snapToHeight(sortedSnaps()[0]);
 
   if (newHeight < minSnapHeight) {
-    // 低于最小锚点，阻尼跟随
     const overflow = minSnapHeight - newHeight;
     const damped = minSnapHeight - overflow * 0.4;
     bodyRef.value.style.transition = "none";
@@ -118,14 +123,13 @@ function handleTouchMove(e: TouchEvent) {
   }
 
   const clampedHeight = Math.min(newHeight, window.innerHeight);
-  e.preventDefault();
   bodyRef.value.style.transition = "none";
   bodyRef.value.style.height = `${clampedHeight}px`;
   dragOpacity = 1;
   updateBackdropOpacity();
 }
 
-function handleTouchEnd() {
+function handleDragEnd() {
   if (!isDragging || !bodyRef.value || !dialogRef.value) return;
   isDragging = false;
 
@@ -173,6 +177,42 @@ function handleTouchEnd() {
   resetBackdrop();
 }
 
+// ─── 触摸事件适配 ──────────────────────────────────────────────────────────
+function handleTouchStart(e: TouchEvent) {
+  if (shouldIgnoreDragStart(e.target)) return;
+  handleDragStart(e.touches[0].clientY);
+}
+
+function handleTouchMove(e: TouchEvent) {
+  if (!isDragging) return;
+  e.preventDefault();
+  handleDragMove(e.touches[0].clientY);
+}
+
+function handleTouchEnd() {
+  handleDragEnd();
+}
+
+// ─── 鼠标事件适配 ──────────────────────────────────────────────────────────
+function handleMouseDown(e: MouseEvent) {
+  if (shouldIgnoreDragStart(e.target)) return;
+  // 只响应左键
+  if (e.button !== 0) return;
+  handleDragStart(e.clientY);
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+}
+
+function handleMouseMove(e: MouseEvent) {
+  handleDragMove(e.clientY);
+}
+
+function handleMouseUp() {
+  handleDragEnd();
+  document.removeEventListener("mousemove", handleMouseMove);
+  document.removeEventListener("mouseup", handleMouseUp);
+}
+
 function resetBackdrop() {
   dragOpacity = 1;
   dialogRef.value?.style.removeProperty("--backdrop-alpha");
@@ -183,9 +223,13 @@ function updateBackdropOpacity() {
   dialogRef.value?.style.setProperty("--backdrop-alpha", `${0.5 * dragOpacity}`);
 }
 
-// ─── 非被动触摸事件 ────────────────────────────────────────────────────────
+// ─── 非被动触摸事件（阻止默认滚动） ──────────────────────────────────────
 onMounted(() => {
   bodyRef.value?.addEventListener("touchmove", handleTouchMove, { passive: false });
+  // 防止鼠标拖拽时选中文字
+  bodyRef.value?.addEventListener("mousedown", (e: Event) => {
+    if (isDragging) (e as MouseEvent).preventDefault();
+  });
 });
 onBeforeUnmount(() => {
   bodyRef.value?.removeEventListener("touchmove", handleTouchMove);
@@ -210,6 +254,7 @@ function open() {
 
 function close() {
   dialogRef.value?.close();
+  emit('close');
 }
 
 function handleBackdropClick(e: MouseEvent) {
@@ -227,6 +272,7 @@ defineExpose({ open, close });
       @click.stop
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
+      @mousedown="handleMouseDown"
     >
       <div class="bottom-sheet-handle" aria-hidden="true" />
       <div v-if="title" class="bottom-sheet-title">{{ title }}</div>
