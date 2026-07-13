@@ -16,7 +16,6 @@
   overflow: hidden;
 }
 
-
 .detail-shell {
   position: fixed;
   inset: 0;
@@ -42,6 +41,7 @@
   min-height: 100dvh;
   height: 100dvh;
 }
+
 
 .main-stage,
 .track-list {

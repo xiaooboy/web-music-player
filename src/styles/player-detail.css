@@ -110,6 +110,7 @@ input[type="range"] {
   height: 6px;
   border-radius: 999px;
   outline: none;
+  cursor: pointer;
   background: linear-gradient(
     90deg,
     var(--accent-deep) 0%,
@@ -126,6 +127,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: transparent;
   border: none;
   box-shadow: none;
+  cursor: pointer;
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -135,6 +137,7 @@ input[type="range"]::-moz-range-thumb {
   background: transparent;
   border: none;
   box-shadow: none;
+  cursor: pointer;
 }
 
 .progress-slider {
@@ -544,7 +547,7 @@ input[type="range"].detail-volume-slider {
   color: var(--muted);
   text-align: center;
   line-height: 1.6;
-  font-size: 1.18rem;
+  font-size: clamp(1.2rem, 1.8vw, 2rem);
   font-weight: 700;
   opacity: 0.62;
   transition:
