@@ -175,14 +175,7 @@ watch(
 </script>
 
 <template>
-  <section class="detail-page"
-  :style="
-    playerStore.currentTrack &&
-    uiStore.currentView === 'detail'
-      ? { 'view-transition-name': 'dock-detail' }
-      : undefined
-  "
-  >
+  <section class="detail-page">
     <Transition name="backdrop-fade">
       <div
         class="detail-backdrop"

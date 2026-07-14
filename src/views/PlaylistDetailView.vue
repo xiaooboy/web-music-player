@@ -1,42 +1,24 @@
 <script setup lang="ts">
-import { ArrowLeft, Play } from "@lucide/vue";
 import { computed } from "vue";
+import { ArrowLeft } from "@lucide/vue";
+import TrackTable from "../components/TrackTable.vue";
+import SectionHead from "../components/SectionHead.vue";
 import { useFavoriteStore, usePlayerStore, usePlaylistStore, useAlbumStore, useUIStore } from "@/stores";
-import TrackTable from "./TrackTable.vue";
-import SectionHead from "./SectionHead.vue";
-import type { Playlist, Track } from "@/types";
+import { useHistoryBack } from "../composables/useHistoryBack";
 
-interface Props {
-  playlist: Playlist;
-  tracks: Track[];
-  playingTrackId: string;
-  viewTransitionName?: string;
-}
-
-const props = defineProps<Props>();
-
-const emit = defineEmits<{
-  (e: "back"): void;
-}>();
-
+const playlistStore = usePlaylistStore();
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
-const playlistStore = usePlaylistStore();
 const albumStore = useAlbumStore();
 const uiStore = useUIStore();
 
 const isPlaying = computed(() => playerStore.isPlaying);
+const playingTrackId = computed(() => playerStore.isPlaying ? playerStore.currentTrackId : "");
 
 function handlePlay(id: string) {
-  playlistStore.updatePlayingPlaylist(props.playlist.id);
+  playlistStore.updatePlayingPlaylist(playlistStore.selectedPlaylistId);
   playerStore.setPlaySourceType("playlists");
   playerStore.playTrackById(id, true);
-}
-
-function handlePlayPlaylist() {
-  playlistStore.updatePlayingPlaylist(props.playlist.id);
-  playerStore.setPlaySourceType("playlists");
-  playerStore.playTrack(0, true);
 }
 
 function handleTogglePlay() {
@@ -48,30 +30,37 @@ function handleToggleFavorite(id: string) {
 }
 
 function handleNavigateToAlbum(albumName: string) {
-  uiStore.setActiveSection("albums");
   albumStore.selectAlbum(albumName);
+  uiStore.setActiveSection("album-detail");
 }
+
+function navigateBack() {
+  playlistStore.clearSelection();
+  uiStore.popSection();
+}
+
+useHistoryBack(navigateBack);
+
+
 </script>
 
 <template>
-  <section class="playlist-detail-view">
-    <SectionHead :title="playlist.name">
+  <section v-if="playlistStore.selectedPlaylist" class="main-panel playlist-detail-view">
+    <SectionHead :title="playlistStore.selectedPlaylist.name">
       <template #title>
         <h2>
-          <span :style="{ 'view-transition-name': viewTransitionName }">{{
-            playlist.name
-          }}</span>
+          <span>{{ playlistStore.selectedPlaylist!.name }}</span>
         </h2>
       </template>
       <template #left>
-        <button class="icon-button back-button" @click="emit('back')">
+        <button class="icon-button back-button" @click="navigateBack">
           <ArrowLeft :size="20" />
         </button>
       </template>
     </SectionHead>
 
     <TrackTable
-      :tracks="tracks"
+      :tracks="playlistStore.selectedPlaylistTracks"
       :current-track-id="playingTrackId"
       :is-playing="isPlaying"
       :liked-track-id-set="favoriteStore.likedTrackIdSet"

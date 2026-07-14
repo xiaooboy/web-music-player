@@ -1,23 +1,15 @@
 <script setup lang="ts">
-import { computed, nextTick, shallowRef } from "vue";
+import { shallowRef } from "vue";
 import { Plus } from "@lucide/vue";
 import PlaylistGrid from "../components/PlaylistGrid.vue";
-import PlaylistDetail from "../components/PlaylistDetail.vue";
 import PlaylistDialog from "../components/PlaylistDialog.vue";
 import TipContent from "../components/TipContent.vue";
 import SectionHead from "../components/SectionHead.vue";
-import { usePlayerStore, usePlaylistStore } from "@/stores";
-import { withViewTransition } from "@/utils/viewTransition";
+import { usePlayerStore, usePlaylistStore, useUIStore } from "@/stores";
 
-const VIEW_TRANSITION_NAME = "playlist-name";
 const playlistStore = usePlaylistStore();
 const playerStore = usePlayerStore();
-
-const showDetail = computed(() => !!playlistStore.selectedPlaylistId);
-
-const detailViewTransitionName = shallowRef("");
-const gridViewTransitionName = shallowRef("");
-const transitionTarget = shallowRef("");
+const uiStore = useUIStore();
 
 // ─── 对话框 ──────────────────────────────────────────────────────────────────
 const dialogVisible = shallowRef(false);
@@ -48,35 +40,8 @@ function handleDialogConfirm(name?: string) {
 
 // ─── 歌单交互 ────────────────────────────────────────────────────────────────
 function enterPlaylist(playlistId: string) {
-  transitionTarget.value = playlistId;
-  gridViewTransitionName.value = VIEW_TRANSITION_NAME;
-  nextTick(async () => {
-    const { transition } = withViewTransition(() => {
-      gridViewTransitionName.value = ""; // 不能同时出现同名的元素
-      detailViewTransitionName.value = VIEW_TRANSITION_NAME;
-      playlistStore.selectPlaylist(playlistId);
-    });
-    if (!transition) return;
-    await transition.finished;
-    detailViewTransitionName.value = "";
-    transitionTarget.value = "";
-  });
-}
-
-async function handleBack() {
-  detailViewTransitionName.value = VIEW_TRANSITION_NAME;
-  nextTick(async () => {
-    const { transition } = withViewTransition(() => {
-      detailViewTransitionName.value = ""; // 不能同时出现同名的元素
-      transitionTarget.value = playlistStore.selectedPlaylistId ?? "";
-      gridViewTransitionName.value = VIEW_TRANSITION_NAME;
-      playlistStore.clearSelection();
-    });
-    if (!transition) return;
-    await transition.finished;
-    gridViewTransitionName.value = "";
-    transitionTarget.value = "";
-  });
+  playlistStore.selectPlaylist(playlistId);
+  uiStore.setActiveSection("playlist-detail");
 }
 
 function handleDeletePlaylist(playlistId: string) {
@@ -94,7 +59,7 @@ function handlePlayPlaylist(playlistId: string) {
 
 <template>
   <section class="main-panel playlist-browser">
-    <SectionHead v-show="!showDetail">
+    <SectionHead>
       <template #title>
         <h2>歌单</h2>
       </template>
@@ -111,34 +76,19 @@ function handlePlayPlaylist(playlistId: string) {
     </SectionHead>
 
     <PlaylistGrid
-      v-show="playlistStore.playlists.length && !showDetail"
+      v-if="playlistStore.playlists.length"
       :playlists="playlistStore.playlists"
       :selectedPlaylistId="playlistStore.selectedPlaylistId"
-      :viewTransitionName="gridViewTransitionName"
-      :transitionTarget="transitionTarget"
       @selectPlaylist="enterPlaylist"
       @playPlaylist="handlePlayPlaylist"
       @editPlaylist="openEditDialog"
       @deletePlaylist="handleDeletePlaylist"
     />
     <TipContent
-      v-if="!playlistStore.playlists?.length"
+      v-else
       title="还没有歌单"
       content="创建一个歌单，开始整理你的音乐。"
       fill
-    />
-
-    <PlaylistDetail
-      v-if="showDetail && playlistStore.selectedPlaylist"
-      :playlist="playlistStore.selectedPlaylist"
-      :tracks="playlistStore.selectedPlaylistTracks"
-      :playingTrackId="playerStore.isPlaying ? playerStore.currentTrackId : ''"
-      :viewTransitionName="detailViewTransitionName"
-      :style="{
-        position: 'absolute',
-        inset: 0,
-      }"
-      @back="handleBack"
     />
 
     <PlaylistDialog

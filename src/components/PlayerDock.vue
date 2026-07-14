@@ -42,11 +42,6 @@ function handleRemoveTrack(id: string) {
   <footer
     class="player-dock"
     aria-label="播放控制栏"
-    :style="
-      playerStore.currentTrack && enableCoverTransition
-        ? { 'view-transition-name': 'dock-detail' }
-        : undefined
-    "
   >
     <button
       class="dock-track detail-trigger"
@@ -165,7 +160,6 @@ function handleRemoveTrack(id: string) {
         />
       </div>
     </div>
-
     <QueuePopover
       ref="queueRef"
       :tracks="playerStore.queue"

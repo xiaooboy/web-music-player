@@ -41,19 +41,20 @@ export function useTrackContextMenu() {
     if (section === "library-management") return;
     // 详情页场景：沿用当前播放源，不做切换
     if (uiStore.currentView === "detail") return;
-    playerStore.setPlaySourceType(section);
-    if (section === "albums" && albumStore.selectedAlbumName)
+    // 详情页：沿用 playlists / albums 作为播放源
+    const playSource =
+      section === "playlist-detail" ? "playlists" :
+      section === "album-detail" ? "albums" : section;
+    playerStore.setPlaySourceType(playSource);
+    if ((section === "albums" || section === "album-detail") && albumStore.selectedAlbumName)
       albumStore.updatePlayingAlbum(albumStore.selectedAlbumName);
-    if (section === "playlists" && playlistStore.selectedPlaylistId)
+    if ((section === "playlists" || section === "playlist-detail") && playlistStore.selectedPlaylistId)
       playlistStore.updatePlayingPlaylist(playlistStore.selectedPlaylistId);
   }
 
   /** 是否处于歌单详情视图 */
   function isInPlaylistDetail() {
-    return (
-      uiStore.activeSection === "playlists" &&
-      !!playlistStore.selectedPlaylistId
-    );
+    return uiStore.activeSection === "playlist-detail";
   }
 
   function updateMenu(track: Track) {

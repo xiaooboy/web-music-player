@@ -15,8 +15,6 @@ function handleImgLoad(event: Event) {
 interface Props {
   albums: Album[];
   selectedAlbumName: string;
-  transitionTarget?: string;
-  viewTransitionName?: string;
 }
 const ROW_GAP = 30;
 const PADDING_RIGHT = 0;
@@ -140,11 +138,6 @@ onBeforeUnmount(() => {
               :alt="`${album.name} 封面`"
               :width="MIN_COL_WIDTH"
               :height="MIN_COL_WIDTH"
-              :style="
-                album.name === transitionTarget
-                  ? { 'view-transition-name': viewTransitionName }
-                  : undefined
-              "
               loading="lazy"
             />
             <Disc3 v-else :size="32" class="album-card-placeholder" />

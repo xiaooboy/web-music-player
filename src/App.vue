@@ -8,7 +8,9 @@ import SidebarPanel from "./components/SidebarPanel.vue";
 import BaseDialog from "./components/BaseDialog.vue";
 import FavoritesView from "./views/FavoritesView.vue";
 import AlbumsView from "./views/AlbumsView.vue";
+import AlbumDetailView from "./views/AlbumDetailView.vue";
 import PlaylistsView from "./views/PlaylistsView.vue";
+import PlaylistDetailView from "./views/PlaylistDetailView.vue";
 import LibraryManagementView from "./views/LibraryManagementView.vue";
 import { storeToRefs } from "pinia";
 import AllTrackView from "./views/AllTrackView.vue";
@@ -115,11 +117,15 @@ function handleContextMenuBlock(event: MouseEvent) {
     <SidebarPanel />
 
     <main class="main-stage" aria-label="音乐库">
-      <AllTrackView v-if="activeSection === 'all-track'" />
-      <FavoritesView v-else-if="activeSection === 'favorites'" />
-      <AlbumsView v-else-if="activeSection === 'albums'" />
-      <PlaylistsView v-else-if="activeSection === 'playlists'" />
-      <LibraryManagementView v-else />
+      <Transition name="section-slide" mode="out-in">
+        <AllTrackView v-if="activeSection === 'all-track'" key="all-track" />
+        <FavoritesView v-else-if="activeSection === 'favorites'" key="favorites" />
+        <AlbumsView v-else-if="activeSection === 'albums'" key="albums" />
+        <AlbumDetailView v-else-if="activeSection === 'album-detail'" key="album-detail" />
+        <PlaylistsView v-else-if="activeSection === 'playlists'" key="playlists" />
+        <PlaylistDetailView v-else-if="activeSection === 'playlist-detail'" key="playlist-detail" />
+        <LibraryManagementView v-else key="library-management" />
+      </Transition>
     </main>
 
     <PlayerDock />
@@ -136,5 +142,3 @@ function handleContextMenuBlock(event: MouseEvent) {
     {{ screenReaderAnnouncement }}
   </div>
 </template>
-
-

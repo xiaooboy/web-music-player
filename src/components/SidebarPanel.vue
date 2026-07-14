@@ -49,7 +49,7 @@ function switchSection(name: SectionName) {
         class="nav-item"
         :aria-label="item.title"
         :title="item.title"
-        :class="{ 'is-active': uiStore.activeSection === item.name }"
+        :class="{ 'is-active': uiStore.activeSection === item.name || (item.name === 'playlists' && uiStore.activeSection === 'playlist-detail') || (item.name === 'albums' && uiStore.activeSection === 'album-detail') }"
         type="button"
         @click="switchSection(item.name)"
       >

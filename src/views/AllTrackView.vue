@@ -59,8 +59,8 @@ function handleSelectTrack(id: string) {
 }
 
 function handleNavigateToAlbum(albumName: string) {
-  uiStore.setActiveSection("albums");
   albumStore.selectAlbum(albumName);
+  uiStore.setActiveSection("album-detail");
 }
 </script>
 
