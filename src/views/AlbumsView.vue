@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { shallowRef } from "vue";
 import AlbumGrid from "../components/AlbumGrid.vue";
-import SectionHead from "../components/SectionHead.vue";
-import TipContent from "../components/TipContent.vue";
+import SectionHeader from "../components/SectionHeader.vue";
+import EmptyState from "../components/EmptyState.vue";
 import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
 
 const albumStore = useAlbumStore();
@@ -17,13 +17,13 @@ function handlePlayAlbum(albumName: string) {
 
 function enterAlbum(albumName: string) {
   albumStore.selectAlbum(albumName);
-  uiStore.setActiveSection("album-detail");
+  uiStore.setActiveView("album-detail");
 }
 </script>
 
 <template>
   <section class="main-panel album-browser">
-    <SectionHead title="专辑">
+    <SectionHeader title="专辑">
       <template #right>
         <span class="library-status">
           {{
@@ -33,7 +33,7 @@ function enterAlbum(albumName: string) {
           }}
         </span>
       </template>
-    </SectionHead>
+    </SectionHeader>
 
     <AlbumGrid
       v-if="albumStore.albums.length"
@@ -42,7 +42,7 @@ function enterAlbum(albumName: string) {
       @selectAlbum="enterAlbum"
       @playAlbum="handlePlayAlbum"
     />
-    <TipContent
+    <EmptyState
       v-else
       title="还没有可展示的专辑"
       content="导入音乐后，这里会按专辑自动整理并展示其中的歌曲。"

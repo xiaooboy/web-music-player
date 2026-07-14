@@ -2,9 +2,9 @@
 import { shallowRef } from "vue";
 import { Plus } from "@lucide/vue";
 import PlaylistGrid from "../components/PlaylistGrid.vue";
-import PlaylistDialog from "../components/PlaylistDialog.vue";
-import TipContent from "../components/TipContent.vue";
-import SectionHead from "../components/SectionHead.vue";
+import PlaylistFormDialog from "../components/PlaylistFormDialog.vue";
+import EmptyState from "../components/EmptyState.vue";
+import SectionHeader from "../components/SectionHeader.vue";
 import { usePlayerStore, usePlaylistStore, useUIStore } from "@/stores";
 
 const playlistStore = usePlaylistStore();
@@ -41,7 +41,7 @@ function handleDialogConfirm(name?: string) {
 // ─── 歌单交互 ────────────────────────────────────────────────────────────────
 function enterPlaylist(playlistId: string) {
   playlistStore.selectPlaylist(playlistId);
-  uiStore.setActiveSection("playlist-detail");
+  uiStore.setActiveView("playlist-detail");
 }
 
 function handleDeletePlaylist(playlistId: string) {
@@ -59,7 +59,7 @@ function handlePlayPlaylist(playlistId: string) {
 
 <template>
   <section class="main-panel playlist-browser">
-    <SectionHead>
+    <SectionHeader>
       <template #title>
         <h2>歌单</h2>
       </template>
@@ -73,7 +73,7 @@ function handlePlayPlaylist(playlistId: string) {
           <Plus :size="20" />
         </button>
       </template>
-    </SectionHead>
+    </SectionHeader>
 
     <PlaylistGrid
       v-if="playlistStore.playlists.length"
@@ -84,14 +84,14 @@ function handlePlayPlaylist(playlistId: string) {
       @editPlaylist="openEditDialog"
       @deletePlaylist="handleDeletePlaylist"
     />
-    <TipContent
+    <EmptyState
       v-else
       title="还没有歌单"
       content="创建一个歌单，开始整理你的音乐。"
       fill
     />
 
-    <PlaylistDialog
+    <PlaylistFormDialog
       v-model="dialogVisible"
       :mode="dialogMode"
       :initial-name="

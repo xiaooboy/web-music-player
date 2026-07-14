@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
-import TipContent from "./TipContent.vue";
+import EmptyState from "./EmptyState.vue";
 import ContextMenu from "./ContextMenu.vue";
 import ActionSheet from "./ActionSheet.vue";
 import type { Track } from "../types";
@@ -216,7 +216,7 @@ function scrollToCurrentTrack() {
         </div>
       </template>
 
-      <TipContent v-else :title="emptyTitle" :content="emptyDescription" />
+      <EmptyState v-else :title="emptyTitle" :content="emptyDescription" />
     </div>
 
     <!-- 滚动到当前音乐按钮 -->

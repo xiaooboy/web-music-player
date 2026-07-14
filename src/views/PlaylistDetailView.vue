@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { ArrowLeft } from "@lucide/vue";
 import TrackTable from "../components/TrackTable.vue";
-import SectionHead from "../components/SectionHead.vue";
+import SectionHeader from "../components/SectionHeader.vue";
 import { useFavoriteStore, usePlayerStore, usePlaylistStore, useAlbumStore, useUIStore } from "@/stores";
 import { useHistoryBack } from "../composables/useHistoryBack";
 
@@ -31,12 +31,12 @@ function handleToggleFavorite(id: string) {
 
 function handleNavigateToAlbum(albumName: string) {
   albumStore.selectAlbum(albumName);
-  uiStore.setActiveSection("album-detail");
+  uiStore.setActiveView("album-detail");
 }
 
 function navigateBack() {
   playlistStore.clearSelection();
-  uiStore.popSection();
+  uiStore.popView();
 }
 
 useHistoryBack(navigateBack);
@@ -46,7 +46,7 @@ useHistoryBack(navigateBack);
 
 <template>
   <section v-if="playlistStore.selectedPlaylist" class="main-panel playlist-detail-view">
-    <SectionHead :title="playlistStore.selectedPlaylist.name">
+    <SectionHeader :title="playlistStore.selectedPlaylist.name">
       <template #title>
         <h2>
           <span>{{ playlistStore.selectedPlaylist!.name }}</span>
@@ -57,7 +57,7 @@ useHistoryBack(navigateBack);
           <ArrowLeft :size="20" />
         </button>
       </template>
-    </SectionHead>
+    </SectionHeader>
 
     <TrackTable
       :tracks="playlistStore.selectedPlaylistTracks"

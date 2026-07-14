@@ -1,30 +1,35 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, type Component } from "vue";
 import { usePlayerStore, useLibraryStore, useUIStore } from "./stores";
+import type { ViewName } from "./stores/uiStore";
 
-import MusicDetailPanel from "./components/MusicDetailPanel.vue";
+import NowPlayingPanel from "./views/NowPlayingPanel.vue";
 import PlayerDock from "./components/PlayerDock.vue";
-import SidebarPanel from "./components/SidebarPanel.vue";
-import BaseDialog from "./components/BaseDialog.vue";
+import SidebarNav from "./components/SidebarNav.vue";
 import FavoritesView from "./views/FavoritesView.vue";
 import AlbumsView from "./views/AlbumsView.vue";
 import AlbumDetailView from "./views/AlbumDetailView.vue";
 import PlaylistsView from "./views/PlaylistsView.vue";
 import PlaylistDetailView from "./views/PlaylistDetailView.vue";
-import LibraryManagementView from "./views/LibraryManagementView.vue";
-import { storeToRefs } from "pinia";
-import AllTrackView from "./views/AllTrackView.vue";
+import SourcesView from "./views/SourcesView.vue";
+import TracksView from "./views/TracksView.vue";
 import ToastContainer from "./components/ToastContainer.vue";
+import { storeToRefs } from "pinia";
 
 const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
 const uiStore = useUIStore();
-const { currentView, activeSection } = storeToRefs(uiStore);
+const { activeView } = storeToRefs(uiStore);
 
-const detailOpen = computed({
-  get: () => currentView.value === 'detail',
-  set: (val) => uiStore.setCurrentView(val ? 'detail' : 'library'),
-});
+const viewComponents: Record<ViewName, Component> = {
+  tracks: TracksView,
+  favorites: FavoritesView,
+  albums: AlbumsView,
+  "album-detail": AlbumDetailView,
+  playlists: PlaylistsView,
+  "playlist-detail": PlaylistDetailView,
+  sources: SourcesView,
+};
 
 // ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────────
 const screenReaderAnnouncement = computed(() => {
@@ -92,9 +97,7 @@ function handleKeydown(event: KeyboardEvent) {
       break;
     case "f":
     case "F":
-      uiStore.setCurrentView(
-        uiStore.currentView === "detail" ? "library" : "detail",
-      );
+      uiStore.openNowPlaying();
       break;
   }
 }
@@ -114,29 +117,17 @@ function handleContextMenuBlock(event: MouseEvent) {
     role="application"
     aria-label="LocalMusic 本地音乐播放器"
   >
-    <SidebarPanel />
+    <SidebarNav />
 
     <main class="main-stage" aria-label="音乐库">
       <Transition name="section-slide" mode="out-in">
-        <AllTrackView v-if="activeSection === 'all-track'" key="all-track" />
-        <FavoritesView v-else-if="activeSection === 'favorites'" key="favorites" />
-        <AlbumsView v-else-if="activeSection === 'albums'" key="albums" />
-        <AlbumDetailView v-else-if="activeSection === 'album-detail'" key="album-detail" />
-        <PlaylistsView v-else-if="activeSection === 'playlists'" key="playlists" />
-        <PlaylistDetailView v-else-if="activeSection === 'playlist-detail'" key="playlist-detail" />
-        <LibraryManagementView v-else key="library-management" />
+        <component :is="viewComponents[activeView]" :key="activeView" />
       </Transition>
     </main>
 
     <PlayerDock />
   </div>
-  <BaseDialog
-    v-model="detailOpen"
-    class="detail-shell"
-    aria-label="播放详情"
-  >
-    <MusicDetailPanel />
-  </BaseDialog>
+  <NowPlayingPanel />
   <ToastContainer />
   <div aria-live="polite" aria-atomic="true" class="sr-only">
     {{ screenReaderAnnouncement }}

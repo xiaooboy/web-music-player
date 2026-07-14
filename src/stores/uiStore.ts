@@ -6,31 +6,42 @@ import {
 } from "@/utils/persistence";
 import { withViewTransition } from "@/utils/viewTransition";
 
-export type SectionName =
-  | "all-track" | "favorites" | "albums" | "album-detail" | "playlists" | "playlist-detail" | "library-management";
+export type ViewName =
+  | "tracks" | "favorites" | "albums" | "album-detail"
+  | "playlists" | "playlist-detail" | "sources";
 
 export const useUIStore = defineStore("ui", () => {
-  const currentView = shallowRef<"library" | "detail">("library");
+  const activeView = shallowRef<ViewName>("tracks");
+  const nowPlayingOpen = shallowRef(false);
   const sidebarCollapsed = shallowRef(
     window.screen.width < 480 ? false : loadSidebarCollapsed(),
   );
-  const activeSection = shallowRef<SectionName>("all-track");
-  const sectionStack: SectionName[] = [];
 
-  function setCurrentView(nextView: "library" | "detail") {
-    if (currentView.value === nextView) return;
-    // Mutation inside view transition so browsers can capture snapshots
+  const viewStack: ViewName[] = [];
+
+  function setActiveView(view: ViewName, pushStack = true) {
+    if (pushStack) {
+      viewStack.push(activeView.value);
+    }
+    activeView.value = view;
+  }
+
+  /** 弹出栈顶并导航回该 view，用于详情页返回 */
+  function popView() {
+    const prev = viewStack.pop();
+    if (prev) activeView.value = prev;
+  }
+
+  function openNowPlaying() {
     withViewTransition(() => {
-      currentView.value = nextView;
+      nowPlayingOpen.value = true;
     });
   }
 
-  function openDetail() {
-    setCurrentView("detail");
-  }
-
-  function closeDetail() {
-    setCurrentView("library");
+  function closeNowPlaying() {
+    withViewTransition(() => {
+      nowPlayingOpen.value = false;
+    });
   }
 
   function toggleSidebar() {
@@ -38,28 +49,14 @@ export const useUIStore = defineStore("ui", () => {
     saveSidebarCollapsed(sidebarCollapsed.value);
   }
 
-  function setActiveSection(section: SectionName, pushStack = true) {
-    if (pushStack) {
-      sectionStack.push(activeSection.value);
-    }
-    activeSection.value = section;
-  }
-
-  /** 弹出栈顶并导航回该 section，用于详情页返回 */
-  function popSection() {
-    const prev = sectionStack.pop();
-    if (prev) activeSection.value = prev;
-  }
-
   return {
-    currentView,
+    activeView,
+    nowPlayingOpen,
     sidebarCollapsed,
-    activeSection,
-    setCurrentView,
-    openDetail,
-    closeDetail,
+    setActiveView,
+    popView,
+    openNowPlaying,
+    closeNowPlaying,
     toggleSidebar,
-    setActiveSection,
-    popSection,
   };
 });

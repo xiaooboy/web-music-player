@@ -37,24 +37,24 @@ export function useTrackContextMenu() {
 
   /** 根据当前视图上下文推断播放源并激活 */
   function activatePlaySource() {
-    const section = uiStore.activeSection;
-    if (section === "library-management") return;
-    // 详情页场景：沿用当前播放源，不做切换
-    if (uiStore.currentView === "detail") return;
+    const view = uiStore.activeView;
+    if (view === "sources") return;
+    // 正在播放面板场景：沿用当前播放源，不做切换
+    if (uiStore.nowPlayingOpen) return;
     // 详情页：沿用 playlists / albums 作为播放源
     const playSource =
-      section === "playlist-detail" ? "playlists" :
-      section === "album-detail" ? "albums" : section;
+      view === "playlist-detail" ? "playlists" :
+      view === "album-detail" ? "albums" : view;
     playerStore.setPlaySourceType(playSource);
-    if ((section === "albums" || section === "album-detail") && albumStore.selectedAlbumName)
+    if ((view === "albums" || view === "album-detail") && albumStore.selectedAlbumName)
       albumStore.updatePlayingAlbum(albumStore.selectedAlbumName);
-    if ((section === "playlists" || section === "playlist-detail") && playlistStore.selectedPlaylistId)
+    if ((view === "playlists" || view === "playlist-detail") && playlistStore.selectedPlaylistId)
       playlistStore.updatePlayingPlaylist(playlistStore.selectedPlaylistId);
   }
 
   /** 是否处于歌单详情视图 */
   function isInPlaylistDetail() {
-    return uiStore.activeSection === "playlist-detail";
+    return uiStore.activeView === "playlist-detail";
   }
 
   function updateMenu(track: Track) {

@@ -15,7 +15,7 @@ import { computed, useTemplateRef } from "vue";
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { useUIStore } from "../stores/uiStore";
-import QueuePopover from "./QueuePopover.vue";
+import PlayQueueSheet from "./PlayQueueSheet.vue";
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
@@ -26,8 +26,8 @@ const isCurrentTrackLiked = computed(() =>
     ? favoriteStore.likedTrackIdSet.has(playerStore.currentTrackId)
     : false,
 );
-const enableCoverTransition = computed(() => uiStore.currentView !== "detail");
-const queueRef = useTemplateRef<InstanceType<typeof QueuePopover>>("queueRef");
+const enableCoverTransition = computed(() => !uiStore.nowPlayingOpen);
+const queueRef = useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
 
 function handlePlayTrack(index: number) {
   playerStore.playTrack(index, true);
@@ -44,10 +44,10 @@ function handleRemoveTrack(id: string) {
     aria-label="播放控制栏"
   >
     <button
-      class="dock-track detail-trigger"
+      class="dock-track now-playing-trigger"
       type="button"
       title="查看播放详情"
-      @click="playerStore.currentTrack && uiStore.openDetail()"
+      @click="playerStore.currentTrack && uiStore.openNowPlaying()"
     >
       <div class="cover-art dock-cover">
         <img
@@ -160,7 +160,7 @@ function handleRemoveTrack(id: string) {
         />
       </div>
     </div>
-    <QueuePopover
+    <PlayQueueSheet
       ref="queueRef"
       :tracks="playerStore.queue"
       :current-track-id="playerStore.currentTrackId"

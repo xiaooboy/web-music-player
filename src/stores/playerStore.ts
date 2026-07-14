@@ -36,8 +36,8 @@ export const usePlayerStore = defineStore("player", () => {
   // ─── 播放队列 ───────────────────────────────────────────────────────────
   const queue = shallowRef<Track[]>([]);
   const playSourceType = shallowRef<
-    "all-track" | "favorites" | "albums" | "playlists"
-  >("all-track");
+    "tracks" | "favorites" | "albums" | "playlists"
+  >("tracks");
   let queueIndexMap = new Map<string, number>();
   let queueSourceInitialized = false;
 
@@ -48,7 +48,7 @@ export const usePlayerStore = defineStore("player", () => {
     const albumStore = useAlbumStore();
     const playlistStore = usePlaylistStore();
     switch (playSourceType.value) {
-      case "all-track":
+      case "tracks":
         return libraryStore.tracks;
       case "favorites":
         return favoriteStore.favoriteTracks;
@@ -141,7 +141,7 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function setPlaySourceType(
-    type: "all-track" | "favorites" | "albums" | "playlists",
+    type: "tracks" | "favorites" | "albums" | "playlists",
   ) {
     playSourceType.value = type;
   }

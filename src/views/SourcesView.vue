@@ -5,8 +5,8 @@ import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
 import { showToast } from "../composables/useToast";
-import TipContent from "../components/TipContent.vue";
-import SectionHead from "../components/SectionHead.vue";
+import EmptyState from "../components/EmptyState.vue";
+import SectionHeader from "../components/SectionHeader.vue";
 import BaseDialog from "../components/BaseDialog.vue";
 
 const libraryStore = useLibraryStore();
@@ -68,10 +68,10 @@ function confirmRemove() {
 </script>
 
 <template>
-  <section class="main-panel library-management-panel">
-    <SectionHead title="音乐源">
+  <section class="main-panel sources-panel">
+    <SectionHeader title="音乐源">
       <template #right>
-        <div class="library-actions-inline">
+        <div class="sources-actions-inline">
           <button
             v-if="showAddButton"
             class="icon-button"
@@ -102,9 +102,9 @@ function confirmRemove() {
           </button>
         </div>
       </template>
-    </SectionHead>
+    </SectionHeader>
 
-    <p class="library-management-hint">{{ libraryHint }}</p>
+    <p class="sources-hint">{{ libraryHint }}</p>
 
     <div
       v-if="libraryStore.musicSources.length"
@@ -137,7 +137,7 @@ function confirmRemove() {
         </button>
       </div>
     </div>
-    <TipContent
+    <EmptyState
       v-else
       fill
       title="还没有添加音乐源"
@@ -147,11 +147,11 @@ function confirmRemove() {
     <!-- 删除确认对话框 -->
     <BaseDialog
       v-model="confirmVisible"
-      class="playlist-dialog"
+      class="form-dialog"
     >
       <form method="dialog" @submit.prevent="confirmRemove">
         <h3>移除音乐源</h3>
-        <p class="playlist-dialog-text">
+        <p class="form-dialog-text">
           确定移除「{{ removingSourceName }}」吗？移除后该目录中的歌曲将从播放列表中消失。
         </p>
         <div class="dialog-actions">

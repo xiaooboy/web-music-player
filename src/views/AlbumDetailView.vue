@@ -46,7 +46,7 @@ function handleStop() {
 
 function navigateBack() {
   albumStore.clearSelection();
-  uiStore.popSection();
+  uiStore.popView();
 }
 
 useHistoryBack(navigateBack);

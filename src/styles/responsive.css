@@ -73,21 +73,21 @@
     flex-wrap: wrap;
   }
 
-  .detail-head,
-  .detail-meta,
-  .detail-lyrics {
+  .now-playing-head,
+  .now-playing-meta,
+  .now-playing-lyrics {
     padding-left: 18px;
     padding-right: 18px;
   }
 
-  .detail-transport {
+  .now-playing-transport {
     gap: 10px;
   }
 
   .lyrics-line {
     font-size: 1.08rem;
   }
-  .detail-body {
+  .now-playing-body {
     overflow: auto;
     scrollbar-width: none;
     scroll-behavior: smooth;
@@ -95,25 +95,25 @@
     border-right: none;
   }
 
-  .detail-body::-webkit-scrollbar {
+  .now-playing-body::-webkit-scrollbar {
     width: 0;
     height: 0;
   }
-  .detail-cover {
+  .now-playing-cover {
     width: min(100%, clamp(180px, 90vw, 300px));
   }
-  .detail-meta::after {
+  .now-playing-meta::after {
     display: none;
   }
-  .detail-meta,
-  .detail-lyrics {
+  .now-playing-meta,
+  .now-playing-lyrics {
     width: 100%;
     flex: 0 0 100%;
     scroll-snap-align: start;
     justify-content: space-evenly;
   }
 
-  .detail-meta {
+  .now-playing-meta {
     border-right: 0;
     overflow: visible;
   }

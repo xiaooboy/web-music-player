@@ -10,23 +10,23 @@ const {
 }>();
 </script>
 <template>
-  <div :class="{ 'tip-content': true, 'tip-content--fill': fill }">
+  <div :class="{ 'empty-state': true, 'empty-state--fill': fill }">
     <strong>{{ title }}</strong>
     <p>{{ content }}</p>
   </div>
 </template>
 <style>
-.tip-content {
+.empty-state {
   padding: 72px 16px 82px;
   text-align: center;
 }
-.tip-content strong {
+.empty-state strong {
   display: block;
   color: var(--text);
   font-size: 1.08rem;
   margin-bottom: 10px;
 }
-.tip-content--fill {
+.empty-state--fill {
   display: grid;
   place-content: center;
   min-height: 100%;
