@@ -27,7 +27,8 @@ const isCurrentTrackLiked = computed(() =>
     : false,
 );
 const enableCoverTransition = computed(() => !uiStore.nowPlayingOpen);
-const queueRef = useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
+const queueRef =
+  useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
 
 function handlePlayTrack(index: number) {
   playerStore.playTrack(index, true);
@@ -39,10 +40,7 @@ function handleRemoveTrack(id: string) {
 </script>
 
 <template>
-  <footer
-    class="player-dock"
-    aria-label="播放控制栏"
-  >
+  <footer class="player-dock" aria-label="播放控制栏">
     <button
       class="dock-track now-playing-trigger"
       type="button"
@@ -54,11 +52,6 @@ function handleRemoveTrack(id: string) {
           v-if="playerStore.currentTrack?.coverUrl"
           :src="playerStore.currentTrack.coverUrl"
           alt="底部播放器封面"
-          :style="
-            playerStore.currentTrack && enableCoverTransition
-              ? { 'view-transition-name': 'active-cover-art' }
-              : undefined
-          "
         />
         <span v-else aria-hidden="true">LM</span>
       </div>

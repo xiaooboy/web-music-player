@@ -33,15 +33,11 @@ export const useUIStore = defineStore("ui", () => {
   }
 
   function openNowPlaying() {
-    withViewTransition(() => {
-      nowPlayingOpen.value = true;
-    });
+    nowPlayingOpen.value = true;
   }
 
   function closeNowPlaying() {
-    withViewTransition(() => {
-      nowPlayingOpen.value = false;
-    });
+    nowPlayingOpen.value = false;
   }
 
   function toggleSidebar() {

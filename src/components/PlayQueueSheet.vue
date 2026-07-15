@@ -90,7 +90,8 @@ defineExpose({ open, close });
 
 <template>
   <!-- 小屏：BottomSheet -->
-  <BottomSheet v-if="isSmallScreen" ref="sheetRef" title="播放队列">
+  <BottomSheet v-if="isSmallScreen" ref="sheetRef" title="播放队列"
+  :snap-points="[0.6,1]">
     <div ref="listRef" class="queue-sheet-list">
       <template v-if="tracks.length">
         <div

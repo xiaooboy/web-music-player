@@ -16,31 +16,7 @@
   overflow: hidden;
 }
 
-.now-playing-shell {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-overlay);
-  /* 重置 dialog 默认样式 */
-  border: 0;
-  padding: 0;
-  margin: 0;
-  max-width: none;
-  max-height: none;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  color: inherit;
-  overflow: hidden;
-}
 
-.now-playing-shell::backdrop {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.now-playing-stage {
-  min-height: 100dvh;
-  height: 100dvh;
-}
 
 
 .main-stage,

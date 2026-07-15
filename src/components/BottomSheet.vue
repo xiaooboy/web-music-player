@@ -99,8 +99,16 @@ function snapTo(index: number, animate = true) {
 }
 
 // ─── 拖拽（触摸 + 鼠标） ────────────────────────────────────────────────────
-function shouldIgnoreDragStart(target: EventTarget | null) {
-  // 交互元素（滑块、按钮等）不拦截，保留其原生行为
+type DragMode = "drag" | "observe" | "ignore";
+
+/**
+ * 判断手势起始时的交互模式：
+ * - drag：直接接管拖拽（handle、非滚动区等）
+ * - observe：先放行内容滚动，到顶后下滑时再接管（可滚动内容区）
+ * - ignore：完全忽略（交互元素）
+ */
+function getDragMode(target: EventTarget | null): DragMode {
+  // 交互元素（滑块、按钮等）完全忽略
   if (target instanceof HTMLElement) {
     const tag = target.tagName;
     if (
@@ -111,23 +119,36 @@ function shouldIgnoreDragStart(target: EventTarget | null) {
       tag === "A" ||
       target.closest('input, button, select, textarea, a, [role="slider"]')
     )
-      return true;
+      return "ignore";
   }
-  // 可滚动内容内部，不拦截（保留滚动能力，关闭 Sheet 请通过 handle 或遮罩）
-  const scrollEl = bodyRef.value?.querySelector(".bottom-sheet-content");
-  if (
-    scrollEl instanceof HTMLElement &&
-    scrollEl.scrollHeight > scrollEl.clientHeight &&
-    scrollEl.contains(target as Node)
-  )
-    return true;
-  return false;
+  // 从 target 向上查找可滚动祖先
+  if (target instanceof HTMLElement) {
+    let el: HTMLElement | null = target;
+    const boundary = bodyRef.value;
+    while (el && el !== boundary) {
+      if (el.scrollHeight > el.clientHeight) return "observe";
+      el = el.parentElement;
+    }
+  }
+  return "drag";
 }
+
+/** 观察模式下追踪的可滚动元素 */
+let observingScrollEl: HTMLElement | null = null;
+let isObserving = false;
 
 function handleDragStart(clientY: number) {
   dragStartY = clientY;
   dragStartTranslateY = getCurrentTranslateY();
   isDragging = true;
+  isObserving = false;
+  observingScrollEl = null;
+}
+
+function handleObserveStart(clientY: number, scrollEl: HTMLElement) {
+  dragStartY = clientY;
+  isObserving = true;
+  observingScrollEl = scrollEl;
 }
 
 /** @returns 是否实际处理了拖拽 */
@@ -137,10 +158,6 @@ function handleDragMove(clientY: number): boolean {
 
   // ─── 适应内容模式（单锚点或无锚点）：只允许下拉关闭 ────
   if (!hasResizableSnaps()) {
-    // 内容未到顶 → 放行浏览器滚动
-    const scrollEl = bodyRef.value.querySelector(".bottom-sheet-content");
-    if (scrollEl instanceof HTMLElement && scrollEl.scrollTop > 0) return false;
-    // 上滑 → 放行浏览器滚动
     if (deltaY <= 0) return false;
     const damped = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
@@ -176,7 +193,32 @@ function handleDragMove(clientY: number): boolean {
   return true;
 }
 
+/**
+ * 观察模式：不拦截默认滚动，监测可滚动元素是否到顶且用户在下滑，
+ * 满足条件时切换为拖拽模式。
+ * @returns 是否切换到了拖拽模式
+ */
+function handleObserveMove(clientY: number): boolean {
+  if (!isObserving || !observingScrollEl || !bodyRef.value) return false;
+  const deltaY = clientY - dragStartY;
+  // 可滚动元素已到顶且用户下滑 → 切换为拖拽
+  if (observingScrollEl.scrollTop <= 0 && deltaY > 0) {
+    isObserving = false;
+    observingScrollEl = null;
+    // 以当前位置为起点启动拖拽
+    handleDragStart(clientY);
+    return true;
+  }
+  return false;
+}
+
 function handleDragEnd() {
+  // 观察模式：直接重置
+  if (isObserving) {
+    isObserving = false;
+    observingScrollEl = null;
+    return;
+  }
   if (!isDragging || !bodyRef.value || !dialogRef.value) return;
   isDragging = false;
 
@@ -222,11 +264,37 @@ function handleDragEnd() {
 
 // ─── 触摸事件适配 ──────────────────────────────────────────────────────────
 function handleTouchStart(e: TouchEvent) {
-  if (shouldIgnoreDragStart(e.target)) return;
-  handleDragStart(e.touches[0].clientY);
+  const mode = getDragMode(e.target);
+  if (mode === "ignore") return;
+  const clientY = e.touches[0].clientY;
+  if (mode === "observe") {
+    // 找到最近的可滚动祖先作为观察目标
+    let el = e.target instanceof HTMLElement ? e.target : null;
+    const boundary = bodyRef.value;
+    while (el && el !== boundary) {
+      if (el.scrollHeight > el.clientHeight) {
+        handleObserveStart(clientY, el);
+        return;
+      }
+      el = el.parentElement;
+    }
+    return;
+  }
+  handleDragStart(clientY);
 }
 
 function handleTouchMove(e: TouchEvent) {
+  // 观察模式：监测是否应切换为拖拽
+  if (isObserving) {
+    const clientY = e.touches[0].clientY;
+    if (handleObserveMove(clientY)) {
+      // 已切换为拖拽，处理当前帧
+      if (handleDragMove(clientY)) {
+        e.preventDefault();
+      }
+    }
+    return;
+  }
   if (!isDragging) return;
   if (handleDragMove(e.touches[0].clientY)) {
     e.preventDefault();
@@ -239,7 +307,8 @@ function handleTouchEnd() {
 
 // ─── 鼠标事件适配 ──────────────────────────────────────────────────────────
 function handleMouseDown(e: MouseEvent) {
-  if (shouldIgnoreDragStart(e.target)) return;
+  const mode = getDragMode(e.target);
+  if (mode === "ignore") return;
   // 只响应左键
   if (e.button !== 0) return;
   e.preventDefault(); // 防止拖拽时选中文字

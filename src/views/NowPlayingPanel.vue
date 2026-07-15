@@ -24,6 +24,7 @@ import {
 } from "vue";
 import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
+import BottomSheet from "../components/BottomSheet.vue";
 import EmptyState from "../components/EmptyState.vue";
 import PlayQueueSheet from "../components/PlayQueueSheet.vue";
 import ContextMenu from "../components/ContextMenu.vue";
@@ -37,8 +38,9 @@ const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const uiStore = useUIStore();
 
-const dialogRef = useTemplateRef<HTMLDialogElement>("dialogRef");
-const queueRef = useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
+const sheetRef = useTemplateRef<InstanceType<typeof BottomSheet>>("sheetRef");
+const queueRef =
+  useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
 
 const isCurrentTrackLiked = computed(() =>
   playerStore.currentTrack
@@ -56,30 +58,17 @@ function handleMoreClick(event: MouseEvent) {
   handleClickTrigger(track);
 }
 
-// ─── Dialog 打开/关闭 ─────────────────────────────────────────────────────────
-function openDialog() {
-  const el = dialogRef.value;
-  if (el && !el.open) {
-    el.showModal();
-  }
+// ─── BottomSheet 打开/关闭 ──────────────────────────────────────────────────
+function openSheet() {
+  sheetRef.value?.open();
 }
 
-function closeDialog() {
-  const el = dialogRef.value;
-  if (el && el.open) {
-    el.close();
-  }
+function closeSheet() {
+  sheetRef.value?.close();
 }
 
-/** 点击 backdrop（dialog 自身）关闭 */
-function handleDialogClick(event: MouseEvent) {
-  if (event.target === dialogRef.value) {
-    closeDialog();
-  }
-}
-
-/** dialog.close() 触发后同步 store 状态 */
-function handleDialogClose() {
+/** BottomSheet close 事件触发后同步 store 状态 */
+function handleSheetClose() {
   if (uiStore.nowPlayingOpen) {
     uiStore.closeNowPlaying();
   }
@@ -90,27 +79,14 @@ watch(
   () => uiStore.nowPlayingOpen,
   (open) => {
     if (open) {
-      openDialog();
+      openSheet();
     } else {
-      closeDialog();
+      closeSheet();
     }
   },
 );
 
-// 小屏下 .now-playing-body 可横向滚动，当滚动到歌词页时封面不可见
-// 此时返回应移除 view-transition-name，避免动画异常
-const isCoverVisible = ref(true);
 
-let scrollRafId = 0;
-function handleDetailBodyScroll() {
-  cancelAnimationFrame(scrollRafId);
-  scrollRafId = requestAnimationFrame(() => {
-    const el = detailBodyRef.value;
-    if (!el) return;
-    // 滚动超过容器宽度的 40% 即认为封面不可见
-    isCoverVisible.value = el.scrollLeft < el.clientWidth * 0.4;
-  });
-}
 
 // 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
 const displayCoverUrl = ref<string | undefined>(undefined);
@@ -137,8 +113,14 @@ function handleLyricsWheel(event: Event) {
   }, 3000);
 }
 
+const lyricsTextCache = new Map<string, string>();
+
 function displayLyricsText(text: string) {
-  return text.replace(/^(\[[^\]]+\]\s*)+/, "").trim() || text.trim();
+  const cached = lyricsTextCache.get(text);
+  if (cached !== undefined) return cached;
+  const result = text.replace(/^(\[\[^\]]+\]\s*)+/, "").trim() || text.trim();
+  lyricsTextCache.set(text, result);
+  return result;
 }
 
 function scheduleLyricsFollow(index: number) {
@@ -209,22 +191,23 @@ watch(
 watch(
   () => playerStore.currentTrack?.id,
   () => {
+    lyricsTextCache.clear();
     nextTick(() => {
       lyricsScrollRef.value?.scrollTo({ top: 0, behavior: "auto" });
     });
   },
 );
 
-defineExpose({ openDialog, closeDialog });
+defineExpose({ openSheet, closeSheet });
 </script>
 
 <template>
-  <dialog
-    ref="dialogRef"
-    class="now-playing-shell"
-    aria-label="播放详情"
-    @click="handleDialogClick"
-    @close="handleDialogClose"
+  <BottomSheet
+    ref="sheetRef"
+    :snap-points="[1]"
+    hide-handle
+    body-class="now-playing-sheet-body"
+    @close="handleSheetClose"
   >
     <section class="now-playing-page">
       <Transition name="backdrop-fade">
@@ -254,7 +237,7 @@ defineExpose({ openDialog, closeDialog });
       <div
         ref="detailBodyRef"
         class="now-playing-body"
-        @scroll="handleDetailBodyScroll"
+
       >
         <div class="now-playing-meta">
           <div class="cover-art now-playing-cover">
@@ -262,13 +245,6 @@ defineExpose({ openDialog, closeDialog });
               v-if="playerStore.currentTrack?.coverUrl"
               :src="playerStore.currentTrack.coverUrl"
               alt="歌曲封面"
-              :style="
-                playerStore.currentTrack &&
-                uiStore.nowPlayingOpen &&
-                isCoverVisible
-                  ? { 'view-transition-name': 'active-cover-art' }
-                  : undefined
-              "
             />
             <span v-else>LM</span>
           </div>
@@ -286,27 +262,27 @@ defineExpose({ openDialog, closeDialog });
 
           <div class="now-playing-controls">
             <div class="now-playing-progress">
-                        <input
-                          class="progress-slider"
-                          type="range"
-                          min="0"
-                          max="100"
-                          aria-label="播放进度"
-                          :value="playerStore.progressPercent"
-                          :style="{ '--slider-value': playerStore.progressPercent + '%' }"
-                          @input="
-                            playerStore.seekToPercent(
-                              Number(($event.target as HTMLInputElement).value),
-                            )
-                          "
-                        />
-                        <div class="now-playing-progress-times">
-                          <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
-                          <span>{{
-                            formatTime(playerStore.currentTrack?.duration || 0)
-                          }}</span>
-                        </div>
-                      </div>
+              <input
+                class="progress-slider"
+                type="range"
+                min="0"
+                max="100"
+                aria-label="播放进度"
+                :value="playerStore.progressPercent"
+                :style="{ '--slider-value': playerStore.progressPercent + '%' }"
+                @input="
+                  playerStore.seekToPercent(
+                    Number(($event.target as HTMLInputElement).value),
+                  )
+                "
+              />
+              <div class="now-playing-progress-times">
+                <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
+                <span>{{
+                  formatTime(playerStore.currentTrack?.duration || 0)
+                }}</span>
+              </div>
+            </div>
 
             <div class="now-playing-transport">
               <div class="now-playing-playback">
@@ -349,14 +325,14 @@ defineExpose({ openDialog, closeDialog });
                   @click="playerStore.nextPlaybackMode()"
                 >
                   <Shuffle
-                                    v-if="playerStore.playbackMode === 'shuffle'"
-                                    :size="20"
-                                  />
-                                  <Repeat1
-                                    v-else-if="playerStore.playbackMode === 'one'"
-                                    :size="20"
-                                  />
-                                  <Repeat v-else :size="20" />
+                    v-if="playerStore.playbackMode === 'shuffle'"
+                    :size="20"
+                  />
+                  <Repeat1
+                    v-else-if="playerStore.playbackMode === 'one'"
+                    :size="20"
+                  />
+                  <Repeat v-else :size="20" />
                 </button>
                 <button
                   class="icon-button favorite-button"
@@ -365,11 +341,13 @@ defineExpose({ openDialog, closeDialog });
                   :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
                   :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
                   @click="
-                    favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
+                    favoriteStore.toggleTrackFavorite(
+                      playerStore.currentTrackId,
+                    )
                   "
                 >
                   <Heart
-                                    :size="20"
+                    :size="20"
                     :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
                   />
                 </button>
@@ -392,7 +370,7 @@ defineExpose({ openDialog, closeDialog });
                   :popovertarget="VOLUME_POPOVER_ID"
                 >
                   <VolumeX v-if="playerStore.volumePercent === 0" :size="20" />
-                                  <Volume2 v-else :size="20" />
+                  <Volume2 v-else :size="20" />
                 </button>
                 <button
                   class="icon-button more-button"
@@ -403,8 +381,8 @@ defineExpose({ openDialog, closeDialog });
                   @click="handleMoreClick($event)"
                 >
                   <MoreVertical :size="20" />
-                                </button>
-                              </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -432,7 +410,9 @@ defineExpose({ openDialog, closeDialog });
                   :tabindex="line.time !== null ? 0 : undefined"
                   :role="line.time !== null ? 'button' : 'listitem'"
                   :aria-label="displayLyricsText(line.text)"
-                  :aria-current="index === playerStore.activeLyricsIndex ? 'true' : undefined"
+                  :aria-current="
+                    index === playerStore.activeLyricsIndex ? 'true' : undefined
+                  "
                   :data-line-index="index"
                   @click="
                     line.time !== null && playerStore.seekToLyricsLine(index)
@@ -444,24 +424,32 @@ defineExpose({ openDialog, closeDialog });
                   <span>{{ displayLyricsText(line.text) }}</span>
                 </div>
               </template>
-              <EmptyState
+              <div
                 v-else
-                title="这首歌还没有可展示的歌词"
-                content="优先读取同目录 `.lrc`，其次读取音频标签里的内嵌歌词。"
-              />
+                class="lyrics-line is-active"
+                tabindex="0"
+                role="listitem"
+                aria-label="暂无歌词"
+              >
+                <span>暂无歌词</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <PlayQueueSheet
-            ref="queueRef"
+        ref="queueRef"
         :tracks="playerStore.queue"
         :current-track-id="playerStore.currentTrackId"
         @play="playerStore.playTrack($event, true)"
         @remove="playerStore.removeFromQueue($event)"
       />
-      <div class="now-playing-volume-popover" popover="auto" :id="VOLUME_POPOVER_ID">
+      <div
+        class="now-playing-volume-popover"
+        popover="auto"
+        :id="VOLUME_POPOVER_ID"
+      >
         <input
           class="now-playing-volume-slider"
           type="range"
@@ -480,5 +468,5 @@ defineExpose({ openDialog, closeDialog });
       <ContextMenu v-if="!isSmallScreen" ref="contextMenu" v-bind="menuProps" />
       <ActionSheet v-else ref="actionSheet" v-bind="menuProps" />
     </section>
-  </dialog>
+  </BottomSheet>
 </template>
