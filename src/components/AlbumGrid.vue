@@ -20,7 +20,7 @@ const ROW_GAP = 30;
 const PADDING_RIGHT = 0;
 const ROW_HEIGHT = 190;
 // 最少两列
-const MIN_COL_WIDTH = Math.min(150, (screen.width - ROW_GAP - PADDING_RIGHT - 2 * 16) / 2);
+const MIN_COL_WIDTH = calcMinColWidth(2)
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
@@ -93,6 +93,11 @@ onMounted(() => {
 onBeforeUnmount(() => {
   resizeObserver?.disconnect();
 });
+function calcMinColWidth(col: number) {
+  const width = window.innerWidth
+  const value = Math.min(150, (width - ROW_GAP - PADDING_RIGHT - 2 * 16) / col)
+  return Math.floor(value);
+}
 </script>
 
 <template>
