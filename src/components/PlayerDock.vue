@@ -40,7 +40,15 @@ function handleRemoveTrack(id: string) {
 </script>
 
 <template>
-  <footer class="player-dock" aria-label="播放控制栏">
+  <footer
+    class="player-dock"
+    aria-label="播放控制栏"
+    :style="
+      playerStore.currentTrack && enableCoverTransition
+        ? { 'view-transition-name': 'dock-detail' }
+        : undefined
+    "
+  >
     <button
       class="dock-track now-playing-trigger"
       type="button"
