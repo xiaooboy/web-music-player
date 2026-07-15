@@ -1,73 +1,90 @@
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import { ArrowLeft, Disc3, MoreVertical, Pause, Play } from "@lucide/vue";
-import { ref } from "vue";
 import { formatTime } from "../utils/media";
-import { Album } from "@/types";
-import ContextMenu from "./ContextMenu.vue";
-import ActionSheet from "./ActionSheet.vue";
+import type { Track } from "@/types";
+import ContextMenu from "../components/ContextMenu.vue";
+import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
+import { useHistoryBack } from "../composables/useHistoryBack";
+import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
 
-interface Props {
-  album: Album;
-  playingTrackId: string;
-  viewTransitionName?: string;
-}
+const albumStore = useAlbumStore();
+const playerStore = usePlayerStore();
+const uiStore = useUIStore();
 
-const props = defineProps<Props>();
-
-const emit = defineEmits<{
-  (e: "back"): void;
-  (e: "stop", trackId: string): void;
-  (e: "playAlbum", albumName: string): void;
-  (e: "playTrack", albumName: string, trackId: string): void;
-}>();
+const playingTrackId = computed(() => playerStore.isPlaying ? playerStore.currentTrackId : "");
 
 const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 const contextMenuHeader = ref("");
 
 function handleContextMenu(
   event: MouseEvent,
-  track: (typeof props.album.tracks)[number],
+  track: Track,
 ) {
   event.preventDefault();
   event.stopPropagation();
   contextMenuHeader.value = track.title;
   openContextMenu(track, event);
 }
+
+function handlePlayTrack(trackId: string) {
+  albumStore.updatePlayingAlbum(albumStore.selectedAlbumName);
+  playerStore.setPlaySourceType("albums");
+  playerStore.playTrackById(trackId, true);
+}
+
+function handlePlayAlbum() {
+  albumStore.updatePlayingAlbum(albumStore.selectedAlbumName);
+  playerStore.setPlaySourceType("albums");
+  playerStore.playTrack(0, true);
+}
+
+function handleStop() {
+  playerStore.togglePlay();
+}
+
+function navigateBack() {
+  albumStore.clearSelection();
+  uiStore.popView();
+}
+
+useHistoryBack(navigateBack);
+
+
 </script>
 
 <template>
-  <section class="album-detail-view">
+  <section v-if="albumStore.selectedAlbum" class="main-panel album-detail-view">
     <div class="album-detail-head">
       <button
         class="icon-button back-button"
         type="button"
-        @click="emit('back')"
+        @click="navigateBack"
       >
         <ArrowLeft :size="20" />
       </button>
       <div class="album-detail-cover">
         <img
-          v-if="album.coverUrl"
-          :src="album.coverUrl"
+          v-if="albumStore.selectedAlbum.coverUrl"
+          :src="albumStore.selectedAlbum.coverUrl"
           class="img-fadein is-loaded"
-          :alt="`${album.name} 封面`"
-          :style="{ 'view-transition-name': viewTransitionName }"
+          :alt="`${albumStore.selectedAlbum.name} 封面`"
         />
         <Disc3 v-else :size="34" />
       </div>
       <div class="album-detail-copy">
-        <h3>{{ album.name }}</h3>
-        <span>{{ album.artistLabel }}</span>
+        <h3>{{ albumStore.selectedAlbum.name }}</h3>
+        <span>{{ albumStore.selectedAlbum.artistLabel }}</span>
         <div class="album-detail-stats">
-          <span>{{ album.tracks.length }} 首</span>
-          <span>{{ formatTime(album.duration) }}</span>
+          <span>{{ albumStore.selectedAlbum.tracks.length }} 首</span>
+          <span>{{ formatTime(albumStore.selectedAlbum.duration) }}</span>
         </div>
       </div>
       <button
         class="primary-button album-play-button"
         type="button"
-        @click="emit('playAlbum', album.name)"
+        @click="handlePlayAlbum"
       >
         <Play :size="20" />
         <span>播放专辑</span>
@@ -76,12 +93,12 @@ function handleContextMenu(
 
     <div class="album-song-list">
       <button
-        v-for="(track, songOrder) in album.tracks"
+        v-for="(track, songOrder) in albumStore.selectedAlbum.tracks"
         :key="track.id"
         class="album-song-row"
         :class="{ 'is-active': track.id === playingTrackId }"
         type="button"
-        @click="emit('playTrack', album.name, track.id)"
+        @click="handlePlayTrack(track.id)"
         @contextmenu="handleContextMenu($event, track)"
       >
         <div class="album-song-main">
@@ -93,7 +110,7 @@ function handleContextMenu(
           >
             <Pause
               v-if="track.id === playingTrackId"
-              @click.stop="emit('stop', track.id)"
+              @click.stop="handleStop()"
               :size="20"
             />
             <Play v-else :size="20" />

@@ -37,7 +37,7 @@ function handleConfirm() {
 <template>
   <BaseDialog
     v-model="visible"
-    class="playlist-dialog"
+    class="form-dialog"
   >
     <form method="dialog" @submit.prevent="handleConfirm">
       <h3>
@@ -49,7 +49,7 @@ function handleConfirm() {
               : "删除歌单"
         }}
       </h3>
-      <p v-if="mode === 'delete'" class="playlist-dialog-text">
+      <p v-if="mode === 'delete'" class="form-dialog-text">
         确定删除歌单「{{ initialName }}」吗？
       </p>
       <input
@@ -59,7 +59,7 @@ function handleConfirm() {
         aria-label="歌单名称"
         placeholder="歌单名称"
         autofocus
-        class="playlist-dialog-input"
+        class="form-dialog-input"
       />
       <div class="dialog-actions">
         <button
@@ -84,7 +84,7 @@ function handleConfirm() {
 </template>
 
 <style>
-.playlist-dialog {
+.form-dialog {
   position: fixed;
   inset: 0;
   margin: auto;
@@ -111,7 +111,7 @@ function handleConfirm() {
 }
 
 /* 打开态 */
-.playlist-dialog[open] {
+.form-dialog[open] {
   opacity: 1;
   transform: scale(1);
 
@@ -128,7 +128,7 @@ function handleConfirm() {
 }
 
 /* ─── backdrop 动画 ──────────────────────────────────────────────────────── */
-.playlist-dialog::backdrop {
+.form-dialog::backdrop {
   background: rgba(0, 0, 0, 0);
 
   transition:
@@ -137,7 +137,7 @@ function handleConfirm() {
     overlay 120ms ease-in allow-discrete;
 }
 
-.playlist-dialog[open]::backdrop {
+.form-dialog[open]::backdrop {
   background: rgba(0, 0, 0, 0.5);
 
   transition:
@@ -151,13 +151,13 @@ function handleConfirm() {
 }
 
 /* ─── 内容样式 ────────────────────────────────────────────────────────────── */
-.playlist-dialog h3 {
+.form-dialog h3 {
   margin: 0 0 16px;
   font-size: 1.1rem;
   font-weight: 700;
 }
 
-.playlist-dialog-input {
+.form-dialog-input {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -169,7 +169,7 @@ function handleConfirm() {
   transition: border-color 0.15s ease;
 }
 
-.playlist-dialog-input:focus {
+.form-dialog-input:focus {
   border-color: var(--accent);
 }
 
@@ -209,7 +209,7 @@ function handleConfirm() {
 }
 
 /* ─── 删除确认文本 ─────────────────────────────────────────────────────────── */
-.playlist-dialog-text {
+.form-dialog-text {
   margin: 0;
   color: var(--muted);
   font-size: 0.95rem;

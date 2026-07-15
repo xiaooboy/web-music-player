@@ -52,7 +52,7 @@
   font-size: 0.84rem;
 }
 
-.library-management-panel {
+.sources-panel {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
@@ -61,18 +61,18 @@
   padding-right: 0;
 }
 
-.library-management-hint {
+.sources-hint {
   margin-top: 6px;
   color: var(--muted);
   line-height: 1.5;
 }
 
-.library-actions-inline {
+.sources-actions-inline {
   display: flex;
   gap: 4px;
 }
 
-.all-track-view {
+.tracks-view {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   min-height: 0;
@@ -81,17 +81,17 @@
   justify-self: stretch;
 }
 
-.all-track-searchbar {
+.tracks-searchbar {
   position: relative;
   z-index: var(--z-sticky);
   width: 100%;
   background: transparent;
   backdrop-filter: none;
 }
-.all-track-view .all-track-searchbar {
+.tracks-view .tracks-searchbar {
   margin-bottom: 10px;
 }
-.all-track-scroll {
+.tracks-scroll {
   width: 100%;
   min-height: 0;
   height: 100%;
@@ -232,7 +232,7 @@
   cursor: pointer;
 }
 
-.all-track-scroll::-webkit-scrollbar {
+.tracks-scroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }

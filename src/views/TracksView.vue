@@ -8,7 +8,7 @@ import { useAlbumStore } from "../stores/albumStore";
 import { useUIStore } from "../stores/uiStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
-import SectionHead from "@/components/SectionHead.vue";
+import SectionHeader from "@/components/SectionHeader.vue";
 
 const libraryStore = useLibraryStore();
 const playerStore = usePlayerStore();
@@ -54,19 +54,19 @@ const emptyDescription = computed(() => {
 });
 
 function handleSelectTrack(id: string) {
-  playerStore.setPlaySourceType("all-track");
+  playerStore.setPlaySourceType("tracks");
   playerStore.playTrackById(id, true);
 }
 
 function handleNavigateToAlbum(albumName: string) {
-  uiStore.setActiveSection("albums");
   albumStore.selectAlbum(albumName);
+  uiStore.setActiveView("album-detail");
 }
 </script>
 
 <template>
-  <div class="all-track-view">
-    <header class="all-track-searchbar">
+  <div class="tracks-view">
+    <header class="tracks-searchbar">
       <label class="search-field">
         <Search :size="18" aria-hidden="true" />
         <input
@@ -77,9 +77,9 @@ function handleNavigateToAlbum(albumName: string) {
         />
       </label>
     </header>
-    <SectionHead title="歌曲" />
+    <SectionHeader title="歌曲" />
 
-    <div class="all-track-scroll">
+    <div class="tracks-scroll">
       <TrackTable
         :tracks="visibleTracks"
         :current-track-id="playerStore.currentTrackId"

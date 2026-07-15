@@ -6,30 +6,38 @@ import {
 } from "@/utils/persistence";
 import { withViewTransition } from "@/utils/viewTransition";
 
-export type SectionName =
-  "all-track" | "favorites" | "albums" | "playlists" | "library-management";
+export type ViewName =
+  | "tracks" | "favorites" | "albums" | "album-detail"
+  | "playlists" | "playlist-detail" | "sources";
 
 export const useUIStore = defineStore("ui", () => {
-  const currentView = shallowRef<"library" | "detail">("library");
+  const activeView = shallowRef<ViewName>("tracks");
+  const nowPlayingOpen = shallowRef(false);
   const sidebarCollapsed = shallowRef(
     window.screen.width < 480 ? false : loadSidebarCollapsed(),
   );
-  const activeSection = shallowRef<SectionName>("all-track");
 
-  function setCurrentView(nextView: "library" | "detail") {
-    if (currentView.value === nextView) return;
-    // Mutation inside view transition so browsers can capture snapshots
-    withViewTransition(() => {
-      currentView.value = nextView;
-    });
+  const viewStack: ViewName[] = [];
+
+  function setActiveView(view: ViewName, pushStack = true) {
+    if (pushStack) {
+      viewStack.push(activeView.value);
+    }
+    activeView.value = view;
   }
 
-  function openDetail() {
-    setCurrentView("detail");
+  /** 弹出栈顶并导航回该 view，用于详情页返回 */
+  function popView() {
+    const prev = viewStack.pop();
+    if (prev) activeView.value = prev;
   }
 
-  function closeDetail() {
-    setCurrentView("library");
+  function openNowPlaying() {
+    nowPlayingOpen.value = true;
+  }
+
+  function closeNowPlaying() {
+    nowPlayingOpen.value = false;
   }
 
   function toggleSidebar() {
@@ -37,18 +45,14 @@ export const useUIStore = defineStore("ui", () => {
     saveSidebarCollapsed(sidebarCollapsed.value);
   }
 
-  function setActiveSection(section: SectionName) {
-    activeSection.value = section;
-  }
-
   return {
-    currentView,
+    activeView,
+    nowPlayingOpen,
     sidebarCollapsed,
-    activeSection,
-    setCurrentView,
-    openDetail,
-    closeDetail,
+    setActiveView,
+    popView,
+    openNowPlaying,
+    closeNowPlaying,
     toggleSidebar,
-    setActiveSection,
   };
 });

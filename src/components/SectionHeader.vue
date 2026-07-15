@@ -8,23 +8,23 @@ const slots = useSlots();
 </script>
 
 <template>
-  <div class="section-head">
-    <div class="section-head-left" v-if="slots.left">
+  <div class="section-header">
+    <div class="section-header-left" v-if="slots.left">
       <slot name="left" />
     </div>
-    <div class="section-head-title">
+    <div class="section-header-title">
       <slot name="title">
         <h2>{{ title }}</h2>
       </slot>
     </div>
-    <div class="section-head-right">
+    <div class="section-header-right">
       <slot name="right" />
     </div>
   </div>
 </template>
 
 <style>
-.section-head {
+.section-header {
   display: flex;
   align-items: center;
   height: 42px;
@@ -32,17 +32,17 @@ const slots = useSlots();
   align-items: center;
   /*gap: 18px;*/
 }
-.section-head-left {
+.section-header-left {
   margin-right: 12px;
 }
-.section-head h2 {
+.section-header h2 {
   margin: 0;
   color: var(--accent);
   font-size: 1.08rem;
   font-weight: 700;
   line-height: 1.2;
 }
-.section-head-title {
+.section-header-title {
   flex: 1;
 }
 </style>

@@ -11,8 +11,6 @@ import { useMediaQuery } from "../composables/useMediaQuery";
 const props = defineProps<{
   playlists: Playlist[];
   selectedPlaylistId?: string;
-  transitionTarget?: string;
-  viewTransitionName?: string;
 }>();
 
 // ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
@@ -124,12 +122,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
         <div class="playlist-card-copy">
           <strong class="playlist-card-title">
             <span
-              :style="
-                playlist.id === transitionTarget
-                  ? { 'view-transition-name': viewTransitionName }
-                  : undefined
-              "
-              >{{ playlist.name }}</span
+            >{{ playlist.name }}</span
             >
           </strong>
           <span class="playlist-card-count"

@@ -1,78 +1,29 @@
 <script setup lang="ts">
-import { computed, nextTick, shallowRef } from "vue";
+import { shallowRef } from "vue";
 import AlbumGrid from "../components/AlbumGrid.vue";
-import SectionHead from "../components/SectionHead.vue";
-import AlbumDetail from "../components/AlbumDetail.vue";
-import TipContent from "../components/TipContent.vue";
-import { usePlayerStore, useAlbumStore } from "@/stores";
-import { withViewTransition } from "@/utils/viewTransition";
-const VIEW_TRANSITION_NAME = "album-cover";
+import SectionHeader from "../components/SectionHeader.vue";
+import EmptyState from "../components/EmptyState.vue";
+import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
+
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();
+const uiStore = useUIStore();
 
-const detailViewTransitionName = shallowRef("");
-const albumViewTransitionName = shallowRef("");
-const transitionTarget = shallowRef("");
-
-const showDetail = computed(() => !!albumStore.selectedAlbumName);
-const playingTrackId = computed(() => {
-  return playerStore.isPlaying ? playerStore.currentTrackId : "";
-});
-
-function handlePlayTrack(albumName: string, id: string) {
-  albumStore.updatePlayingAlbum(albumName);
-  albumStore.selectedAlbumName = albumName;
-  playerStore.setPlaySourceType("albums");
-  playerStore.playTrackById(id, true);
-}
 function handlePlayAlbum(albumName: string) {
   albumStore.updatePlayingAlbum(albumName);
   playerStore.setPlaySourceType("albums");
   playerStore.playTrack(0, true);
 }
-async function handleBack() {
-  detailViewTransitionName.value = VIEW_TRANSITION_NAME;
-  nextTick(async () => {
-    const { transition } = withViewTransition(() => {
-      detailViewTransitionName.value = ""; // 不能同时出现同名的元素
-      transitionTarget.value = albumStore.selectedAlbumName;
-      albumViewTransitionName.value = VIEW_TRANSITION_NAME;
-      albumStore.clearSelection();
-    });
-    if (!transition) return;
-    await transition.finished;
-    albumViewTransitionName.value = "";
-    transitionTarget.value = "";
-  });
-}
+
 function enterAlbum(albumName: string) {
-  transitionTarget.value = albumName;
-  albumViewTransitionName.value = VIEW_TRANSITION_NAME;
-  nextTick(async () => {
-    const { transition } = withViewTransition(() => {
-      albumViewTransitionName.value = ""; // 不能同时出现同名的元素
-      detailViewTransitionName.value = VIEW_TRANSITION_NAME;
-      albumStore.selectAlbum(albumName);
-    });
-    if (!transition) return;
-    await transition.finished;
-    detailViewTransitionName.value = "";
-    transitionTarget.value = "";
-  });
-}
-function handleStop() {
-  playerStore.togglePlay();
+  albumStore.selectAlbum(albumName);
+  uiStore.setActiveView("album-detail");
 }
 </script>
 
 <template>
   <section class="main-panel album-browser">
-    <SectionHead
-      title="专辑"
-      :style="{
-        opacity: showDetail ? 0 : 1,
-      }"
-    >
+    <SectionHeader title="专辑">
       <template #right>
         <span class="library-status">
           {{
@@ -82,40 +33,20 @@ function handleStop() {
           }}
         </span>
       </template>
-    </SectionHead>
+    </SectionHeader>
 
     <AlbumGrid
       v-if="albumStore.albums.length"
       :albums="albumStore.albums"
       :selectedAlbumName="albumStore.selectedAlbumName"
-      :viewTransitionName="albumViewTransitionName"
-      :transitionTarget="transitionTarget"
       @selectAlbum="enterAlbum"
       @playAlbum="handlePlayAlbum"
-      :style="{
-        gridRow: '2/3',
-        opacity: showDetail ? 0 : 1,
-      }"
     />
-    <TipContent
+    <EmptyState
       v-else
       title="还没有可展示的专辑"
       content="导入音乐后，这里会按专辑自动整理并展示其中的歌曲。"
       fill
-    />
-    <AlbumDetail
-      v-if="showDetail"
-      :album="albumStore.selectedAlbum!"
-      :playingTrackId="playingTrackId"
-      :viewTransitionName="detailViewTransitionName"
-      :style="{
-        position: 'absolute',
-        inset: 0,
-      }"
-      @back="handleBack"
-      @playAlbum="handlePlayAlbum"
-      @playTrack="handlePlayTrack"
-      @stop="handleStop"
     />
   </section>
 </template>

@@ -6,14 +6,24 @@ const props = withDefaults(
     title?: string;
     /**
      * 锚点比例数组（基于视口高度），如 [0.5, 1] 表示半屏和全屏
-     * - 多个锚点：可上拉/下拉切换高度，下拉超限关闭
+     * - 多个锚点：可上拉切换到更大锚点，下拉关闭
      * - 单个锚点：高度适应内容，不可上拉扩展，只可下拉关闭
      * - 空数组或不传：高度适应内容，不可拖拽调整
      * 默认 [0.5, 1]
      */
     snapPoints?: number[];
+    /** 是否隐藏顶部拖拽把手 */
+    hideHandle?: boolean;
+    /** body 容器的额外 class */
+    bodyClass?: string;
+    /** 内容区域的额外 class */
+    contentClass?: string;
+    /** 拖拽把手的额外 class */
+    handleClass?: string;
+    /** 标题的额外 class */
+    titleClass?: string;
   }>(),
-  { snapPoints: () => [0.5, 1] },
+  { snapPoints: () => [0.5, 1], hideHandle: false },
 );
 
 const emit = defineEmits<{
@@ -29,23 +39,39 @@ const hasResizableSnaps = () => props.snapPoints.length >= 2;
 
 // ─── Snap points ─────────────────────────────────────────────────────────
 let currentSnapIndex = 0;
-let dragStartHeight = 0;
+let dragStartTranslateY = 0;
 let dragStartY = 0;
 let isDragging = false;
-let dragOpacity = 1;
 
 const sortedSnaps = () => [...props.snapPoints].sort((a, b) => a - b);
 function snapToHeight(ratio: number) {
   return Math.round(ratio * window.innerHeight);
 }
 
-function nearestSnapIndex(heightPx: number) {
-  const dvh = window.innerHeight;
+/** 最大锚点对应的高度（即 Sheet 的固定总高度） */
+function maxSnapHeight() {
+  return snapToHeight(sortedSnaps()[sortedSnaps().length - 1]);
+}
+
+/** 给定锚点比例，计算对应的 translateY（向下偏移 = 隐藏底部内容） */
+function snapToTranslateY(ratio: number) {
+  return maxSnapHeight() - snapToHeight(ratio);
+}
+
+/** 从 body 的 style 中读取当前 translateY 值 */
+function getCurrentTranslateY(): number {
+  if (!bodyRef.value) return 0;
+  const match = bodyRef.value.style.transform.match(/translateY\((.+)px\)/);
+  return match ? parseFloat(match[1]) : 0;
+}
+
+/** 根据 translateY 值找到最近的锚点索引 */
+function nearestSnapIndex(translateY: number) {
+  const snaps = sortedSnaps();
   let best = 0;
   let bestDist = Infinity;
-  const snaps = sortedSnaps();
   for (let i = 0; i < snaps.length; i++) {
-    const dist = Math.abs(heightPx - snaps[i] * dvh);
+    const dist = Math.abs(translateY - snapToTranslateY(snaps[i]));
     if (dist < bestDist) {
       bestDist = dist;
       best = i;
@@ -58,9 +84,9 @@ function snapTo(index: number, animate = true) {
   const body = bodyRef.value;
   if (!body) return;
   currentSnapIndex = index;
-  const height = snapToHeight(sortedSnaps()[index]);
+  const ty = snapToTranslateY(sortedSnaps()[index]);
   if (animate) {
-    body.style.transition = "height 300ms cubic-bezier(0.32, 0.72, 0, 1)";
+    body.style.transition = "transform 300ms cubic-bezier(0.32, 0.72, 0, 1)";
     body.addEventListener(
       "transitionend",
       () => {
@@ -69,82 +95,141 @@ function snapTo(index: number, animate = true) {
       { once: true },
     );
   }
-  body.style.height = `${height}px`;
+  body.style.transform = `translateY(${ty}px)`;
 }
 
 // ─── 拖拽（触摸 + 鼠标） ────────────────────────────────────────────────────
-function shouldIgnoreDragStart(target: EventTarget | null) {
-  // 可滚动内容内部且未到顶时，不拦截
-  const scrollEl = bodyRef.value?.querySelector(".bottom-sheet-content");
-  if (
-    scrollEl instanceof HTMLElement &&
-    scrollEl.scrollTop > 0 &&
-    scrollEl.contains(target as Node)
-  )
-    return true;
-  return false;
+type DragMode = "drag" | "observe" | "ignore";
+
+/**
+ * 判断手势起始时的交互模式：
+ * - drag：直接接管拖拽（handle、非滚动区等）
+ * - observe：先放行内容滚动，到顶后下滑时再接管（可滚动内容区）
+ * - ignore：完全忽略（交互元素）
+ */
+function getDragMode(target: EventTarget | null): DragMode {
+  // 交互元素（滑块、按钮等）完全忽略
+  if (target instanceof HTMLElement) {
+    const tag = target.tagName;
+    if (
+      tag === "INPUT" ||
+      tag === "BUTTON" ||
+      tag === "SELECT" ||
+      tag === "TEXTAREA" ||
+      tag === "A" ||
+      target.closest('input, button, select, textarea, a, [role="slider"]')
+    )
+      return "ignore";
+  }
+  // 从 target 向上查找可滚动祖先
+  if (target instanceof HTMLElement) {
+    let el: HTMLElement | null = target;
+    const boundary = bodyRef.value;
+    while (el && el !== boundary) {
+      if (el.scrollHeight > el.clientHeight) return "observe";
+      el = el.parentElement;
+    }
+  }
+  return "drag";
 }
+
+/** 观察模式下追踪的可滚动元素 */
+let observingScrollEl: HTMLElement | null = null;
+let isObserving = false;
 
 function handleDragStart(clientY: number) {
   dragStartY = clientY;
-  dragStartHeight = bodyRef.value?.offsetHeight ?? 0;
+  dragStartTranslateY = getCurrentTranslateY();
   isDragging = true;
+  isObserving = false;
+  observingScrollEl = null;
 }
 
-function handleDragMove(clientY: number) {
-  if (!isDragging || !bodyRef.value || !dialogRef.value) return;
+function handleObserveStart(clientY: number, scrollEl: HTMLElement) {
+  dragStartY = clientY;
+  isObserving = true;
+  observingScrollEl = scrollEl;
+}
+
+/** @returns 是否实际处理了拖拽 */
+function handleDragMove(clientY: number): boolean {
+  if (!isDragging || !bodyRef.value || !dialogRef.value) return false;
   const deltaY = clientY - dragStartY;
 
   // ─── 适应内容模式（单锚点或无锚点）：只允许下拉关闭 ────
   if (!hasResizableSnaps()) {
-    if (deltaY <= 0) return;
+    if (deltaY <= 0) return false;
     const damped = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
     bodyRef.value.style.transform = `translateY(${damped}px)`;
-    const progress = Math.min(deltaY / 80, 1);
-    dragOpacity = 1 - progress * 0.6;
-    updateBackdropOpacity();
-    return;
+    return true;
   }
 
-  // ─── 锚点模式：拖拽调整高度 ──────────────────────────────
-  const newHeight = dragStartHeight - deltaY;
-  const minSnapHeight = snapToHeight(sortedSnaps()[0]);
+  // ─── 锚点模式：translateY 拖拽（原生风格） ──────────────
+  const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
 
-  if (newHeight < minSnapHeight) {
-    const overflow = minSnapHeight - newHeight;
-    const damped = minSnapHeight - overflow * 0.4;
+  if (deltaY > 0) {
+    // 下拉 → 关闭方向，阻尼
+    const overflow = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
-    bodyRef.value.style.height = `${damped}px`;
-    const progress = Math.min(overflow / 80, 1);
-    dragOpacity = 1 - progress * 0.6;
-    updateBackdropOpacity();
-    return;
+    bodyRef.value.style.transform = `translateY(${currentSnapTranslateY + overflow}px)`;
+    return true;
   }
 
-  const clampedHeight = Math.min(newHeight, window.innerHeight);
+  // 上拉 → 自由移动到更大锚点
+  let newTranslateY = dragStartTranslateY + deltaY;
+
+  if (newTranslateY < 0) {
+    // 超过最大锚点 → 阻尼回弹
+    const overscroll = -newTranslateY;
+    const damped = -overscroll * 0.4;
+    bodyRef.value.style.transition = "none";
+    bodyRef.value.style.transform = `translateY(${damped}px)`;
+    return true;
+  }
+
   bodyRef.value.style.transition = "none";
-  bodyRef.value.style.height = `${clampedHeight}px`;
-  dragOpacity = 1;
-  updateBackdropOpacity();
+  bodyRef.value.style.transform = `translateY(${newTranslateY}px)`;
+  return true;
+}
+
+/**
+ * 观察模式：不拦截默认滚动，监测可滚动元素是否到顶且用户在下滑，
+ * 满足条件时切换为拖拽模式。
+ * @returns 是否切换到了拖拽模式
+ */
+function handleObserveMove(clientY: number): boolean {
+  if (!isObserving || !observingScrollEl || !bodyRef.value) return false;
+  const deltaY = clientY - dragStartY;
+  // 可滚动元素已到顶且用户下滑 → 切换为拖拽
+  if (observingScrollEl.scrollTop <= 0 && deltaY > 0) {
+    isObserving = false;
+    observingScrollEl = null;
+    // 以当前位置为起点启动拖拽
+    handleDragStart(clientY);
+    return true;
+  }
+  return false;
 }
 
 function handleDragEnd() {
+  // 观察模式：直接重置
+  if (isObserving) {
+    isObserving = false;
+    observingScrollEl = null;
+    return;
+  }
   if (!isDragging || !bodyRef.value || !dialogRef.value) return;
   isDragging = false;
 
   // ─── 适应内容模式：translateY 拖拽 ───────────────────────
   if (!hasResizableSnaps()) {
-    const currentY = parseFloat(
-      bodyRef.value.style.transform.match(/translateY\((.+)px\)/)?.[1] ?? "0",
-    );
+    const currentY = getCurrentTranslateY();
     if (currentY > 48) {
       close();
       return;
     }
     // 弹回
-    dragOpacity = 1;
-    dialogRef.value?.style.removeProperty("--backdrop-alpha");
     bodyRef.value.style.transition = "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)";
     bodyRef.value.style.transform = "";
     bodyRef.value.addEventListener(
@@ -157,36 +242,63 @@ function handleDragEnd() {
     return;
   }
 
-  // ─── 锚点模式：height 拖拽 ───────────────────────────────
-  const currentHeight = bodyRef.value.offsetHeight;
-  const minSnapHeight = snapToHeight(sortedSnaps()[0]);
+  // ─── 锚点模式：translateY 拖拽 ───────────────────────────
+  const currentTranslateY = getCurrentTranslateY();
+  const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
 
-  if (currentHeight < minSnapHeight) {
-    const overflow = minSnapHeight - currentHeight;
+  if (currentTranslateY > currentSnapTranslateY) {
+    // 被下拉 → 检查是否关闭
+    const overflow = currentTranslateY - currentSnapTranslateY;
     if (overflow > 60) {
       close();
       return;
     }
-    snapTo(0);
-    resetBackdrop();
+    snapTo(currentSnapIndex);
     return;
   }
 
-  const idx = nearestSnapIndex(currentHeight);
+  // 被上拉 → 吸附到最近锚点
+  const idx = nearestSnapIndex(currentTranslateY);
   snapTo(idx);
-  resetBackdrop();
 }
 
 // ─── 触摸事件适配 ──────────────────────────────────────────────────────────
 function handleTouchStart(e: TouchEvent) {
-  if (shouldIgnoreDragStart(e.target)) return;
-  handleDragStart(e.touches[0].clientY);
+  const mode = getDragMode(e.target);
+  if (mode === "ignore") return;
+  const clientY = e.touches[0].clientY;
+  if (mode === "observe") {
+    // 找到最近的可滚动祖先作为观察目标
+    let el = e.target instanceof HTMLElement ? e.target : null;
+    const boundary = bodyRef.value;
+    while (el && el !== boundary) {
+      if (el.scrollHeight > el.clientHeight) {
+        handleObserveStart(clientY, el);
+        return;
+      }
+      el = el.parentElement;
+    }
+    return;
+  }
+  handleDragStart(clientY);
 }
 
 function handleTouchMove(e: TouchEvent) {
+  // 观察模式：监测是否应切换为拖拽
+  if (isObserving) {
+    const clientY = e.touches[0].clientY;
+    if (handleObserveMove(clientY)) {
+      // 已切换为拖拽，处理当前帧
+      if (handleDragMove(clientY)) {
+        e.preventDefault();
+      }
+    }
+    return;
+  }
   if (!isDragging) return;
-  e.preventDefault();
-  handleDragMove(e.touches[0].clientY);
+  if (handleDragMove(e.touches[0].clientY)) {
+    e.preventDefault();
+  }
 }
 
 function handleTouchEnd() {
@@ -195,9 +307,11 @@ function handleTouchEnd() {
 
 // ─── 鼠标事件适配 ──────────────────────────────────────────────────────────
 function handleMouseDown(e: MouseEvent) {
-  if (shouldIgnoreDragStart(e.target)) return;
+  const mode = getDragMode(e.target);
+  if (mode === "ignore") return;
   // 只响应左键
   if (e.button !== 0) return;
+  e.preventDefault(); // 防止拖拽时选中文字
   handleDragStart(e.clientY);
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
@@ -213,23 +327,9 @@ function handleMouseUp() {
   document.removeEventListener("mouseup", handleMouseUp);
 }
 
-function resetBackdrop() {
-  dragOpacity = 1;
-  dialogRef.value?.style.removeProperty("--backdrop-alpha");
-}
-
-// ─── 遮罩透明度 ────────────────────────────────────────────────────────────
-function updateBackdropOpacity() {
-  dialogRef.value?.style.setProperty("--backdrop-alpha", `${0.5 * dragOpacity}`);
-}
-
 // ─── 非被动触摸事件（阻止默认滚动） ──────────────────────────────────────
 onMounted(() => {
   bodyRef.value?.addEventListener("touchmove", handleTouchMove, { passive: false });
-  // 防止鼠标拖拽时选中文字
-  bodyRef.value?.addEventListener("mousedown", (e: Event) => {
-    if (isDragging) (e as MouseEvent).preventDefault();
-  });
 });
 onBeforeUnmount(() => {
   bodyRef.value?.removeEventListener("touchmove", handleTouchMove);
@@ -246,8 +346,13 @@ function open() {
   dialogRef.value?.showModal();
 
   if (hasResizableSnaps()) {
-    // 锚点模式：打开后设置初始锚点高度
-    requestAnimationFrame(() => snapTo(0, false));
+    // 锚点模式：设置固定总高度，再通过 translateY 显示初始锚点
+    requestAnimationFrame(() => {
+      if (bodyRef.value) {
+        bodyRef.value.style.height = `${maxSnapHeight()}px`;
+      }
+      snapTo(0, false);
+    });
   }
   // 适应内容模式：不设 height，内容自适应
 }
@@ -269,14 +374,15 @@ defineExpose({ open, close });
     <div
       ref="bodyRef"
       class="bottom-sheet-body"
+      :class="bodyClass"
       @click.stop
-      @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
-      @mousedown="handleMouseDown"
+      @touchstart.stop="handleTouchStart"
+      @touchend.stop="handleTouchEnd"
+      @mousedown.stop="handleMouseDown"
     >
-      <div class="bottom-sheet-handle" aria-hidden="true" />
-      <div v-if="title" class="bottom-sheet-title">{{ title }}</div>
-      <div class="bottom-sheet-content">
+      <div v-if="!hideHandle" class="bottom-sheet-handle" :class="handleClass" aria-hidden="true" />
+      <div v-if="title" class="bottom-sheet-title" :class="titleClass">{{ title }}</div>
+      <div class="bottom-sheet-content" :class="contentClass">
         <slot />
       </div>
     </div>
@@ -293,9 +399,8 @@ defineExpose({ open, close });
   padding: 0;
   margin: 0;
   border: none;
-  border-radius: 16px 16px 0 0;
   background: transparent;
-  overflow: visible;
+  overflow: hidden;
   color: var(--text);
 
   /* 关闭态 */
@@ -348,13 +453,13 @@ defineExpose({ open, close });
 
 /* 内容区 */
 .bottom-sheet-body {
-  max-height: calc(100dvh - env(safe-area-inset-top));
+  max-height: inherit;
   background: var(--panel);
   border-radius: 16px 16px 0 0;
   padding: 8px 0 env(safe-area-inset-bottom, 0);
   display: flex;
   flex-direction: column;
-  will-change: height, transform;
+  will-change: transform;
 }
 
 .bottom-sheet-handle {

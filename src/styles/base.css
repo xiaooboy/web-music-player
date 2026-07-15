@@ -29,7 +29,7 @@
   --dock-height: 70px;
   --shell-gap: 16px;
   /* z-index 层级 — 间隔 10，留出插入空间 */
-  --z-base: 1;            /* 组件内部相对层级（detail-head/body） */
+  --z-base: 1;            /* 组件内部相对层级（now-playing-head/body） */
   --z-sticky: 10;         /* 吸顶/置顶元素（搜索栏） */
   --z-float: 20;          /* 浮动装饰（折叠品牌图标） */
   --z-overlay: 30;        /* 全屏遮罩层（详情页降级） */
@@ -177,6 +177,8 @@ svg {
     cursor: default !important;
   }
 }
+
+
 
 /* ─── 无障碍：减少动画偏好 ────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

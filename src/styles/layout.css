@@ -16,31 +16,7 @@
   overflow: hidden;
 }
 
-.detail-shell {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-overlay);
-  /* 重置 dialog 默认样式 */
-  border: 0;
-  padding: 0;
-  margin: 0;
-  max-width: none;
-  max-height: none;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  color: inherit;
-  overflow: hidden;
-}
 
-.detail-shell::backdrop {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.detail-stage {
-  min-height: 100dvh;
-  height: 100dvh;
-}
 
 
 .main-stage,
@@ -73,7 +49,7 @@
   height: 0;
 }
 
-.main-stage > .all-track-view {
+.main-stage > .tracks-view {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -157,4 +133,18 @@
 .library-status {
   color: var(--accent-light);
   font-weight: 600;
+}
+
+/* ─── 视图切换过渡（Vue Transition slide） ─────────────────────────────────── */
+.section-slide-enter-active,
+.section-slide-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.section-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.section-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
 }
