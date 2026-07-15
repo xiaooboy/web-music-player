@@ -12,8 +12,18 @@ const props = withDefaults(
      * 默认 [0.5, 1]
      */
     snapPoints?: number[];
+    /** 是否隐藏顶部拖拽把手 */
+    hideHandle?: boolean;
+    /** body 容器的额外 class */
+    bodyClass?: string;
+    /** 内容区域的额外 class */
+    contentClass?: string;
+    /** 拖拽把手的额外 class */
+    handleClass?: string;
+    /** 标题的额外 class */
+    titleClass?: string;
   }>(),
-  { snapPoints: () => [0.5, 1] },
+  { snapPoints: () => [0.5, 1], hideHandle: false },
 );
 
 const emit = defineEmits<{
@@ -32,7 +42,6 @@ let currentSnapIndex = 0;
 let dragStartTranslateY = 0;
 let dragStartY = 0;
 let isDragging = false;
-let dragOpacity = 1;
 
 const sortedSnaps = () => [...props.snapPoints].sort((a, b) => a - b);
 function snapToHeight(ratio: number) {
@@ -91,11 +100,24 @@ function snapTo(index: number, animate = true) {
 
 // ─── 拖拽（触摸 + 鼠标） ────────────────────────────────────────────────────
 function shouldIgnoreDragStart(target: EventTarget | null) {
-  // 可滚动内容内部且未到顶时，不拦截
+  // 交互元素（滑块、按钮等）不拦截，保留其原生行为
+  if (target instanceof HTMLElement) {
+    const tag = target.tagName;
+    if (
+      tag === "INPUT" ||
+      tag === "BUTTON" ||
+      tag === "SELECT" ||
+      tag === "TEXTAREA" ||
+      tag === "A" ||
+      target.closest('input, button, select, textarea, a, [role="slider"]')
+    )
+      return true;
+  }
+  // 可滚动内容内部，不拦截（保留滚动能力，关闭 Sheet 请通过 handle 或遮罩）
   const scrollEl = bodyRef.value?.querySelector(".bottom-sheet-content");
   if (
     scrollEl instanceof HTMLElement &&
-    scrollEl.scrollTop > 0 &&
+    scrollEl.scrollHeight > scrollEl.clientHeight &&
     scrollEl.contains(target as Node)
   )
     return true;
@@ -108,20 +130,22 @@ function handleDragStart(clientY: number) {
   isDragging = true;
 }
 
-function handleDragMove(clientY: number) {
-  if (!isDragging || !bodyRef.value || !dialogRef.value) return;
+/** @returns 是否实际处理了拖拽 */
+function handleDragMove(clientY: number): boolean {
+  if (!isDragging || !bodyRef.value || !dialogRef.value) return false;
   const deltaY = clientY - dragStartY;
 
   // ─── 适应内容模式（单锚点或无锚点）：只允许下拉关闭 ────
   if (!hasResizableSnaps()) {
-    if (deltaY <= 0) return;
+    // 内容未到顶 → 放行浏览器滚动
+    const scrollEl = bodyRef.value.querySelector(".bottom-sheet-content");
+    if (scrollEl instanceof HTMLElement && scrollEl.scrollTop > 0) return false;
+    // 上滑 → 放行浏览器滚动
+    if (deltaY <= 0) return false;
     const damped = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
     bodyRef.value.style.transform = `translateY(${damped}px)`;
-    const progress = Math.min(deltaY / 80, 1);
-    dragOpacity = 1 - progress * 0.6;
-    updateBackdropOpacity();
-    return;
+    return true;
   }
 
   // ─── 锚点模式：translateY 拖拽（原生风格） ──────────────
@@ -132,10 +156,7 @@ function handleDragMove(clientY: number) {
     const overflow = deltaY * 0.6;
     bodyRef.value.style.transition = "none";
     bodyRef.value.style.transform = `translateY(${currentSnapTranslateY + overflow}px)`;
-    const progress = Math.min(overflow / 120, 1);
-    dragOpacity = 1 - progress * 0.6;
-    updateBackdropOpacity();
-    return;
+    return true;
   }
 
   // 上拉 → 自由移动到更大锚点
@@ -147,15 +168,12 @@ function handleDragMove(clientY: number) {
     const damped = -overscroll * 0.4;
     bodyRef.value.style.transition = "none";
     bodyRef.value.style.transform = `translateY(${damped}px)`;
-    dragOpacity = 1;
-    updateBackdropOpacity();
-    return;
+    return true;
   }
 
   bodyRef.value.style.transition = "none";
   bodyRef.value.style.transform = `translateY(${newTranslateY}px)`;
-  dragOpacity = 1;
-  updateBackdropOpacity();
+  return true;
 }
 
 function handleDragEnd() {
@@ -170,8 +188,6 @@ function handleDragEnd() {
       return;
     }
     // 弹回
-    dragOpacity = 1;
-    dialogRef.value?.style.removeProperty("--backdrop-alpha");
     bodyRef.value.style.transition = "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)";
     bodyRef.value.style.transform = "";
     bodyRef.value.addEventListener(
@@ -196,14 +212,12 @@ function handleDragEnd() {
       return;
     }
     snapTo(currentSnapIndex);
-    resetBackdrop();
     return;
   }
 
   // 被上拉 → 吸附到最近锚点
   const idx = nearestSnapIndex(currentTranslateY);
   snapTo(idx);
-  resetBackdrop();
 }
 
 // ─── 触摸事件适配 ──────────────────────────────────────────────────────────
@@ -214,8 +228,9 @@ function handleTouchStart(e: TouchEvent) {
 
 function handleTouchMove(e: TouchEvent) {
   if (!isDragging) return;
-  e.preventDefault();
-  handleDragMove(e.touches[0].clientY);
+  if (handleDragMove(e.touches[0].clientY)) {
+    e.preventDefault();
+  }
 }
 
 function handleTouchEnd() {
@@ -241,16 +256,6 @@ function handleMouseUp() {
   handleDragEnd();
   document.removeEventListener("mousemove", handleMouseMove);
   document.removeEventListener("mouseup", handleMouseUp);
-}
-
-function resetBackdrop() {
-  dragOpacity = 1;
-  dialogRef.value?.style.removeProperty("--backdrop-alpha");
-}
-
-// ─── 遮罩透明度 ────────────────────────────────────────────────────────────
-function updateBackdropOpacity() {
-  dialogRef.value?.style.setProperty("--backdrop-alpha", `${0.5 * dragOpacity}`);
 }
 
 // ─── 非被动触摸事件（阻止默认滚动） ──────────────────────────────────────
@@ -300,14 +305,15 @@ defineExpose({ open, close });
     <div
       ref="bodyRef"
       class="bottom-sheet-body"
+      :class="bodyClass"
       @click.stop
-      @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
-      @mousedown="handleMouseDown"
+      @touchstart.stop="handleTouchStart"
+      @touchend.stop="handleTouchEnd"
+      @mousedown.stop="handleMouseDown"
     >
-      <div class="bottom-sheet-handle" aria-hidden="true" />
-      <div v-if="title" class="bottom-sheet-title">{{ title }}</div>
-      <div class="bottom-sheet-content">
+      <div v-if="!hideHandle" class="bottom-sheet-handle" :class="handleClass" aria-hidden="true" />
+      <div v-if="title" class="bottom-sheet-title" :class="titleClass">{{ title }}</div>
+      <div class="bottom-sheet-content" :class="contentClass">
         <slot />
       </div>
     </div>
@@ -324,7 +330,6 @@ defineExpose({ open, close });
   padding: 0;
   margin: 0;
   border: none;
-  border-radius: 16px 16px 0 0;
   background: transparent;
   overflow: hidden;
   color: var(--text);
@@ -379,7 +384,7 @@ defineExpose({ open, close });
 
 /* 内容区 */
 .bottom-sheet-body {
-  max-height: calc(100dvh - env(safe-area-inset-top));
+  max-height: inherit;
   background: var(--panel);
   border-radius: 16px 16px 0 0;
   padding: 8px 0 env(safe-area-inset-bottom, 0);
