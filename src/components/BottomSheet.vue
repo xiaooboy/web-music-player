@@ -41,7 +41,14 @@ const hasResizableSnaps = () => props.snapPoints.length >= 2;
 let currentSnapIndex = 0;
 let dragStartTranslateY = 0;
 let dragStartY = 0;
+let dragStartX = 0;
 let isDragging = false;
+
+// ─── 方向锁定（与原生 BottomSheet 对齐） ─────────────────────────────────
+/** 手势方向锁定状态：pending = 尚未判定，vertical = 垂直拖拽，horizontal = 横向放行 */
+let dragOrientation: "pending" | "vertical" | "horizontal" = "pending";
+/** 方向判定的最小位移阈值（px），近似 Android touchSlop */
+const TOUCH_SLOP = 8;
 
 const sortedSnaps = () => [...props.snapPoints].sort((a, b) => a - b);
 function snapToHeight(ratio: number) {
@@ -137,23 +144,43 @@ function getDragMode(target: EventTarget | null): DragMode {
 let observingScrollEl: HTMLElement | null = null;
 let isObserving = false;
 
-function handleDragStart(clientY: number) {
+function handleDragStart(clientX: number, clientY: number) {
+  dragStartX = clientX;
   dragStartY = clientY;
   dragStartTranslateY = getCurrentTranslateY();
   isDragging = true;
   isObserving = false;
   observingScrollEl = null;
+  dragOrientation = "pending";
 }
 
-function handleObserveStart(clientY: number, scrollEl: HTMLElement) {
+function handleObserveStart(clientX: number, clientY: number, scrollEl: HTMLElement) {
+  dragStartX = clientX;
   dragStartY = clientY;
   isObserving = true;
   observingScrollEl = scrollEl;
+  dragOrientation = "pending";
 }
 
 /** @returns 是否实际处理了拖拽 */
-function handleDragMove(clientY: number): boolean {
+function handleDragMove(clientX: number, clientY: number): boolean {
   if (!isDragging || !bodyRef.value || !dialogRef.value) return false;
+
+  // ─── 方向锁定：未判定时根据主方向决定是否接管 ──────
+  if (dragOrientation === "pending") {
+    const dx = Math.abs(clientX - dragStartX);
+    const dy = Math.abs(clientY - dragStartY);
+    if (dx < TOUCH_SLOP && dy < TOUCH_SLOP) return false; // 位移不足，继续等待
+    dragOrientation = dx > dy ? "horizontal" : "vertical";
+    if (dragOrientation === "horizontal") {
+      // 横向手势 → 放弃拖拽，让子元素自行处理
+      isDragging = false;
+      return false;
+    }
+  } else if (dragOrientation === "horizontal") {
+    return false;
+  }
+
   const deltaY = clientY - dragStartY;
 
   // ─── 适应内容模式（单锚点或无锚点）：只允许下拉关闭 ────
@@ -198,15 +225,26 @@ function handleDragMove(clientY: number): boolean {
  * 满足条件时切换为拖拽模式。
  * @returns 是否切换到了拖拽模式
  */
-function handleObserveMove(clientY: number): boolean {
+function handleObserveMove(clientX: number, clientY: number): boolean {
   if (!isObserving || !observingScrollEl || !bodyRef.value) return false;
+
+  // 方向锁定：横向滑动不触发 observe → drag 切换
+  if (dragOrientation === "pending") {
+    const dx = Math.abs(clientX - dragStartX);
+    const dy = Math.abs(clientY - dragStartY);
+    if (dx >= TOUCH_SLOP || dy >= TOUCH_SLOP) {
+      dragOrientation = dx > dy ? "horizontal" : "vertical";
+    }
+  }
+  if (dragOrientation === "horizontal") return false;
+
   const deltaY = clientY - dragStartY;
   // 可滚动元素已到顶且用户下滑 → 切换为拖拽
   if (observingScrollEl.scrollTop <= 0 && deltaY > 0) {
     isObserving = false;
     observingScrollEl = null;
     // 以当前位置为起点启动拖拽
-    handleDragStart(clientY);
+    handleDragStart(clientX, clientY);
     return true;
   }
   return false;
@@ -266,6 +304,7 @@ function handleDragEnd() {
 function handleTouchStart(e: TouchEvent) {
   const mode = getDragMode(e.target);
   if (mode === "ignore") return;
+  const clientX = e.touches[0].clientX;
   const clientY = e.touches[0].clientY;
   if (mode === "observe") {
     // 找到最近的可滚动祖先作为观察目标
@@ -273,30 +312,31 @@ function handleTouchStart(e: TouchEvent) {
     const boundary = bodyRef.value;
     while (el && el !== boundary) {
       if (el.scrollHeight > el.clientHeight) {
-        handleObserveStart(clientY, el);
+        handleObserveStart(clientX, clientY, el);
         return;
       }
       el = el.parentElement;
     }
     return;
   }
-  handleDragStart(clientY);
+  handleDragStart(clientX, clientY);
 }
 
 function handleTouchMove(e: TouchEvent) {
   // 观察模式：监测是否应切换为拖拽
   if (isObserving) {
+    const clientX = e.touches[0].clientX;
     const clientY = e.touches[0].clientY;
-    if (handleObserveMove(clientY)) {
+    if (handleObserveMove(clientX, clientY)) {
       // 已切换为拖拽，处理当前帧
-      if (handleDragMove(clientY)) {
+      if (handleDragMove(clientX, clientY)) {
         e.preventDefault();
       }
     }
     return;
   }
   if (!isDragging) return;
-  if (handleDragMove(e.touches[0].clientY)) {
+  if (handleDragMove(e.touches[0].clientX, e.touches[0].clientY)) {
     e.preventDefault();
   }
 }
@@ -312,13 +352,13 @@ function handleMouseDown(e: MouseEvent) {
   // 只响应左键
   if (e.button !== 0) return;
   e.preventDefault(); // 防止拖拽时选中文字
-  handleDragStart(e.clientY);
+  handleDragStart(e.clientX, e.clientY);
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
 }
 
 function handleMouseMove(e: MouseEvent) {
-  handleDragMove(e.clientY);
+  handleDragMove(e.clientX, e.clientY);
 }
 
 function handleMouseUp() {

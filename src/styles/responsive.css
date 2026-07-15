@@ -120,24 +120,20 @@
 }
 
 @media (max-width: 480px) {
+  body {
+    overflow: hidden;
+  }
   .app-shell {
     overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: none;
-    grid-template-columns: auto 100%;
+    grid-template-columns: auto 100vw;
+    max-height: unset;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
-  }
-
-  .app-shell::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    display: none;
-  }
-
-  .app-shell::-webkit-scrollbar-thumb,
-  .app-shell::-webkit-scrollbar-track,
-  .app-shell::-webkit-scrollbar-corner {
-    display: none;
+    /* 将滚动条推出视口底部，由 body overflow:hidden 裁切 */
+    height: calc(100dvh + 20px);
+    padding-bottom: 20px;
   }
   .main-stage {
     scroll-snap-align: start;
