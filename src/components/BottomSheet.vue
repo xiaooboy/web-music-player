@@ -399,6 +399,16 @@ function open() {
 
 function close() {
   dialogRef.value?.close();
+}
+
+/**
+ * <dialog> 原生 close 事件，覆盖所有关闭路径：
+ * - 程序调用 close()
+ * - Android 返回手势 / ESC 键触发 cancel 后浏览器自动关闭
+ * - 点击 backdrop 关闭
+ * 统一在此 emit，避免重复触发
+ */
+function handleDialogClose() {
   emit('close');
 }
 
@@ -410,7 +420,7 @@ defineExpose({ open, close });
 </script>
 
 <template>
-  <dialog ref="dialogRef" class="bottom-sheet" @click="handleBackdropClick">
+  <dialog ref="dialogRef" class="bottom-sheet" @click="handleBackdropClick" @close="handleDialogClose">
     <div
       ref="bodyRef"
       class="bottom-sheet-body"
