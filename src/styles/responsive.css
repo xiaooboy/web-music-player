@@ -120,8 +120,9 @@
 }
 
 @media (max-width: 480px) {
-  body {
+  #app {
     overflow: hidden;
+    height: 100dvh;
   }
   .app-shell {
     overflow-x: auto;
