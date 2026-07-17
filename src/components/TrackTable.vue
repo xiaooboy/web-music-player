@@ -100,7 +100,7 @@ function scrollToCurrentTrack() {
     <div
       ref="listRef"
       class="track-list scroll-borrow"
-      :class="{ 'track-list--empty': !tracks.length }"
+      :class="{ 'track-list-empty': !tracks.length }"
     >
       <template v-if="tracks.length">
         <!-- 撑起虚拟总高度，行用 absolute + translateY 定位 -->
@@ -160,9 +160,9 @@ function scrollToCurrentTrack() {
               >{{ item.album }}</strong>
             </div>
             <span class="track-duration">{{ formatTime(item.duration) }}</span>
-            <div class="row-action">
+            <div class="track-row-action">
               <button
-                class="row-play"
+                class="track-row-play"
                 :class="{
                   'is-playing': item.id === currentTrackId && isPlaying,
                 }"
@@ -186,7 +186,7 @@ function scrollToCurrentTrack() {
                                 <Play v-else :size="20" />
               </button>
               <button
-                class="row-like"
+                class="track-row-like"
                 :class="{ 'is-active': likedTrackIdSet.has(item.id) }"
                 type="button"
                 :title="likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'"
@@ -201,7 +201,7 @@ function scrollToCurrentTrack() {
                 />
               </button>
               <button
-                class="row-more"
+                class="track-row-more"
                 type="button"
                 title="更多操作"
                 aria-label="更多操作"

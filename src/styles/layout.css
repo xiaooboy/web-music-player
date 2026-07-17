@@ -58,9 +58,9 @@
 }
 
 .dock-track,
-.transport,
-.progress-row,
-.volume-wrap {
+.dock-transport,
+.dock-progress-row,
+.dock-volume-wrap {
   display: flex;
 }
 

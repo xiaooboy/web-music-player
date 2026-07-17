@@ -125,7 +125,7 @@ useHistoryBack(navigateBack);
             formatTime(track.duration)
           }}</span>
           <button
-            class="row-more"
+            class="track-row-more"
             type="button"
             title="更多"
             @click.stop="handleContextMenu($event, track)"

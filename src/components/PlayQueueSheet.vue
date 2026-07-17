@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Track } from "@/types";
 import { X, Minus } from "@lucide/vue";
-import { computed, ref, watch } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import BottomSheet from "./BottomSheet.vue";
@@ -20,6 +20,7 @@ const emit = defineEmits<{
 const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
 const ITEM_HEIGHT = 40;
+const wasOpen = shallowRef(false)
 const listRef = ref<HTMLElement | null>(null);
 const sheetRef = ref<InstanceType<typeof BottomSheet> | null>(null);
 const popoverRef = ref<HTMLElement | null>(null);
@@ -58,8 +59,13 @@ function scrollToCurrentTrack() {
 }
 
 function handleToggle(event: ToggleEvent) {
-  if (event.newState !== "open") return;
+  wasOpen.value = event.newState === "open";
+  if (!wasOpen.value) return;
   scrollToCurrentTrack();
+}
+
+function getWasOpen() {
+  return wasOpen.value;
 }
 
 // 队列变化时重新测量虚拟行
@@ -85,7 +91,7 @@ function close() {
   }
 }
 
-defineExpose({ open, close });
+defineExpose({ open, close,getWasOpen });
 </script>
 
 <template>
@@ -205,7 +211,6 @@ defineExpose({ open, close });
 <style>
 /* ─── 大屏 Popover 样式 ──────────────────────────────────────────────────── */
 .queue-popover {
-  padding: 0;
   border-radius: 12px;
   background: rgba(32, 32, 32, 0.9);
   backdrop-filter: blur(12px);
@@ -253,7 +258,6 @@ defineExpose({ open, close });
   max-height: 260px;
   min-height: 80px;
   padding: 6px;
-  margin: 0;
   list-style: none;
 }
 
@@ -366,7 +370,6 @@ defineExpose({ open, close });
   padding: 8px;
   border-radius: 8px;
   background: transparent;
-  border: none;
   color: var(--muted);
   cursor: pointer;
 }

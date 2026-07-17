@@ -152,7 +152,7 @@ function handleConfirm() {
 
 /* ─── 内容样式 ────────────────────────────────────────────────────────────── */
 .form-dialog h3 {
-  margin: 0 0 16px;
+  margin-bottom: 16px;
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -210,7 +210,6 @@ function handleConfirm() {
 
 /* ─── 删除确认文本 ─────────────────────────────────────────────────────────── */
 .form-dialog-text {
-  margin: 0;
   color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.5;

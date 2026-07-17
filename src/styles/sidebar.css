@@ -21,7 +21,7 @@
 }
 
 /* sidebar 内的高度占位，与固定 brand 的 Music3 图标等高 */
-.brand--placeholder {
+.brand-placeholder {
   height: 32px;
   display: flex;
   align-items: center;
@@ -29,7 +29,7 @@
 }
 
 /* App 层固定 brand：坐标与 sidebar 内原始位置完全重合 */
-.brand--fixed {
+.brand-fixed {
   position: fixed;
   top: calc(18px + var(--window-safe-top));
   left: 16px;
@@ -39,8 +39,9 @@
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--accent);
   flex-shrink: 0;
 }

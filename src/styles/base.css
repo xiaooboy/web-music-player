@@ -55,8 +55,21 @@
   }
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* dialog / popover 依赖 margin: auto 实现居中，全局清零后需恢复 */
+dialog,
+[popover] {
+  margin: auto;
+}
+
+* {
   scrollbar-width: thin;
   scrollbar-color: var(--accent-muted) transparent;
   -webkit-tap-highlight-color: transparent;
@@ -68,7 +81,6 @@ html,
 body,
 #app {
   min-height: 100%;
-  margin: 0;
   overscroll-behavior-y: none;
 }
 

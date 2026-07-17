@@ -73,7 +73,11 @@ function handleSheetClose() {
     uiStore.closeNowPlaying();
   }
 }
-
+function handleQueueClick() {
+  if (!queueRef.value?.getWasOpen()) {
+    queueRef.value?.open();
+  }
+}
 // 监听 store 状态，从外部触发打开
 watch(
   () => uiStore.nowPlayingOpen,
@@ -85,8 +89,6 @@ watch(
     }
   },
 );
-
-
 
 // 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
 const displayCoverUrl = ref<string | undefined>(undefined);
@@ -216,7 +218,7 @@ defineExpose({ openSheet, closeSheet });
           :key="displayCoverUrl"
           :style="
             displayCoverUrl
-              ? { backgroundImage: `url(${displayCoverUrl})` }
+              ? { '--cover-url': `url(${displayCoverUrl})` }
               : undefined
           "
         ></div>
@@ -234,11 +236,7 @@ defineExpose({ openSheet, closeSheet });
         </button>
       </header>
 
-      <div
-        ref="detailBodyRef"
-        class="now-playing-body"
-
-      >
+      <div ref="detailBodyRef" class="now-playing-body">
         <div class="now-playing-meta">
           <div class="cover-art now-playing-cover">
             <img
@@ -263,7 +261,7 @@ defineExpose({ openSheet, closeSheet });
           <div class="now-playing-controls">
             <div class="now-playing-progress">
               <input
-                class="progress-slider"
+                class="dock-progress-slider"
                 type="range"
                 min="0"
                 max="100"
@@ -356,7 +354,7 @@ defineExpose({ openSheet, closeSheet });
                   type="button"
                   aria-label="播放队列"
                   title="播放队列"
-                  @click="queueRef?.open()"
+                  @click="handleQueueClick"
                 >
                   <List :size="20" />
                 </button>
@@ -393,7 +391,7 @@ defineExpose({ openSheet, closeSheet });
             class="lyrics-scroll"
             aria-label="歌词"
             :class="{
-              'not-overflowed': playerStore.currentLyricsLines.length < 5,
+              'is-collapsed': playerStore.currentLyricsLines.length < 5,
             }"
             @wheel="handleLyricsWheel"
           >

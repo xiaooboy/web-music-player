@@ -30,7 +30,7 @@ function switchView(name: ViewName) {
 
 <template>
   <aside class="sidebar" :class="{ 'is-collapsed': uiStore.sidebarCollapsed }" role="navigation" aria-label="主导航">
-    <div class="brand brand--placeholder" aria-hidden="true">
+    <div class="brand brand-placeholder" aria-hidden="true">
       <button
         class="collapse-btn"
         :aria-label="uiStore.sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'"
