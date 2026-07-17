@@ -37,6 +37,11 @@ function handlePlayTrack(index: number) {
 function handleRemoveTrack(id: string) {
   playerStore.removeFromQueue(id);
 }
+function handleQueueClick() {
+  if (!queueRef.value?.getWasOpen()) {
+    queueRef.value?.open();
+  }
+}
 </script>
 
 <template>
@@ -137,16 +142,16 @@ function handleRemoveTrack(id: string) {
         type="button"
         aria-label="播放队列"
         title="播放队列"
-        @click="queueRef?.open()"
+        @click="handleQueueClick"
       >
         <List :size="20" />
       </button>
     </div>
 
     <div class="dock-extra">
-      <div class="progress-row" v-if="playerStore.currentTrack">
+      <div class="dock-progress-row" v-if="playerStore.currentTrack">
         <input
-          class="progress-slider"
+          class="dock-progress-slider"
           type="range"
           min="0"
           max="100"

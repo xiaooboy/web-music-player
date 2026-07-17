@@ -24,7 +24,7 @@
     gap: 14px;
   }
   .track-row {
-    .row-play {
+    .track-row-play {
       display: none;
     }
   }
@@ -59,7 +59,7 @@
     display: none;
   }
 
-  .row-action {
+  .track-row-action {
     grid-area: action;
   }
 }
@@ -69,7 +69,7 @@
     display: none;
   }
 
-  .transport {
+  .dock-transport {
     flex-wrap: wrap;
   }
 
@@ -142,7 +142,7 @@
   .sidebar {
     scroll-snap-align: end;
   }
-  .brand--placeholder .collapse-btn {
+  .brand-placeholder .collapse-btn {
     display: none;
   }
   .player-dock {
@@ -150,7 +150,7 @@
       display: none;
     }
     .play-toggle {
-      display: grid;
+      display: inline-flex;
     }
   }
 }

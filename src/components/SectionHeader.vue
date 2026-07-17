@@ -36,7 +36,6 @@ const slots = useSlots();
   margin-right: 12px;
 }
 .section-header h2 {
-  margin: 0;
   color: var(--accent);
   font-size: 1.08rem;
   font-weight: 700;

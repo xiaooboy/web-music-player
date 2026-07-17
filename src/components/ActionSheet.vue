@@ -102,8 +102,6 @@ defineExpose({ open, close });
         </div>
       </template>
     </div>
-
-
   </BottomSheet>
 </template>
 
@@ -121,7 +119,6 @@ defineExpose({ open, close });
   padding: 12px 16px;
   border-radius: 10px;
   background: transparent;
-  border: none;
   color: var(--text);
   font-size: 0.95rem;
   font-family: inherit;
@@ -175,5 +172,4 @@ defineExpose({ open, close });
   font-size: 0.9rem;
   min-height: 44px;
 }
-
 </style>

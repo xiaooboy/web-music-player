@@ -108,7 +108,7 @@ function confirmRemove() {
 
     <div
       v-if="libraryStore.musicSources.length"
-      class="source-list source-list--panel scroll-borrow"
+      class="source-list source-list-panel scroll-borrow"
     >
       <div
         v-for="source in libraryStore.musicSources"
