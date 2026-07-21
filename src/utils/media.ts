@@ -1160,9 +1160,8 @@ function createObjectUrlFromBytes(
   bytes: Uint8Array,
   mimeType: string,
 ): CoverResult {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  const blob = new Blob([copy.buffer], { type: mimeType });
+  // bytes.buffer 类型为 ArrayBufferLike，实际运行时为 ArrayBuffer，断言以满足 Blob 构造签名
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: mimeType });
   const url = URL.createObjectURL(blob);
   return { coverUrl: url, coverBlob: blob };
 }
