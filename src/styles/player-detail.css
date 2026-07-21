@@ -98,24 +98,17 @@
   gap: 6px;
 }
 
-.dock-transport,
-.dock-progress-row {
+.dock-transport {
   width: 100%;
   align-items: center;
   gap: 8px;
 }
 
-.dock-progress-row span {
-  min-width: 44px;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 input[type="range"] {
   appearance: none;
+  overflow: hidden;
   height: 6px;
-  border-radius: 999px;
+  border-radius: 3px;
   outline: none;
   background: linear-gradient(
     90deg,
@@ -124,28 +117,32 @@ input[type="range"] {
     rgba(211, 58, 49, 0.22) var(--slider-value, 0%),
     rgba(211, 58, 49, 0.22) 100%
   );
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: 6px;
-  height: 6px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-input[type="range"]::-moz-range-thumb {
-  appearance: none;
-  width: 6px;
-  height: 6px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  &::-webkit-slider-runnable-track {
+    appearance: none;
+  }
+  &::-moz-range-track {
+    appearance: none;
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+  }
+  &::-moz-range-thumb {
+    appearance: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+  }
 }
 
 .dock-progress-slider {
-  flex: 1;
+  width: 100%;
 }
 
 .dock-volume-wrap {
@@ -195,8 +192,17 @@ input[type="range"]::-moz-range-thumb {
   position-try-fallbacks: bottom center;
 }
 input[type="range"].now-playing-volume-slider {
-  width: 200px;
-  transform: rotate(-90deg);
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 6px;
+  height: 140px;
+  background: linear-gradient(
+    0deg,
+    var(--accent-deep) 0%,
+    var(--accent) var(--slider-value, 0%),
+    rgba(211, 58, 49, 0.22) var(--slider-value, 0%),
+    rgba(211, 58, 49, 0.22) 100%
+  );
 }
 
 .primary-button,
@@ -340,8 +346,6 @@ input[type="range"].now-playing-volume-slider {
 .backdrop-fade-leave-to {
   opacity: 0;
 }
-
-
 
 .now-playing-head,
 .now-playing-body,
@@ -495,6 +499,7 @@ input[type="range"].now-playing-volume-slider {
 .now-playing-progress .dock-progress-slider {
   width: 100%;
   min-width: 0;
+  flex: none;
 }
 
 .lyrics-scroll {

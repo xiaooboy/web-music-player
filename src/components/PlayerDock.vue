@@ -149,8 +149,8 @@ function handleQueueClick() {
     </div>
 
     <div class="dock-extra">
-      <div class="dock-progress-row" v-if="playerStore.currentTrack">
         <input
+          v-if="playerStore.currentTrack"
           class="dock-progress-slider"
           type="range"
           min="0"
@@ -164,7 +164,6 @@ function handleQueueClick() {
             )
           "
         />
-      </div>
     </div>
     <PlayQueueSheet
       ref="queueRef"
