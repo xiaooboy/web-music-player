@@ -268,6 +268,7 @@ defineExpose({ openSheet, closeSheet });
                 aria-label="播放进度"
                 :value="playerStore.progressPercent"
                 :style="{ '--slider-value': playerStore.progressPercent + '%' }"
+                :step="0.1"
                 @input="
                   playerStore.seekToPercent(
                     Number(($event.target as HTMLInputElement).value),
@@ -454,6 +455,7 @@ defineExpose({ openSheet, closeSheet });
           min="0"
           max="100"
           aria-label="音量"
+          orient="vertical"
           :value="playerStore.volumePercent"
           :style="{ '--slider-value': playerStore.volumePercent + '%' }"
           @input="
