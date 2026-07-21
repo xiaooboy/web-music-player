@@ -149,22 +149,16 @@ export async function buildTrack(
   const extension = getFileExtension(file.name);
   const format = extension.toUpperCase() || "AUDIO";
 
-  const metadataPromise = (async (): Promise<Partial<Track>> => {
-    try {
-      if (extension === "mp3") return await parseId3Tags(file);
-      if (extension === "flac") return await parseFlacMetadata(file);
-      if (extension === "m4a" || extension === "mp4")
-        return await parseMp4Metadata(file);
-      return {};
-    } catch {
-      return {};
-    }
-  })();
-
-  const [metadata, duration] = await Promise.all([
-    metadataPromise,
-    probeDuration(file),
-  ]);
+  let metadata: Partial<Track> = {};
+  try {
+    if (extension === "mp3") metadata = await parseId3Tags(file);
+    else if (extension === "flac") metadata = await parseFlacMetadata(file);
+    else if (extension === "m4a" || extension === "mp4")
+      metadata = await parseMp4Metadata(file);
+  } catch {
+    // 解析失败时使用空元信息
+  }
+  const duration = metadata.duration || (await probeDuration(file));
 
   return {
     id: generateTrackId(relativePath, file),
@@ -350,19 +344,98 @@ export async function probeDuration(file: File) {
   });
 }
 
+/**
+ * 从 MPEG 音频帧的 Xing/VBRI 信息头提取时长
+ * @param bytes 文件头部字节数组
+ * @param searchStart 开始搜索的偏移量（ID3 标签之后为 10+declaredSize，无 ID3 时为 0）
+ */
+function parseMp3FrameDuration(bytes: Uint8Array, searchStart: number): number {
+  if (searchStart >= bytes.length - 4) return 0;
+  const limit = Math.min(searchStart + 10240, bytes.length - 4);
+
+  for (let i = searchStart; i < limit; i++) {
+    // 查找 MPEG 帧同步字: 0xFF + 0xE0+
+    if (bytes[i] !== 0xff || (bytes[i + 1] & 0xe0) !== 0xe0) continue;
+
+    const versionBits = (bytes[i + 1] >> 3) & 0x03;
+    const layerBits = (bytes[i + 1] >> 1) & 0x03;
+    const bitrateIndex = (bytes[i + 2] >> 4) & 0x0f;
+    const sampleRateIndex = (bytes[i + 2] >> 2) & 0x03;
+
+    // 版本: 00=2.5, 01=reserved, 10=2, 11=1
+    if (versionBits === 0x01) continue;
+    // 仅处理 Layer III
+    if (layerBits !== 0x01) continue;
+    // 比特率和采样率索引不能是保留值
+    if (bitrateIndex === 0x00 || bitrateIndex === 0x0f) continue;
+    if (sampleRateIndex === 0x03) continue;
+
+    const isMpeg1 = versionBits === 0x03;
+    const sampleRates = isMpeg1
+      ? [44100, 48000, 32000]
+      : versionBits === 0x02
+        ? [22050, 24000, 16000]
+        : [11025, 12000, 8000];
+    const sampleRate = sampleRates[sampleRateIndex];
+    if (!sampleRate) continue;
+
+    const samplesPerFrame = isMpeg1 ? 1152 : 576;
+    const isMono = ((bytes[i + 3] >> 6) & 0x03) === 0x03;
+
+    // Xing/Info 头偏移取决于 side info 大小
+    const xingOffset = i + (isMpeg1 ? (isMono ? 21 : 36) : isMono ? 13 : 21);
+
+    // 检查 Xing/Info 头
+    if (xingOffset + 12 <= bytes.length) {
+      const headerId = decodeLatin1(bytes.slice(xingOffset, xingOffset + 4));
+      if (headerId === "Xing" || headerId === "Info") {
+        const flags = readUint32(bytes, xingOffset + 4);
+        if (flags & 0x01) {
+          const frameCount = readUint32(bytes, xingOffset + 8);
+          if (frameCount > 0) {
+            return (frameCount * samplesPerFrame) / sampleRate;
+          }
+        }
+      }
+    }
+
+    // 检查 VBRI 头（Fraunhofer 编码器，固定在帧起始偏移 36 字节处）
+    const vbriOffset = i + 36;
+    if (vbriOffset + 18 <= bytes.length) {
+      const headerId = decodeLatin1(bytes.slice(vbriOffset, vbriOffset + 4));
+      if (headerId === "VBRI") {
+        const frameCount = readUint32(bytes, vbriOffset + 14);
+        if (frameCount > 0) {
+          return (frameCount * samplesPerFrame) / sampleRate;
+        }
+      }
+    }
+
+    // 找到有效 MPEG 帧但无 Xing/VBRI 头，不再继续搜索
+    break;
+  }
+
+  return 0;
+}
+
 async function parseId3Tags(file: File) {
   const headerBuffer = await file
     .slice(0, Math.min(file.size, 2 * 1024 * 1024))
     .arrayBuffer();
   let bytes = new Uint8Array(headerBuffer);
+  const metadata: Partial<Track> = {};
+  let id3End = 0;
 
   if (decodeLatin1(bytes.slice(0, 3)) !== "ID3") {
-    return {};
+    const duration = parseMp3FrameDuration(bytes, id3End);
+    if (duration > 0) metadata.duration = duration;
+    return metadata;
   }
 
   const version = bytes[3];
   const flags = bytes[5];
   const declaredSize = readSynchsafe(bytes, 6);
+  id3End = 10 + declaredSize;
   let offset = 10;
 
   if (flags & 0x80) {
@@ -376,7 +449,6 @@ async function parseId3Tags(file: File) {
   }
 
   const tagLimit = Math.min(bytes.length, 10 + declaredSize);
-  const metadata: Partial<Track> = {};
 
   if (version === 2) {
     while (offset + 6 <= tagLimit) {
@@ -426,6 +498,8 @@ async function parseId3Tags(file: File) {
       offset = frameEnd;
     }
 
+    const duration = parseMp3FrameDuration(bytes, id3End);
+    if (duration > 0) metadata.duration = duration;
     return metadata;
   }
 
@@ -479,6 +553,8 @@ async function parseId3Tags(file: File) {
     offset = frameEnd;
   }
 
+  const duration = parseMp3FrameDuration(bytes, id3End);
+  if (duration > 0) metadata.duration = duration;
   return metadata;
 }
 
@@ -509,6 +585,16 @@ async function parseFlacMetadata(file: File) {
     }
 
     const blockBytes = bytes.slice(blockStart, blockEnd);
+    if (blockType === 0 && blockBytes.length >= 18) {
+      // STREAMINFO: 提取时长
+      const sampleRate =
+        (blockBytes[10] << 12) | (blockBytes[11] << 4) | (blockBytes[12] >> 4);
+      const totalSamples =
+        (blockBytes[13] & 0x0f) * 0x1_0000_0000 + readUint32(blockBytes, 14);
+      if (sampleRate > 0 && totalSamples > 0) {
+        metadata.duration = totalSamples / sampleRate;
+      }
+    }
     if (blockType === 4) {
       Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
     }
@@ -726,6 +812,26 @@ function walkMp4Atoms(
         atomType === "meta" ? offset + headerSize + 4 : offset + headerSize;
       if (childStart <= atomEnd) {
         walkMp4Atoms(bytes, childStart, atomEnd, nextPath, metadata);
+      }
+    } else if (atomType === "mdhd" && !metadata.duration) {
+      // Media Header Box: 提取时长
+      const payloadStart = offset + headerSize;
+      if (payloadStart + 8 <= atomEnd) {
+        const version = bytes[payloadStart];
+        const needed = version === 0 ? 20 : 32;
+        if (payloadStart + needed <= atomEnd) {
+          const timescale =
+            version === 0
+              ? readUint32(bytes, payloadStart + 12)
+              : readUint32(bytes, payloadStart + 20);
+          const durationValue =
+            version === 0
+              ? readUint32(bytes, payloadStart + 16)
+              : readUint64(bytes, payloadStart + 24);
+          if (timescale > 0) {
+            metadata.duration = durationValue / timescale;
+          }
+        }
       }
     } else if (path[path.length - 1] === "ilst") {
       parseMp4MetadataAtom(
