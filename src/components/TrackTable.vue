@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
 import EmptyState from "./EmptyState.vue";
@@ -48,7 +48,7 @@ function handleMoreKeydown(event: KeyboardEvent, track: Track) {
 // ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
 // 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
 // 挂载和切换面板的耗时是 O(1) 而非 O(n)。
-const listRef = ref<HTMLElement | null>(null);
+const listRef = useTemplateRef('listRef');
 
 const rowVirtualizer = useVirtualizer(
   computed(() => ({

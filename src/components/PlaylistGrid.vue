@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, shallowReactive, useTemplateRef } from "vue";
+import type { ComponentExposed } from "vue-component-type-helpers";
 import { MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
@@ -46,9 +47,9 @@ const coverUrlMap = computed(() => {
 // ─── 右键菜单 ────────────────────────────────────────────────────────────────
 const isSmallScreen = useMediaQuery("(max-width: 640px)");
 const contextMenuRef =
-  useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
+  useTemplateRef<ComponentExposed<typeof ContextMenu>>("contextMenu");
 const actionSheetRef =
-  useTemplateRef<InstanceType<typeof ActionSheet>>("actionSheet");
+  useTemplateRef<ComponentExposed<typeof ActionSheet>>("actionSheet");
 const menuProps = shallowReactive({
   title: "",
   menu: [] as MenuItem[],

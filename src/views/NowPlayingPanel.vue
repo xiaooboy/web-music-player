@@ -22,6 +22,7 @@ import {
   computed,
   useTemplateRef,
 } from "vue";
+import type { ComponentExposed } from "vue-component-type-helpers";
 import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import BottomSheet from "../components/BottomSheet.vue";
@@ -39,9 +40,9 @@ const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const uiStore = useUIStore();
 
-const sheetRef = useTemplateRef<InstanceType<typeof BottomSheet>>("sheetRef");
+const sheetRef = useTemplateRef<ComponentExposed<typeof BottomSheet>>("sheetRef");
 const queueRef =
-  useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
+  useTemplateRef<ComponentExposed<typeof PlayQueueSheet>>("queueRef");
 
 const isCurrentTrackLiked = computed(() =>
   playerStore.currentTrack

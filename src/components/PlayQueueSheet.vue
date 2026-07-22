@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Track } from "@/types";
 import { X, Minus } from "@lucide/vue";
-import { computed, ref, shallowRef, watch } from "vue";
+import { computed, ref, shallowRef, useTemplateRef, watch } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import BottomSheet from "./BottomSheet.vue";
 import "@/styles/popover.css";
-
+import type { ComponentExposed } from 'vue-component-type-helpers';
 const props = defineProps<{
   tracks: Track[];
   currentTrackId: string;
@@ -21,9 +21,9 @@ const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
 const ITEM_HEIGHT = 40;
 const wasOpen = shallowRef(false)
-const listRef = ref<HTMLElement | null>(null);
-const sheetRef = ref<InstanceType<typeof BottomSheet> | null>(null);
-const popoverRef = ref<HTMLElement | null>(null);
+const listRef = useTemplateRef('listRef');
+const sheetRef = ref<ComponentExposed<typeof BottomSheet>>();
+const popoverRef = useTemplateRef('popoverRef');
 
 const rowVirtualizer = useVirtualizer(
   computed(() => ({

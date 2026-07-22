@@ -11,6 +11,7 @@ import {
   SkipForward,
 } from "@lucide/vue";
 import { computed, useTemplateRef } from "vue";
+import type { ComponentExposed } from "vue-component-type-helpers";
 
 import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
@@ -29,7 +30,7 @@ const isCurrentTrackLiked = computed(() =>
 );
 const enableCoverTransition = computed(() => !uiStore.nowPlayingOpen);
 const queueRef =
-  useTemplateRef<InstanceType<typeof PlayQueueSheet>>("queueRef");
+  useTemplateRef<ComponentExposed<typeof PlayQueueSheet>>("queueRef");
 
 function handlePlayTrack(index: number) {
   playerStore.playTrack(index, true);
