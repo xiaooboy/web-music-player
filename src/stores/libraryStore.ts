@@ -145,7 +145,7 @@ export const useLibraryStore = defineStore("library", () => {
     }
     await saveTrackCache({
       sourceKey: cacheKey,
-      tracks: tracks.value.map(({ coverUrl: _, file: __, ...rest }) => rest),
+      tracks: tracks.value.map(({ file: _, ...rest }) => rest),
     });
   }
 

@@ -8,6 +8,7 @@ import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { useHistoryBack } from "../composables/useHistoryBack";
 import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
+import { ensureCoverUrl } from "../utils/coverCache";
 
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();
@@ -66,8 +67,8 @@ useHistoryBack(navigateBack);
       </button>
       <div class="album-detail-cover">
         <img
-          v-if="albumStore.selectedAlbum.coverUrl"
-          :src="albumStore.selectedAlbum.coverUrl"
+          v-if="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
+          :src="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
           class="img-fadein is-loaded"
           :alt="`${albumStore.selectedAlbum.name} 封面`"
         />

@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
+import { ensureCoverUrl } from "../utils/coverCache";
 
 // ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
 function handleImgLoad(event: Event) {
@@ -137,9 +138,9 @@ function calcMinColWidth(col: number) {
         >
           <div class="album-card-cover">
             <img
-              v-if="album.coverUrl"
+              v-if="ensureCoverUrl(album.name, album.coverBlob)"
               class="img-fadein"
-              :src="album.coverUrl"
+              :src="ensureCoverUrl(album.name, album.coverBlob)"
               :alt="`${album.name} 封面`"
               :width="MIN_COL_WIDTH"
               :height="MIN_COL_WIDTH"

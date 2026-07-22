@@ -8,6 +8,7 @@ import ActionSheet from "./ActionSheet.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
+import { ensureCoverUrl } from "../utils/coverCache";
 
 const props = defineProps<{
   tracks: Track[];
@@ -137,8 +138,8 @@ function scrollToCurrentTrack() {
             <div class="track-song">
               <div class="track-thumb">
                 <img
-                  v-if="item.coverUrl"
-                  :src="item.coverUrl"
+                  v-if="ensureCoverUrl(item.id, item.coverBlob)"
+                  :src="ensureCoverUrl(item.id, item.coverBlob)"
                   :alt="`${item.title} 封面`"
                   loading="lazy"
                 />

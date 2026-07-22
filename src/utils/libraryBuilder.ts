@@ -32,7 +32,6 @@ export function cachedTrackRecordsToTracks(
   return records.map((record) => ({
     ...record,
     file: null, // 无 File，entriesToTracks 后再获取
-    coverUrl: record.coverBlob ? URL.createObjectURL(record.coverBlob) : "",
     isPlayable: false,
   }));
 }

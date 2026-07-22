@@ -45,8 +45,8 @@ export const useAlbumStore = defineStore("album", () => {
           existingAlbum.artistLabel += ` / ${artistName}`;
         }
         existingAlbum.duration += track.duration;
-        if (!existingAlbum.coverUrl && track.coverUrl) {
-          existingAlbum.coverUrl = track.coverUrl;
+        if (!existingAlbum.coverBlob && track.coverBlob) {
+          existingAlbum.coverBlob = track.coverBlob;
         }
         existingAlbum.tracks.push(track);
         return;
@@ -57,7 +57,7 @@ export const useAlbumStore = defineStore("album", () => {
         artistSet: new Set([artistName]),
         artistLabel: artistName,
         duration: track.duration,
-        coverUrl: track.coverUrl,
+        coverBlob: track.coverBlob,
         tracks: [track],
       });
     });

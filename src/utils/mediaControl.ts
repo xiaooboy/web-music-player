@@ -1,4 +1,5 @@
 import type { Track } from "@/types";
+import { ensureCoverUrl } from "./coverCache";
 
 interface MediaSectionControlOption {
   onPlay: () => void;
@@ -17,12 +18,12 @@ export function updateMediaSession(track: Track) {
     title: track.title,
     artist: track.artist,
     album: track.album,
-    artwork: track.coverUrl
+    artwork: track.coverBlob
       ? [
           {
-            src: track.coverUrl,
+            src: ensureCoverUrl(track.id, track.coverBlob),
             sizes: "512x512",
-            type: track.coverBlob?.type || "image/jpeg",
+            type: track.coverBlob.type || "image/jpeg",
           },
         ]
       : [],

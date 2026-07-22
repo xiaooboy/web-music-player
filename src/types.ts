@@ -14,7 +14,6 @@ export interface Track {
   title: string;
   artist: string;
   album: string;
-  coverUrl: string;
   coverBlob?: Blob;
   duration: number;
   format: string;
@@ -47,7 +46,7 @@ export interface Album {
   artistSet: Set<string>;
   artistLabel: string;
   duration: number;
-  coverUrl: string;
+  coverBlob?: Blob;
   tracks: Track[];
 }
 

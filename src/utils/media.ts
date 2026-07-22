@@ -1,3 +1,5 @@
+import { revokeCoverUrls } from "./coverCache";
+
 import type { FileEntry, LyricsLine, Track } from "../types";
 
 const AUDIO_EXTENSIONS = new Set([
@@ -168,7 +170,6 @@ export async function buildTrack(
     title: metadata.title || fallback.title,
     artist: metadata.artist || fallback.artist,
     album: metadata.album || fallback.album,
-    coverUrl: metadata.coverUrl || "",
     coverBlob: metadata.coverBlob,
     duration,
     format,
@@ -177,12 +178,9 @@ export async function buildTrack(
   };
 }
 
+
 export function revokeTrackResources(tracks: Track[]) {
-  tracks.forEach((track) => {
-    if (track.coverUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(track.coverUrl);
-    }
-  });
+  revokeCoverUrls(tracks.map((t) => t.id));
 }
 
 export function isAudioFile(fileName: string, mimeType = "") {
@@ -489,9 +487,8 @@ async function parseId3Tags(file: File) {
         metadata.lyricsText = decodeLyricsFrame(frameBytes, true);
       }
 
-      if (frameId === "PIC" && !metadata.coverUrl) {
+      if (frameId === "PIC" && !metadata.coverBlob) {
         const cover = decodePicFrame(frameBytes);
-        metadata.coverUrl = cover.coverUrl || "";
         if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
       }
 
@@ -544,9 +541,8 @@ async function parseId3Tags(file: File) {
       metadata.lyricsText = decodeLyricsFrame(frameBytes);
     }
 
-    if (frameId === "APIC" && !metadata.coverUrl) {
+    if (frameId === "APIC" && !metadata.coverBlob) {
       const cover = decodeApicFrame(frameBytes);
-      metadata.coverUrl = cover.coverUrl || "";
       if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
     }
 
@@ -579,9 +575,8 @@ function parseFlacBlock(
   if (blockType === 4) {
     Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
   }
-  if (blockType === 6 && !metadata.coverUrl) {
+  if (blockType === 6 && !metadata.coverBlob) {
     const cover = decodeFlacPictureBlock(blockBytes);
-    metadata.coverUrl = cover.coverUrl || "";
     if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
   }
 }
@@ -615,7 +610,7 @@ async function parseFlacMetadata(file: File) {
     const needRead =
       (blockType === 0 || blockType === 4 || blockType === 6) &&
       blockLength <= MAX_BLOCK_READ &&
-      (blockType !== 6 || !metadata.coverUrl);
+      (blockType !== 6 || !metadata.coverBlob);
 
     if (needRead) {
       const blockBytes = new Uint8Array(
@@ -692,14 +687,14 @@ function decodeApicFrame(frameBytes: Uint8Array) {
   let offset = 1;
   const mimeEnd = frameBytes.indexOf(0, offset);
   if (mimeEnd === -1) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = normalizeMimeType(
     decodeLatin1(frameBytes.slice(offset, mimeEnd)),
   );
   if (mimeType === "-->") {
-    return { coverUrl: "" };
+    return {};
   }
 
   offset = mimeEnd + 1;
@@ -708,10 +703,10 @@ function decodeApicFrame(frameBytes: Uint8Array) {
 
   const imageBytes = frameBytes.slice(offset);
   if (!imageBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
-  return createObjectUrlFromBytes(imageBytes, mimeType);
+  return createCoverBlob(imageBytes, mimeType);
 }
 
 function decodePicFrame(frameBytes: Uint8Array) {
@@ -724,11 +719,11 @@ function decodePicFrame(frameBytes: Uint8Array) {
 
   const imageBytes = frameBytes.slice(offset);
   if (!imageBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = normalizeMimeType(formatToMimeType(format));
-  return createObjectUrlFromBytes(imageBytes, mimeType);
+  return createCoverBlob(imageBytes, mimeType);
 }
 
 function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
@@ -801,14 +796,14 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
 function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   let offset = 0;
   if (blockBytes.length < 32) {
-    return { coverUrl: "" };
+    return {};
   }
 
   offset += 4;
   const mimeLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + mimeLength > blockBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = normalizeMimeType(
@@ -821,21 +816,21 @@ function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   offset += 16;
 
   if (offset + 4 > blockBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const imageLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + imageLength > blockBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const imageBytes = blockBytes.slice(offset, offset + imageLength);
   if (!imageBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
-  return createObjectUrlFromBytes(imageBytes, mimeType);
+  return createCoverBlob(imageBytes, mimeType);
 }
 
 function walkMp4Atoms(
@@ -949,10 +944,9 @@ function parseMp4MetadataAtom(
 
     if (childType === "data" && atomEnd >= offset + headerSize + 8) {
       const payload = bytes.slice(offset + headerSize + 8, atomEnd);
-      if (atomType === "covr" && !metadata.coverUrl) {
+      if (atomType === "covr" && !metadata.coverBlob) {
         const cover = decodeMp4Cover(payload);
-        metadata.coverUrl = cover.coverUrl || "";
-        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+            if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
       }
 
       if ((atomType === "\u00a9nam" || atomType === "nam") && !metadata.title) {
@@ -984,11 +978,11 @@ function parseMp4MetadataAtom(
 
 function decodeMp4Cover(payload: Uint8Array) {
   if (!payload.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = detectImageMimeType(payload);
-  return createObjectUrlFromBytes(payload, mimeType);
+  return createCoverBlob(payload, mimeType);
 }
 
 function decodeMp4Text(payload: Uint8Array) {
@@ -1218,15 +1212,13 @@ function detectImageMimeType(bytes: Uint8Array) {
 }
 
 interface CoverResult {
-  coverUrl: string;
   coverBlob?: Blob;
 }
 
-function createObjectUrlFromBytes(
+function createCoverBlob(
   bytes: Uint8Array,
   mimeType: string,
 ): CoverResult {
   const blob = new Blob([bytes as Uint8Array<ArrayBuffer>], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  return { coverUrl: url, coverBlob: blob };
+  return { coverBlob: blob };
 }

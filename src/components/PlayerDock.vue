@@ -16,6 +16,7 @@ import { usePlayerStore } from "../stores/playerStore";
 import { useFavoriteStore } from "../stores/favoriteStore";
 import { useUIStore } from "../stores/uiStore";
 import PlayQueueSheet from "./PlayQueueSheet.vue";
+import { ensureCoverUrl } from "../utils/coverCache";
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
@@ -62,8 +63,8 @@ function handleQueueClick() {
     >
       <div class="cover-art dock-cover">
         <img
-          v-if="playerStore.currentTrack?.coverUrl"
-          :src="playerStore.currentTrack.coverUrl"
+          v-if="playerStore.currentTrack?.coverBlob"
+          :src="ensureCoverUrl(playerStore.currentTrack!.id, playerStore.currentTrack!.coverBlob)"
           alt="底部播放器封面"
         />
         <span v-else aria-hidden="true">LM</span>
