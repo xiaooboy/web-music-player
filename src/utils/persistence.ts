@@ -14,7 +14,7 @@ export type PersistedMusicSource = MusicSource & {
   handle: FileSystemDirectoryHandle;
 };
 
-export type CachedTrackRecord = Omit<Track, "coverUrl" | "file">;
+export type CachedTrackRecord = Omit<Track, "file">;
 
 export interface PersistedTrackCache {
   sourceKey: string;

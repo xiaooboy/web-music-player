@@ -30,6 +30,7 @@ import PlayQueueSheet from "../components/PlayQueueSheet.vue";
 import ContextMenu from "../components/ContextMenu.vue";
 import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
+import { ensureCoverUrl } from "../utils/coverCache";
 import "@/styles/popover.css";
 
 const VOLUME_POPOVER_ID = crypto.randomUUID();
@@ -155,17 +156,18 @@ function scheduleLyricsFollow(index: number) {
   }, 150);
 }
 watch(
-  () => playerStore.currentTrack?.coverUrl,
-  (url) => {
-    if (!url) {
+  () => playerStore.currentTrack?.id,
+  (trackId) => {
+    const track = playerStore.currentTrack;
+    if (!trackId || !track?.coverBlob) {
       displayCoverUrl.value = "";
       return;
     }
+    const url = ensureCoverUrl(trackId, track.coverBlob);
     const img = new Image();
     pendingCoverImg = img;
     img.onload = img.onerror = () => {
-      // 竞态
-      if (playerStore.currentTrack?.coverUrl !== url) return;
+      if (playerStore.currentTrack?.id !== trackId) return;
       displayCoverUrl.value = url;
       pendingCoverImg = null;
     };
@@ -240,8 +242,8 @@ defineExpose({ openSheet, closeSheet });
         <div class="now-playing-meta">
           <div class="cover-art now-playing-cover">
             <img
-              v-if="playerStore.currentTrack?.coverUrl"
-              :src="playerStore.currentTrack.coverUrl"
+              v-if="playerStore.currentTrack?.coverBlob"
+              :src="ensureCoverUrl(playerStore.currentTrack!.id, playerStore.currentTrack!.coverBlob)"
               alt="歌曲封面"
             />
             <span v-else>LM</span>

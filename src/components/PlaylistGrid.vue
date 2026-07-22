@@ -7,6 +7,7 @@ import ContextMenu from "./ContextMenu.vue";
 import ActionSheet from "./ActionSheet.vue";
 import type { MenuItem, EventPosition } from "./ContextMenu.vue";
 import { useMediaQuery } from "../composables/useMediaQuery";
+import { ensureCoverUrl } from "../utils/coverCache";
 
 const props = defineProps<{
   playlists: Playlist[];
@@ -37,7 +38,7 @@ const coverUrlMap = computed(() => {
   for (const playlist of props.playlists) {
     const firstTrackId = playlist.trackIds[0];
     const track = firstTrackId ? trackMap.get(firstTrackId) : undefined;
-    map[playlist.id] = track?.coverUrl ?? "";
+    map[playlist.id] = track ? ensureCoverUrl(track.id, track.coverBlob) : "";
   }
   return map;
 });

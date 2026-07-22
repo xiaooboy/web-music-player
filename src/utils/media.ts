@@ -1,3 +1,5 @@
+import { revokeCoverUrls } from "./coverCache";
+
 import type { FileEntry, LyricsLine, Track } from "../types";
 
 const AUDIO_EXTENSIONS = new Set([
@@ -149,22 +151,16 @@ export async function buildTrack(
   const extension = getFileExtension(file.name);
   const format = extension.toUpperCase() || "AUDIO";
 
-  const metadataPromise = (async (): Promise<Partial<Track>> => {
-    try {
-      if (extension === "mp3") return await parseId3Tags(file);
-      if (extension === "flac") return await parseFlacMetadata(file);
-      if (extension === "m4a" || extension === "mp4")
-        return await parseMp4Metadata(file);
-      return {};
-    } catch {
-      return {};
-    }
-  })();
-
-  const [metadata, duration] = await Promise.all([
-    metadataPromise,
-    probeDuration(file),
-  ]);
+  let metadata: Partial<Track> = {};
+  try {
+    if (extension === "mp3") metadata = await parseId3Tags(file);
+    else if (extension === "flac") metadata = await parseFlacMetadata(file);
+    else if (extension === "m4a" || extension === "mp4")
+      metadata = await parseMp4Metadata(file);
+  } catch {
+    // 解析失败时使用空元信息
+  }
+  const duration = metadata.duration || (await probeDuration(file));
 
   return {
     id: generateTrackId(relativePath, file),
@@ -174,7 +170,6 @@ export async function buildTrack(
     title: metadata.title || fallback.title,
     artist: metadata.artist || fallback.artist,
     album: metadata.album || fallback.album,
-    coverUrl: metadata.coverUrl || "",
     coverBlob: metadata.coverBlob,
     duration,
     format,
@@ -183,12 +178,9 @@ export async function buildTrack(
   };
 }
 
+
 export function revokeTrackResources(tracks: Track[]) {
-  tracks.forEach((track) => {
-    if (track.coverUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(track.coverUrl);
-    }
-  });
+  revokeCoverUrls(tracks.map((t) => t.id));
 }
 
 export function isAudioFile(fileName: string, mimeType = "") {
@@ -350,19 +342,98 @@ export async function probeDuration(file: File) {
   });
 }
 
+/**
+ * 从 MPEG 音频帧的 Xing/VBRI 信息头提取时长
+ * @param bytes 文件头部字节数组
+ * @param searchStart 开始搜索的偏移量（ID3 标签之后为 10+declaredSize，无 ID3 时为 0）
+ */
+function parseMp3FrameDuration(bytes: Uint8Array, searchStart: number): number {
+  if (searchStart >= bytes.length - 4) return 0;
+  const limit = Math.min(searchStart + 10240, bytes.length - 4);
+
+  for (let i = searchStart; i < limit; i++) {
+    // 查找 MPEG 帧同步字: 0xFF + 0xE0+
+    if (bytes[i] !== 0xff || (bytes[i + 1] & 0xe0) !== 0xe0) continue;
+
+    const versionBits = (bytes[i + 1] >> 3) & 0x03;
+    const layerBits = (bytes[i + 1] >> 1) & 0x03;
+    const bitrateIndex = (bytes[i + 2] >> 4) & 0x0f;
+    const sampleRateIndex = (bytes[i + 2] >> 2) & 0x03;
+
+    // 版本: 00=2.5, 01=reserved, 10=2, 11=1
+    if (versionBits === 0x01) continue;
+    // 仅处理 Layer III
+    if (layerBits !== 0x01) continue;
+    // 比特率和采样率索引不能是保留值
+    if (bitrateIndex === 0x00 || bitrateIndex === 0x0f) continue;
+    if (sampleRateIndex === 0x03) continue;
+
+    const isMpeg1 = versionBits === 0x03;
+    const sampleRates = isMpeg1
+      ? [44100, 48000, 32000]
+      : versionBits === 0x02
+        ? [22050, 24000, 16000]
+        : [11025, 12000, 8000];
+    const sampleRate = sampleRates[sampleRateIndex];
+    if (!sampleRate) continue;
+
+    const samplesPerFrame = isMpeg1 ? 1152 : 576;
+    const isMono = ((bytes[i + 3] >> 6) & 0x03) === 0x03;
+
+    // Xing/Info 头偏移取决于 side info 大小
+    const xingOffset = i + (isMpeg1 ? (isMono ? 21 : 36) : isMono ? 13 : 21);
+
+    // 检查 Xing/Info 头
+    if (xingOffset + 12 <= bytes.length) {
+      const headerId = decodeLatin1(bytes.slice(xingOffset, xingOffset + 4));
+      if (headerId === "Xing" || headerId === "Info") {
+        const flags = readUint32(bytes, xingOffset + 4);
+        if (flags & 0x01) {
+          const frameCount = readUint32(bytes, xingOffset + 8);
+          if (frameCount > 0) {
+            return (frameCount * samplesPerFrame) / sampleRate;
+          }
+        }
+      }
+    }
+
+    // 检查 VBRI 头（Fraunhofer 编码器，固定在帧起始偏移 36 字节处）
+    const vbriOffset = i + 36;
+    if (vbriOffset + 18 <= bytes.length) {
+      const headerId = decodeLatin1(bytes.slice(vbriOffset, vbriOffset + 4));
+      if (headerId === "VBRI") {
+        const frameCount = readUint32(bytes, vbriOffset + 14);
+        if (frameCount > 0) {
+          return (frameCount * samplesPerFrame) / sampleRate;
+        }
+      }
+    }
+
+    // 找到有效 MPEG 帧但无 Xing/VBRI 头，不再继续搜索
+    break;
+  }
+
+  return 0;
+}
+
 async function parseId3Tags(file: File) {
   const headerBuffer = await file
     .slice(0, Math.min(file.size, 2 * 1024 * 1024))
     .arrayBuffer();
   let bytes = new Uint8Array(headerBuffer);
+  const metadata: Partial<Track> = {};
+  let id3End = 0;
 
   if (decodeLatin1(bytes.slice(0, 3)) !== "ID3") {
-    return {};
+    const duration = parseMp3FrameDuration(bytes, id3End);
+    if (duration > 0) metadata.duration = duration;
+    return metadata;
   }
 
   const version = bytes[3];
   const flags = bytes[5];
   const declaredSize = readSynchsafe(bytes, 6);
+  id3End = 10 + declaredSize;
   let offset = 10;
 
   if (flags & 0x80) {
@@ -376,7 +447,6 @@ async function parseId3Tags(file: File) {
   }
 
   const tagLimit = Math.min(bytes.length, 10 + declaredSize);
-  const metadata: Partial<Track> = {};
 
   if (version === 2) {
     while (offset + 6 <= tagLimit) {
@@ -417,15 +487,16 @@ async function parseId3Tags(file: File) {
         metadata.lyricsText = decodeLyricsFrame(frameBytes, true);
       }
 
-      if (frameId === "PIC" && !metadata.coverUrl) {
+      if (frameId === "PIC" && !metadata.coverBlob) {
         const cover = decodePicFrame(frameBytes);
-        metadata.coverUrl = cover.coverUrl || "";
         if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
       }
 
       offset = frameEnd;
     }
 
+    const duration = parseMp3FrameDuration(bytes, id3End);
+    if (duration > 0) metadata.duration = duration;
     return metadata;
   }
 
@@ -470,68 +541,144 @@ async function parseId3Tags(file: File) {
       metadata.lyricsText = decodeLyricsFrame(frameBytes);
     }
 
-    if (frameId === "APIC" && !metadata.coverUrl) {
+    if (frameId === "APIC" && !metadata.coverBlob) {
       const cover = decodeApicFrame(frameBytes);
-      metadata.coverUrl = cover.coverUrl || "";
       if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
     }
 
     offset = frameEnd;
   }
 
+  const duration = parseMp3FrameDuration(bytes, id3End);
+  if (duration > 0) metadata.duration = duration;
   return metadata;
 }
 
-async function parseFlacMetadata(file: File) {
-  const buffer = await file
-    .slice(0, Math.min(file.size, 16 * 1024 * 1024))
-    .arrayBuffer();
-  const bytes = new Uint8Array(buffer);
+/**
+ * 解析单个 FLAC 元数据块并更新 metadata
+ */
+function parseFlacBlock(
+  metadata: Partial<Track>,
+  blockType: number,
+  blockBytes: Uint8Array,
+) {
+  if (blockType === 0 && blockBytes.length >= 18) {
+    // STREAMINFO: 提取时长
+    const sampleRate =
+      (blockBytes[10] << 12) | (blockBytes[11] << 4) | (blockBytes[12] >> 4);
+    const totalSamples =
+      (blockBytes[13] & 0x0f) * 0x1_0000_0000 + readUint32(blockBytes, 14);
+    if (sampleRate > 0 && totalSamples > 0) {
+      metadata.duration = totalSamples / sampleRate;
+    }
+  }
+  if (blockType === 4) {
+    Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
+  }
+  if (blockType === 6 && !metadata.coverBlob) {
+    const cover = decodeFlacPictureBlock(blockBytes);
+    if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+  }
+}
 
-  if (decodeLatin1(bytes.slice(0, 4)) !== "fLaC") {
+async function parseFlacMetadata(file: File) {
+  const MAX_BLOCK_READ = 10 * 1024 * 1024;
+
+  // 验证 fLaC 标识
+  const magicBytes = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  if (magicBytes.length < 4 || decodeLatin1(magicBytes) !== "fLaC") {
     return {};
   }
 
   const metadata: Partial<Track> = {};
-  let offset = 4;
+  let fileOffset = 4; // 跳过 magic
   let lastBlock = false;
 
-  while (!lastBlock && offset + 4 <= bytes.length) {
-    const header = bytes[offset];
-    lastBlock = Boolean(header & 0x80);
-    const blockType = header & 0x7f;
-    const blockLength = readUint24(bytes, offset + 1);
-    const blockStart = offset + 4;
-    const blockEnd = blockStart + blockLength;
+  while (!lastBlock && fileOffset + 4 <= file.size) {
+    // 读取块头（4 字节）
+    const headerBytes = new Uint8Array(
+      await file.slice(fileOffset, fileOffset + 4).arrayBuffer(),
+    );
+    if (headerBytes.length < 4) break;
 
-    if (blockEnd > bytes.length) {
-      break;
+    lastBlock = Boolean(headerBytes[0] & 0x80);
+    const blockType = headerBytes[0] & 0x7f;
+    const blockLength = readUint24(headerBytes, 1);
+    const blockDataOffset = fileOffset + 4;
+
+    // 仅读取需要的块，跳过 PADDING / SEEKTABLE / APPLICATION / CUESHEET 等
+    const needRead =
+      (blockType === 0 || blockType === 4 || blockType === 6) &&
+      blockLength <= MAX_BLOCK_READ &&
+      (blockType !== 6 || !metadata.coverBlob);
+
+    if (needRead) {
+      const blockBytes = new Uint8Array(
+        await file.slice(blockDataOffset, blockDataOffset + blockLength).arrayBuffer(),
+      );
+      parseFlacBlock(metadata, blockType, blockBytes);
     }
 
-    const blockBytes = bytes.slice(blockStart, blockEnd);
-    if (blockType === 4) {
-      Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
-    }
-
-    if (blockType === 6 && !metadata.coverUrl) {
-      const cover = decodeFlacPictureBlock(blockBytes);
-      metadata.coverUrl = cover.coverUrl || "";
-      if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
-    }
-
-    offset = blockEnd;
+    // 前进到下一个块
+    fileOffset = blockDataOffset + blockLength;
   }
 
   return metadata;
 }
 
+/**
+ * 扫描 MP4 顶层 atom 头部，定位 moov atom 的偏移与大小
+ */
+async function findMp4MoovAtom(
+  file: File,
+): Promise<{ offset: number; size: number } | null> {
+  let fileOffset = 0;
+
+  while (fileOffset + 8 <= file.size) {
+    // 读取 atom 头部（最多 16 字节以支持扩展大小）
+    const headerReadEnd = Math.min(file.size, fileOffset + 16);
+    const headerBytes = new Uint8Array(
+      await file.slice(fileOffset, headerReadEnd).arrayBuffer(),
+    );
+    if (headerBytes.length < 8) break;
+
+    let atomSize = readUint32(headerBytes, 0);
+    const atomType = decodeLatin1(headerBytes.slice(4, 8));
+    let headerSize = 8;
+
+    if (atomSize === 1) {
+      if (headerBytes.length < 16) break;
+      atomSize = readUint64(headerBytes, 8);
+      headerSize = 16;
+    } else if (atomSize === 0) {
+      atomSize = file.size - fileOffset;
+    }
+
+    if (atomSize < headerSize) break;
+
+    if (atomType === "moov") {
+      return { offset: fileOffset, size: atomSize };
+    }
+
+    fileOffset += atomSize;
+  }
+
+  return null;
+}
+
 async function parseMp4Metadata(file: File) {
-  const bytes = new Uint8Array(
-    await file.slice(0, Math.min(file.size, 16 * 1024 * 1024)).arrayBuffer(),
+  const MAX_MOOV_READ = 10 * 1024 * 1024;
+
+  // 定位 moov atom，仅读取该部分而非整个文件前 16MB
+  const moov = await findMp4MoovAtom(file);
+  if (!moov || moov.size > MAX_MOOV_READ) return {};
+
+  const moovBytes = new Uint8Array(
+    await file.slice(moov.offset, moov.offset + moov.size).arrayBuffer(),
   );
   const metadata: Partial<Track> = {};
 
-  walkMp4Atoms(bytes, 0, bytes.length, [], metadata);
+  walkMp4Atoms(moovBytes, 0, moovBytes.length, [], metadata);
   return metadata;
 }
 
@@ -540,14 +687,14 @@ function decodeApicFrame(frameBytes: Uint8Array) {
   let offset = 1;
   const mimeEnd = frameBytes.indexOf(0, offset);
   if (mimeEnd === -1) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = normalizeMimeType(
     decodeLatin1(frameBytes.slice(offset, mimeEnd)),
   );
   if (mimeType === "-->") {
-    return { coverUrl: "" };
+    return {};
   }
 
   offset = mimeEnd + 1;
@@ -556,10 +703,10 @@ function decodeApicFrame(frameBytes: Uint8Array) {
 
   const imageBytes = frameBytes.slice(offset);
   if (!imageBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
-  return createObjectUrlFromBytes(imageBytes, mimeType);
+  return createCoverBlob(imageBytes, mimeType);
 }
 
 function decodePicFrame(frameBytes: Uint8Array) {
@@ -572,11 +719,11 @@ function decodePicFrame(frameBytes: Uint8Array) {
 
   const imageBytes = frameBytes.slice(offset);
   if (!imageBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = normalizeMimeType(formatToMimeType(format));
-  return createObjectUrlFromBytes(imageBytes, mimeType);
+  return createCoverBlob(imageBytes, mimeType);
 }
 
 function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
@@ -649,14 +796,14 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
 function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   let offset = 0;
   if (blockBytes.length < 32) {
-    return { coverUrl: "" };
+    return {};
   }
 
   offset += 4;
   const mimeLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + mimeLength > blockBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = normalizeMimeType(
@@ -669,21 +816,21 @@ function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   offset += 16;
 
   if (offset + 4 > blockBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const imageLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + imageLength > blockBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const imageBytes = blockBytes.slice(offset, offset + imageLength);
   if (!imageBytes.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
-  return createObjectUrlFromBytes(imageBytes, mimeType);
+  return createCoverBlob(imageBytes, mimeType);
 }
 
 function walkMp4Atoms(
@@ -726,6 +873,26 @@ function walkMp4Atoms(
         atomType === "meta" ? offset + headerSize + 4 : offset + headerSize;
       if (childStart <= atomEnd) {
         walkMp4Atoms(bytes, childStart, atomEnd, nextPath, metadata);
+      }
+    } else if (atomType === "mdhd" && !metadata.duration) {
+      // Media Header Box: 提取时长
+      const payloadStart = offset + headerSize;
+      if (payloadStart + 8 <= atomEnd) {
+        const version = bytes[payloadStart];
+        const needed = version === 0 ? 20 : 32;
+        if (payloadStart + needed <= atomEnd) {
+          const timescale =
+            version === 0
+              ? readUint32(bytes, payloadStart + 12)
+              : readUint32(bytes, payloadStart + 20);
+          const durationValue =
+            version === 0
+              ? readUint32(bytes, payloadStart + 16)
+              : readUint64(bytes, payloadStart + 24);
+          if (timescale > 0) {
+            metadata.duration = durationValue / timescale;
+          }
+        }
       }
     } else if (path[path.length - 1] === "ilst") {
       parseMp4MetadataAtom(
@@ -777,10 +944,9 @@ function parseMp4MetadataAtom(
 
     if (childType === "data" && atomEnd >= offset + headerSize + 8) {
       const payload = bytes.slice(offset + headerSize + 8, atomEnd);
-      if (atomType === "covr" && !metadata.coverUrl) {
+      if (atomType === "covr" && !metadata.coverBlob) {
         const cover = decodeMp4Cover(payload);
-        metadata.coverUrl = cover.coverUrl || "";
-        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+            if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
       }
 
       if ((atomType === "\u00a9nam" || atomType === "nam") && !metadata.title) {
@@ -812,11 +978,11 @@ function parseMp4MetadataAtom(
 
 function decodeMp4Cover(payload: Uint8Array) {
   if (!payload.length) {
-    return { coverUrl: "" };
+    return {};
   }
 
   const mimeType = detectImageMimeType(payload);
-  return createObjectUrlFromBytes(payload, mimeType);
+  return createCoverBlob(payload, mimeType);
 }
 
 function decodeMp4Text(payload: Uint8Array) {
@@ -1046,17 +1212,13 @@ function detectImageMimeType(bytes: Uint8Array) {
 }
 
 interface CoverResult {
-  coverUrl: string;
   coverBlob?: Blob;
 }
 
-function createObjectUrlFromBytes(
+function createCoverBlob(
   bytes: Uint8Array,
   mimeType: string,
 ): CoverResult {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  const blob = new Blob([copy.buffer], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  return { coverUrl: url, coverBlob: blob };
+  const blob = new Blob([bytes as Uint8Array<ArrayBuffer>], { type: mimeType });
+  return { coverBlob: blob };
 }
