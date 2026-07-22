@@ -558,66 +558,132 @@ async function parseId3Tags(file: File) {
   return metadata;
 }
 
-async function parseFlacMetadata(file: File) {
-  const buffer = await file
-    .slice(0, Math.min(file.size, 16 * 1024 * 1024))
-    .arrayBuffer();
-  const bytes = new Uint8Array(buffer);
+/**
+ * 解析单个 FLAC 元数据块并更新 metadata
+ */
+function parseFlacBlock(
+  metadata: Partial<Track>,
+  blockType: number,
+  blockBytes: Uint8Array,
+) {
+  if (blockType === 0 && blockBytes.length >= 18) {
+    // STREAMINFO: 提取时长
+    const sampleRate =
+      (blockBytes[10] << 12) | (blockBytes[11] << 4) | (blockBytes[12] >> 4);
+    const totalSamples =
+      (blockBytes[13] & 0x0f) * 0x1_0000_0000 + readUint32(blockBytes, 14);
+    if (sampleRate > 0 && totalSamples > 0) {
+      metadata.duration = totalSamples / sampleRate;
+    }
+  }
+  if (blockType === 4) {
+    Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
+  }
+  if (blockType === 6 && !metadata.coverUrl) {
+    const cover = decodeFlacPictureBlock(blockBytes);
+    metadata.coverUrl = cover.coverUrl || "";
+    if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+  }
+}
 
-  if (decodeLatin1(bytes.slice(0, 4)) !== "fLaC") {
+async function parseFlacMetadata(file: File) {
+  const MAX_BLOCK_READ = 10 * 1024 * 1024;
+
+  // 验证 fLaC 标识
+  const magicBytes = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  if (magicBytes.length < 4 || decodeLatin1(magicBytes) !== "fLaC") {
     return {};
   }
 
   const metadata: Partial<Track> = {};
-  let offset = 4;
+  let fileOffset = 4; // 跳过 magic
   let lastBlock = false;
 
-  while (!lastBlock && offset + 4 <= bytes.length) {
-    const header = bytes[offset];
-    lastBlock = Boolean(header & 0x80);
-    const blockType = header & 0x7f;
-    const blockLength = readUint24(bytes, offset + 1);
-    const blockStart = offset + 4;
-    const blockEnd = blockStart + blockLength;
+  while (!lastBlock && fileOffset + 4 <= file.size) {
+    // 读取块头（4 字节）
+    const headerBytes = new Uint8Array(
+      await file.slice(fileOffset, fileOffset + 4).arrayBuffer(),
+    );
+    if (headerBytes.length < 4) break;
 
-    if (blockEnd > bytes.length) {
-      break;
+    lastBlock = Boolean(headerBytes[0] & 0x80);
+    const blockType = headerBytes[0] & 0x7f;
+    const blockLength = readUint24(headerBytes, 1);
+    const blockDataOffset = fileOffset + 4;
+
+    // 仅读取需要的块，跳过 PADDING / SEEKTABLE / APPLICATION / CUESHEET 等
+    const needRead =
+      (blockType === 0 || blockType === 4 || blockType === 6) &&
+      blockLength <= MAX_BLOCK_READ &&
+      (blockType !== 6 || !metadata.coverUrl);
+
+    if (needRead) {
+      const blockBytes = new Uint8Array(
+        await file.slice(blockDataOffset, blockDataOffset + blockLength).arrayBuffer(),
+      );
+      parseFlacBlock(metadata, blockType, blockBytes);
     }
 
-    const blockBytes = bytes.slice(blockStart, blockEnd);
-    if (blockType === 0 && blockBytes.length >= 18) {
-      // STREAMINFO: 提取时长
-      const sampleRate =
-        (blockBytes[10] << 12) | (blockBytes[11] << 4) | (blockBytes[12] >> 4);
-      const totalSamples =
-        (blockBytes[13] & 0x0f) * 0x1_0000_0000 + readUint32(blockBytes, 14);
-      if (sampleRate > 0 && totalSamples > 0) {
-        metadata.duration = totalSamples / sampleRate;
-      }
-    }
-    if (blockType === 4) {
-      Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
-    }
-
-    if (blockType === 6 && !metadata.coverUrl) {
-      const cover = decodeFlacPictureBlock(blockBytes);
-      metadata.coverUrl = cover.coverUrl || "";
-      if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
-    }
-
-    offset = blockEnd;
+    // 前进到下一个块
+    fileOffset = blockDataOffset + blockLength;
   }
 
   return metadata;
 }
 
+/**
+ * 扫描 MP4 顶层 atom 头部，定位 moov atom 的偏移与大小
+ */
+async function findMp4MoovAtom(
+  file: File,
+): Promise<{ offset: number; size: number } | null> {
+  let fileOffset = 0;
+
+  while (fileOffset + 8 <= file.size) {
+    // 读取 atom 头部（最多 16 字节以支持扩展大小）
+    const headerReadEnd = Math.min(file.size, fileOffset + 16);
+    const headerBytes = new Uint8Array(
+      await file.slice(fileOffset, headerReadEnd).arrayBuffer(),
+    );
+    if (headerBytes.length < 8) break;
+
+    let atomSize = readUint32(headerBytes, 0);
+    const atomType = decodeLatin1(headerBytes.slice(4, 8));
+    let headerSize = 8;
+
+    if (atomSize === 1) {
+      if (headerBytes.length < 16) break;
+      atomSize = readUint64(headerBytes, 8);
+      headerSize = 16;
+    } else if (atomSize === 0) {
+      atomSize = file.size - fileOffset;
+    }
+
+    if (atomSize < headerSize) break;
+
+    if (atomType === "moov") {
+      return { offset: fileOffset, size: atomSize };
+    }
+
+    fileOffset += atomSize;
+  }
+
+  return null;
+}
+
 async function parseMp4Metadata(file: File) {
-  const bytes = new Uint8Array(
-    await file.slice(0, Math.min(file.size, 16 * 1024 * 1024)).arrayBuffer(),
+  const MAX_MOOV_READ = 10 * 1024 * 1024;
+
+  // 定位 moov atom，仅读取该部分而非整个文件前 16MB
+  const moov = await findMp4MoovAtom(file);
+  if (!moov || moov.size > MAX_MOOV_READ) return {};
+
+  const moovBytes = new Uint8Array(
+    await file.slice(moov.offset, moov.offset + moov.size).arrayBuffer(),
   );
   const metadata: Partial<Track> = {};
 
-  walkMp4Atoms(bytes, 0, bytes.length, [], metadata);
+  walkMp4Atoms(moovBytes, 0, moovBytes.length, [], metadata);
   return metadata;
 }
 
