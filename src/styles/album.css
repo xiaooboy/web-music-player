@@ -11,13 +11,13 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumGrid — 多列网格 + 虚拟滚动
    ═══════════════════════════════════════════════════════════════════════════ */
-.album-grid-scroll {
+.album-grid {
   overflow-y: auto;
   height: 100%;
   padding-bottom: var(--dock-height);
 }
 
-.album-grid-row {
+.album-grid__row {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--min-col-width,150px), 1fr));
   gap: 30px;
@@ -34,25 +34,25 @@
   background: transparent;
 }
 
-.album-card-cover {
+.album-card__cover {
   aspect-ratio: 1;
   border-radius: var(--cover-radius);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.06);
   position: relative;
 }
-.album-card-cover img {
+.album-card__cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
 }
 
-.album-card-placeholder {
+.album-card__placeholder {
   color: var(--muted);
 }
 
-.album-card-play {
+.album-card__play {
   position: absolute;
   right: 6px;
   bottom: 6px;
@@ -73,35 +73,35 @@
   transform: translateY(4px);
 }
 
-.album-card:hover .album-card-play,
-.album-card:focus .album-card-play,
-.album-card:focus-within .album-card-play {
+.album-card:hover .album-card__play,
+.album-card:focus .album-card__play,
+.album-card:focus-within .album-card__play {
   opacity: 1;
   transform: translateY(0);
 }
 
-.album-card-play:hover {
+.album-card__play:hover {
   background: rgba(0, 0, 0, 0.65);
 }
 
-.album-card-copy {
+.album-card__copy {
   min-width: 0;
 }
 
-.album-card-title,
-.album-card-artist {
+.album-card__title,
+.album-card__artist {
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.album-card-title {
+.album-card__title {
   font-weight: 600;
   font-size: 0.92rem;
 }
 
-.album-card-artist {
+.album-card__artist {
   color: var(--muted);
   font-size: 0.82rem;
   margin-top: 2px;
@@ -110,7 +110,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumDetail — 详情视图
    ═══════════════════════════════════════════════════════════════════════════ */
-.album-detail-view {
+.album-detail {
   width: 100%;
   min-height: 0;
   height: 100%;
@@ -122,7 +122,7 @@
   overflow: auto;
 }
 
-.album-detail-head {
+.album-detail__head {
   display: grid;
   grid-template-columns: 116px minmax(0, 1fr) auto;
   grid-template-rows: auto auto;
@@ -136,39 +136,39 @@
   justify-items: flex-start;
 }
 
-.album-detail-cover,
-.album-detail-copy,
-.album-song-copy {
+.album-detail__cover,
+.album-detail__copy,
+.album-detail__song-copy {
   min-width: 0;
 }
 
-.album-detail-cover {
+.album-detail__cover {
   width: 116px;
   height: 116px;
   overflow: hidden;
   border-radius: var(--cover-radius);
   background: rgba(255, 255, 255, 0.06);
 }
-.album-detail-cover:empty {
+.album-detail__cover:empty {
   background: rgba(255, 255, 255, 0.06);
 }
-.album-detail-cover img {
+.album-detail__cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
 }
 
-.album-detail-copy h3 {
+.album-detail__copy h3 {
   margin: 6px 0 8px;
   font-size: 1.4rem;
 }
 
-.album-detail-copy span {
+.album-detail__copy span {
   color: var(--muted);
 }
 
-.album-detail-stats {
+.album-detail__stats {
   display: flex;
   gap: 16px;
   margin-top: 12px;
@@ -176,7 +176,7 @@
   color: var(--muted);
 }
 
-.album-play-button {
+.album-detail__play-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -184,7 +184,7 @@
 }
 
 /* ─── 曲目列表 ──────────────────────────────────────────────────────────── */
-.album-song-list {
+.album-detail__song-list {
   overflow: auto;
   display: grid;
   padding-bottom: calc(var(--dock-height) + 8px);
@@ -193,7 +193,7 @@
   align-content: flex-start;
 }
 
-.album-song-row {
+.album-detail__song-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -209,14 +209,14 @@
   max-width: 100%;
 }
 
-.album-song-main {
+.album-detail__song-main {
   display: flex;
   align-items: center;
   gap: 14px;
   min-width: 0;
 }
 
-.album-song-icon {
+.album-detail__song-icon {
   width: 34px;
   height: 34px;
   border-radius: 12px;
@@ -227,28 +227,28 @@
   flex-shrink: 0;
 }
 
-.album-song-icon.is-playing {
+.album-detail__song-icon--playing {
   color: var(--accent);
 }
 
-.album-song-copy strong,
-.album-song-copy span {
+.album-detail__song-copy strong,
+.album-detail__song-copy span {
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.album-song-copy span {
+.album-detail__song-copy span {
   color: var(--muted);
 }
 
-.album-song-actions {
+.album-detail__song-actions {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.album-song-duration {
+.album-detail__song-duration {
   color: var(--muted);
 }

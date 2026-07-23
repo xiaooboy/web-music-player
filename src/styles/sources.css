@@ -1,23 +1,23 @@
-.source-list {
+.sources__list {
   display: grid;
   gap: 10px;
   margin-top: 16px;
   justify-items: stretch;
 }
 
-.source-list-panel {
+.sources__list-panel {
   margin-top: 0;
   min-height: 0;
   overflow: auto;
   align-content: start;
 }
 
-.source-item,
-.source-copy {
+.sources__item,
+.sources__copy {
   display: flex;
 }
 
-.source-item {
+.sources__item {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -32,27 +32,27 @@
   justify-self: stretch;
 }
 
-.source-copy {
+.sources__copy {
   min-width: 0;
   justify-content: center;
   flex-direction: column;
   gap: 4px;
 }
 
-.source-copy strong,
-.source-copy span {
+.sources__copy strong,
+.sources__copy span {
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.source-copy span {
+.sources__copy span {
   color: rgba(245, 247, 251, 0.64);
   font-size: 0.84rem;
 }
 
-.sources-panel {
+.sources__panel {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
@@ -61,13 +61,13 @@
   padding-right: 0;
 }
 
-.sources-hint {
+.sources__hint {
   margin-top: 6px;
   color: var(--muted);
   line-height: 1.5;
 }
 
-.sources-actions-inline {
+.sources__actions-inline {
   display: flex;
   gap: 4px;
 }

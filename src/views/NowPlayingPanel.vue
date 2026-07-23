@@ -32,7 +32,6 @@ import ContextMenu from "../components/ContextMenu.vue";
 import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { ensureCoverUrl } from "../utils/coverCache";
-import "@/styles/popover.css";
 
 const VOLUME_POPOVER_ID = crypto.randomUUID();
 
@@ -211,13 +210,13 @@ defineExpose({ openSheet, closeSheet });
     ref="sheetRef"
     :snap-points="[1]"
     hide-handle
-    body-class="now-playing-sheet-body"
+    body-class="now-playing__sheet-body"
     @close="handleSheetClose"
   >
-    <section class="now-playing-page">
+    <section class="now-playing">
       <Transition name="backdrop-fade">
         <div
-          class="now-playing-backdrop"
+          class="now-playing__backdrop"
           :key="displayCoverUrl"
           :style="
             displayCoverUrl
@@ -227,7 +226,7 @@ defineExpose({ openSheet, closeSheet });
         ></div>
       </Transition>
 
-      <header class="now-playing-head">
+      <header class="now-playing__head">
         <button
           class="icon-button"
           type="button"
@@ -239,9 +238,9 @@ defineExpose({ openSheet, closeSheet });
         </button>
       </header>
 
-      <div ref="detailBodyRef" class="now-playing-body">
-        <div class="now-playing-meta">
-          <div class="cover-art now-playing-cover">
+      <div ref="detailBodyRef" class="now-playing__body">
+        <div class="now-playing__meta">
+          <div class="cover-art now-playing__cover">
             <img
               v-if="playerStore.currentTrack?.coverBlob"
               :src="ensureCoverUrl(playerStore.currentTrack!.id, playerStore.currentTrack!.coverBlob)"
@@ -250,7 +249,7 @@ defineExpose({ openSheet, closeSheet });
             <span v-else>LM</span>
           </div>
 
-          <div class="now-playing-copy">
+          <div class="now-playing__copy">
             <h3>{{ playerStore.currentTrack?.title || "请选择一首歌曲" }}</h3>
             <p>
               {{
@@ -261,10 +260,10 @@ defineExpose({ openSheet, closeSheet });
             </p>
           </div>
 
-          <div class="now-playing-controls">
-            <div class="now-playing-progress">
+          <div class="now-playing__controls">
+            <div class="now-playing__progress">
               <input
-                class="dock-progress-slider"
+                class="player-dock__progress-slider"
                 type="range"
                 min="0"
                 max="100"
@@ -278,7 +277,7 @@ defineExpose({ openSheet, closeSheet });
                   )
                 "
               />
-              <div class="now-playing-progress-times">
+              <div class="now-playing__progress-times">
                 <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
                 <span>{{
                   formatTime(playerStore.currentTrack?.duration || 0)
@@ -286,8 +285,8 @@ defineExpose({ openSheet, closeSheet });
               </div>
             </div>
 
-            <div class="now-playing-transport">
-              <div class="now-playing-playback">
+            <div class="now-playing__transport">
+              <div class="now-playing__playback">
                 <button
                   class="icon-button"
                   type="button"
@@ -299,7 +298,7 @@ defineExpose({ openSheet, closeSheet });
                 </button>
                 <button
                   class="icon-button play-toggle"
-                  :class="{ 'is-active': playerStore.isPlaying }"
+                  :class="{ 'play-toggle--active': playerStore.isPlaying }"
                   type="button"
                   aria-label="播放或暂停"
                   title="播放或暂停"
@@ -318,9 +317,9 @@ defineExpose({ openSheet, closeSheet });
                   <SkipForward :size="26" />
                 </button>
               </div>
-              <div class="now-playing-actions">
+              <div class="now-playing__actions">
                 <button
-                  class="icon-button is-active"
+                  class="icon-button now-playing__playback-mode now-playing__playback-mode--active"
                   type="button"
                   :aria-label="playerStore.playbackModeLabel"
                   :title="playerStore.playbackModeLabel"
@@ -338,7 +337,7 @@ defineExpose({ openSheet, closeSheet });
                 </button>
                 <button
                   class="icon-button favorite-button"
-                  :class="{ 'is-active': isCurrentTrackLiked }"
+                  :class="{ 'favorite-button--active': isCurrentTrackLiked }"
                   type="button"
                   :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
                   :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
@@ -354,7 +353,7 @@ defineExpose({ openSheet, closeSheet });
                   />
                 </button>
                 <button
-                  class="icon-button queue-button"
+                  class="icon-button now-playing__queue-button"
                   type="button"
                   aria-label="播放队列"
                   title="播放队列"
@@ -363,7 +362,7 @@ defineExpose({ openSheet, closeSheet });
                   <List :size="20" />
                 </button>
                 <button
-                  class="icon-button volume-button"
+                  class="icon-button player-dock__volume-button"
                   type="button"
                   :aria-label="
                     playerStore.volumePercent === 0 ? '取消静音' : '音量'
@@ -375,7 +374,7 @@ defineExpose({ openSheet, closeSheet });
                   <Volume2 v-else :size="20" />
                 </button>
                 <button
-                  class="icon-button more-button"
+                  class="icon-button now-playing__more-button"
                   type="button"
                   aria-label="更多操作"
                   aria-haspopup="menu"
@@ -389,25 +388,25 @@ defineExpose({ openSheet, closeSheet });
           </div>
         </div>
 
-        <div class="now-playing-lyrics">
+        <div class="now-playing__lyrics">
           <div
             ref="lyricsScrollRef"
-            class="lyrics-scroll"
+            class="now-playing__lyrics-scroll"
             aria-label="歌词"
             :class="{
-              'is-collapsed': playerStore.currentLyricsLines.length < 5,
+              'now-playing__lyrics-scroll--collapsed': playerStore.currentLyricsLines.length < 5,
             }"
             @wheel="handleLyricsWheel"
           >
-            <div class="lyrics-list" role="list">
+            <div class="now-playing__lyrics-list" role="list">
               <template v-if="playerStore.currentLyricsLines.length">
                 <div
                   v-for="(line, index) in playerStore.currentLyricsLines"
                   :key="`${index}-${line.time ?? 'plain'}`"
-                  class="lyrics-line"
+                  class="now-playing__lyrics-line"
                   :class="{
-                    'is-active': index === playerStore.activeLyricsIndex,
-                    'is-clickable': line.time !== null,
+                    'now-playing__lyrics-line--active': index === playerStore.activeLyricsIndex,
+                    'now-playing__lyrics-line--clickable': line.time !== null,
                   }"
                   :tabindex="line.time !== null ? 0 : undefined"
                   :role="line.time !== null ? 'button' : 'listitem'"
@@ -428,7 +427,7 @@ defineExpose({ openSheet, closeSheet });
               </template>
               <div
                 v-else
-                class="lyrics-line is-active"
+                class="now-playing__lyrics-line now-playing__lyrics-line--active"
                 tabindex="0"
                 role="listitem"
                 aria-label="暂无歌词"
@@ -448,12 +447,12 @@ defineExpose({ openSheet, closeSheet });
         @remove="playerStore.removeFromQueue($event)"
       />
       <div
-        class="now-playing-volume-popover"
+        class="now-playing__volume-popover"
         popover="auto"
         :id="VOLUME_POPOVER_ID"
       >
         <input
-          class="now-playing-volume-slider"
+          class="now-playing__volume-slider"
           type="range"
           min="0"
           max="100"

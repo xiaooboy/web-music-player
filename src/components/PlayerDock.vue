@@ -57,12 +57,12 @@ function handleQueueClick() {
     "
   >
     <button
-      class="dock-track now-playing-trigger"
+      class="player-dock__track player-dock__now-playing-trigger"
       type="button"
       title="查看播放详情"
       @click="playerStore.currentTrack && uiStore.openNowPlaying()"
     >
-      <div class="cover-art dock-cover">
+      <div class="cover-art player-dock__cover">
         <img
           v-if="playerStore.currentTrack?.coverBlob"
           :src="ensureCoverUrl(playerStore.currentTrack!.id, playerStore.currentTrack!.coverBlob)"
@@ -71,7 +71,7 @@ function handleQueueClick() {
         <span v-else aria-hidden="true">LM</span>
       </div>
 
-      <div class="dock-copy">
+      <div class="player-dock__copy">
         <strong>{{
           playerStore.currentTrack?.title || "请选择一首歌曲"
         }}</strong>
@@ -83,9 +83,9 @@ function handleQueueClick() {
       </div>
     </button>
 
-    <div class="dock-center">
+    <div class="player-dock__center">
       <button
-        class="icon-button playback-mode-button is-active"
+        class="icon-button player-dock__playback-mode player-dock__playback-mode--active"
         type="button"
         :aria-label="playerStore.playbackModeLabel"
         :title="playerStore.playbackModeLabel"
@@ -106,7 +106,7 @@ function handleQueueClick() {
       </button>
       <button
         class="icon-button play-toggle"
-        :class="{ 'is-active': playerStore.isPlaying }"
+        :class="{ 'play-toggle--active': playerStore.isPlaying }"
         type="button"
         aria-label="播放或暂停"
         title="播放或暂停"
@@ -126,7 +126,7 @@ function handleQueueClick() {
       </button>
       <button
         class="icon-button favorite-button"
-        :class="{ 'is-active': isCurrentTrackLiked }"
+        :class="{ 'favorite-button--active': isCurrentTrackLiked }"
         type="button"
         :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
         :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
@@ -140,7 +140,7 @@ function handleQueueClick() {
         />
       </button>
       <button
-        class="icon-button queue-button"
+        class="icon-button player-dock__queue-button"
         type="button"
         aria-label="播放队列"
         title="播放队列"
@@ -150,10 +150,10 @@ function handleQueueClick() {
       </button>
     </div>
 
-    <div class="dock-extra">
+    <div class="player-dock__extra">
         <input
           v-if="playerStore.currentTrack"
-          class="dock-progress-slider"
+          class="player-dock__progress-slider"
           type="range"
           min="0"
           max="100"

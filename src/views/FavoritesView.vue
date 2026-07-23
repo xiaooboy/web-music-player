@@ -36,8 +36,8 @@ function handleNavigateToAlbum(albumName: string) {
 </script>
 
 <template>
-  <div class="tracks-view favorites-view">
-    <header class="tracks-searchbar">
+  <div class="tracks__view favorites-view">
+    <header class="tracks__searchbar">
       <label class="search-field">
         <Search :size="18" aria-hidden="true" />
         <input
@@ -51,7 +51,7 @@ function handleNavigateToAlbum(albumName: string) {
 
     <SectionHeader title="收藏" />
 
-    <div class="tracks-scroll">
+    <div class="tracks__scroll">
       <TrackTable
         :tracks="visibleTracks"
         :current-track-id="playerStore.currentTrackId"

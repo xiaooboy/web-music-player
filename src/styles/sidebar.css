@@ -11,17 +11,17 @@
 }
 
 
-.sidebar.is-collapsed {
+.sidebar--collapsed {
   width: 82px;
 }
 
-.brand {
+.sidebar__brand {
   display: flex;
   justify-content: flex-start;
 }
 
 /* sidebar 内的高度占位，与固定 brand 的 Music3 图标等高 */
-.brand-placeholder {
+.sidebar__brand-placeholder {
   height: 32px;
   display: flex;
   align-items: center;
@@ -29,7 +29,7 @@
 }
 
 /* App 层固定 brand：坐标与 sidebar 内原始位置完全重合 */
-.brand-fixed {
+.sidebar__brand-fixed {
   position: fixed;
   top: calc(18px + var(--window-safe-top));
   left: 16px;
@@ -38,7 +38,7 @@
   pointer-events: none;
 }
 
-.brand-mark {
+.sidebar__brand-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -46,18 +46,18 @@
   flex-shrink: 0;
 }
 
-.nav-item small {
+.sidebar__nav-item small {
   color: rgba(245, 247, 251, 0.66);
 }
 
-.nav-panel {
+.sidebar__nav-panel {
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: flex-start;
 }
 
-.nav-item {
+.sidebar__nav-item {
   background: transparent;
   display: flex;
   align-items: center;
@@ -68,25 +68,25 @@
   font-weight: 700;
 }
 
-.nav-item:hover .nav-label {
+.sidebar__nav-item:hover .sidebar__nav-label {
   color: var(--text);
 }
 
-.nav-item.is-active .nav-label {
+.sidebar__nav-item--active .sidebar__nav-label {
   color: var(--accent-deep);
 }
 
-.nav-item.is-active .nav-icon {
+.sidebar__nav-item--active .sidebar__nav-icon {
   color: var(--accent-deep);
   transition: color 0.5s ease;
 }
 
-.nav-icon {
+.sidebar__nav-icon {
   color: white;
   flex-shrink: 0;
 }
 
-.nav-label {
+.sidebar__nav-label {
   font-size: 0.9rem;
   color: var(--muted);
   white-space: nowrap;
@@ -97,7 +97,7 @@
   overflow: hidden;
 }
 
-.collapse-btn {
+.sidebar__collapse-btn {
   background: transparent;
   display: flex;
   align-items: center;
@@ -111,6 +111,6 @@
   align-self: flex-start;
 }
 
-.collapse-btn svg {
+.sidebar__collapse-btn svg {
   transition: transform 0.25s ease;
 }

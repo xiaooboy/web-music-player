@@ -8,7 +8,7 @@ const toastList = toasts;
   <Teleport to="body">
     <div class="toast-container" role="status" aria-live="polite" aria-atomic="true">
       <TransitionGroup name="toast">
-        <div v-for="item in toastList" :key="item.id" class="toast-item">
+        <div v-for="item in toastList" :key="item.id" class="toast-container__item">
           {{ item.message }}
         </div>
       </TransitionGroup>
@@ -29,7 +29,7 @@ const toastList = toasts;
   pointer-events: none;
 }
 
-.toast-item {
+.toast-container__item {
   padding: 10px 20px;
   border-radius: 8px;
   background: rgba(32, 32, 32, 0.9);

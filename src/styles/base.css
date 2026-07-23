@@ -56,9 +56,12 @@
 }
 
 *,
-*::before,
-*::after {
+::before,
+::after {
   box-sizing: border-box;
+}
+
+* {
   margin: 0;
   padding: 0;
 }
@@ -90,17 +93,17 @@ body {
   background: var(--gradient-bg);
 }
 
-*::-webkit-scrollbar {
+::webkit-scrollbar {
   width: var(--scrollbar-size);
   height: var(--scrollbar-size);
 }
 
-*::-webkit-scrollbar-track {
+::webkit-scrollbar-track {
   background: transparent;
   border-radius: 999px;
 }
 
-*::-webkit-scrollbar-thumb {
+::webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
     var(--accent-muted) 0%,
@@ -110,7 +113,7 @@ body {
   border-radius: 999px;
 }
 
-*::-webkit-scrollbar-thumb:hover {
+::webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
     var(--accent-bright) 0%,
@@ -118,19 +121,20 @@ body {
   );
 }
 
-*::-webkit-scrollbar-button {
+::webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
 
-*::-webkit-scrollbar-corner {
+::webkit-scrollbar-corner {
   background: transparent;
 }
 
 button,
 input {
   font: inherit;
+  background-color: unset;
 }
 
 input,
@@ -172,7 +176,7 @@ img {
   transition: opacity 0.35s ease;
 }
 
-.img-fadein.is-loaded {
+.img-fadein--loaded {
   opacity: 1;
 }
 
@@ -184,8 +188,8 @@ svg {
 /* PWA 模式下统一使用 default 光标 */
 @media (display-mode: standalone), (display-mode: window-controls-overlay) {
   *,
-  *::before,
-  *::after {
+  ::before,
+  ::after {
     cursor: default !important;
   }
 }
@@ -195,8 +199,8 @@ svg {
 /* ─── 无障碍：减少动画偏好 ────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
-  *::before,
-  *::after {
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -213,7 +217,7 @@ svg {
     --accent-dim: rgba(30, 215, 96, 0.2);
   }
 
-  .context-menu-item.is-disabled {
+  .context-menu__item--disabled {
     text-decoration: line-through;
   }
 }

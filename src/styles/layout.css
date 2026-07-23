@@ -20,12 +20,12 @@
 
 
 .main-stage,
-.track-list {
+.track-table__list {
   display: grid;
   gap: 12px;
   justify-items: start;
 }
-.track-list {
+.track-table__list {
   align-content: start;
   grid-auto-rows: max-content;
   padding-bottom: var(--dock-height);
@@ -49,7 +49,7 @@
   height: 0;
 }
 
-.main-stage > .tracks-view {
+.main-stage > .tracks__view {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -57,9 +57,9 @@
   align-self: stretch;
 }
 
-.dock-track,
-.dock-transport,
-.dock-volume-wrap {
+.player-dock__track,
+.player-dock__transport,
+.player-dock__volume-wrap {
   display: flex;
 }
 

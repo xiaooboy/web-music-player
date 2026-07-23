@@ -45,7 +45,7 @@ useHistoryBack(navigateBack);
 </script>
 
 <template>
-  <section v-if="playlistStore.selectedPlaylist" class="main-panel playlist-detail-view">
+  <section v-if="playlistStore.selectedPlaylist" class="main-panel playlist-detail">
     <SectionHeader :title="playlistStore.selectedPlaylist.name">
       <template #title>
         <h2>

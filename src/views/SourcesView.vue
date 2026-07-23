@@ -68,10 +68,10 @@ function confirmRemove() {
 </script>
 
 <template>
-  <section class="main-panel sources-panel">
+  <section class="main-panel sources__panel">
     <SectionHeader title="音乐源">
       <template #right>
-        <div class="sources-actions-inline">
+        <div class="sources__actions-inline">
           <button
             v-if="showAddButton"
             class="icon-button"
@@ -104,18 +104,18 @@ function confirmRemove() {
       </template>
     </SectionHeader>
 
-    <p class="sources-hint">{{ libraryHint }}</p>
+    <p class="sources__hint">{{ libraryHint }}</p>
 
     <div
       v-if="libraryStore.musicSources.length"
-      class="source-list source-list-panel scroll-borrow"
+      class="sources__list sources__list-panel scroll-borrow"
     >
       <div
         v-for="source in libraryStore.musicSources"
         :key="source.id"
-        class="source-item"
+        class="sources__item"
       >
-        <div class="source-copy">
+        <div class="sources__copy">
           <strong>{{ source.name }}</strong>
           <span>{{
             source.kind === "file-launch"
@@ -128,7 +128,7 @@ function confirmRemove() {
           }}</span>
         </div>
         <button
-          class="source-remove icon-button"
+          class="sources__remove icon-button"
           type="button"
           title="移除"
           @click="requestRemoveSource(source.id)"
@@ -151,18 +151,18 @@ function confirmRemove() {
     >
       <form method="dialog" @submit.prevent="confirmRemove">
         <h3>移除音乐源</h3>
-        <p class="form-dialog-text">
+        <p class="form-dialog__text">
           确定移除「{{ removingSourceName }}」吗？移除后该目录中的歌曲将从播放列表中消失。
         </p>
-        <div class="dialog-actions">
+        <div class="form-dialog__actions">
           <button
             type="button"
-            class="dialog-btn"
+            class="form-dialog__btn"
             @click="confirmVisible = false"
           >
             取消
           </button>
-          <button type="submit" class="dialog-btn dialog-btn--danger">
+          <button type="submit" class="form-dialog__btn form-dialog__btn--danger">
             移除
           </button>
         </div>

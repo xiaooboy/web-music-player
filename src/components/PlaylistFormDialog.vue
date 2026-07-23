@@ -49,7 +49,7 @@ function handleConfirm() {
               : "删除歌单"
         }}
       </h3>
-      <p v-if="mode === 'delete'" class="form-dialog-text">
+      <p v-if="mode === 'delete'" class="form-dialog__text">
         确定删除歌单「{{ initialName }}」吗？
       </p>
       <input
@@ -59,21 +59,21 @@ function handleConfirm() {
         aria-label="歌单名称"
         placeholder="歌单名称"
         autofocus
-        class="form-dialog-input"
+        class="form-dialog__input"
       />
-      <div class="dialog-actions">
+      <div class="form-dialog__actions">
         <button
           type="button"
-          class="dialog-btn"
+          class="form-dialog__btn"
           @click="visible = false"
         >
           取消
         </button>
         <button
           type="submit"
-          class="dialog-btn"
+          class="form-dialog__btn"
           :class="
-            mode === 'delete' ? 'dialog-btn--danger' : 'dialog-btn--primary'
+            mode === 'delete' ? 'form-dialog__btn--danger' : 'form-dialog__btn--primary'
           "
         >
           {{ mode === "create" ? "创建" : mode === "edit" ? "保存" : "删除" }}
@@ -157,7 +157,7 @@ function handleConfirm() {
   font-weight: 700;
 }
 
-.form-dialog-input {
+.form-dialog__input {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -169,18 +169,18 @@ function handleConfirm() {
   transition: border-color 0.15s ease;
 }
 
-.form-dialog-input:focus {
+.form-dialog__input:focus {
   border-color: var(--accent);
 }
 
-.dialog-actions {
+.form-dialog__actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
 }
 
-.dialog-btn {
+.form-dialog__btn {
   padding: 8px 18px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.06);
@@ -193,36 +193,36 @@ function handleConfirm() {
     color 0.15s ease;
 }
 
-.dialog-btn:hover {
+.form-dialog__btn:hover {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.dialog-btn--primary {
+.form-dialog__btn--primary {
   background: var(--accent-deep);
   border-color: var(--accent-deep);
   color: #000;
   font-weight: 600;
 }
 
-.dialog-btn--primary:hover {
+.form-dialog__btn--primary:hover {
   background: var(--accent-bright);
 }
 
 /* ─── 删除确认文本 ─────────────────────────────────────────────────────────── */
-.form-dialog-text {
+.form-dialog__text {
   color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.5;
 }
 
-.dialog-btn--danger {
+.form-dialog__btn--danger {
   background: rgba(220, 60, 60, 0.85);
   border-color: rgba(220, 60, 60, 0.85);
   color: #fff;
   font-weight: 600;
 }
 
-.dialog-btn--danger:hover {
+.form-dialog__btn--danger:hover {
   background: rgba(220, 60, 60, 1);
 }
 </style>

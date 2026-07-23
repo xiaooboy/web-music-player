@@ -423,16 +423,16 @@ defineExpose({ open, close });
   <dialog ref="dialogRef" class="bottom-sheet" @click="handleBackdropClick" @close="handleDialogClose">
     <div
       ref="bodyRef"
-      class="bottom-sheet-body"
+      class="bottom-sheet__body"
       :class="bodyClass"
       @click.stop
       @touchstart.stop="handleTouchStart"
       @touchend.stop="handleTouchEnd"
       @mousedown.stop="handleMouseDown"
     >
-      <div v-if="!hideHandle" class="bottom-sheet-handle" :class="handleClass" aria-hidden="true" />
-      <div v-if="title" class="bottom-sheet-title" :class="titleClass">{{ title }}</div>
-      <div class="bottom-sheet-content" :class="contentClass">
+      <div v-if="!hideHandle" class="bottom-sheet__handle" :class="handleClass" aria-hidden="true" />
+      <div v-if="title" class="bottom-sheet__title" :class="titleClass">{{ title }}</div>
+      <div class="bottom-sheet__content" :class="contentClass">
         <slot />
       </div>
     </div>
@@ -502,7 +502,7 @@ defineExpose({ open, close });
 }
 
 /* 内容区 */
-.bottom-sheet-body {
+.bottom-sheet__body {
   max-height: inherit;
   background: var(--panel);
   border-radius: 16px 16px 0 0;
@@ -512,7 +512,7 @@ defineExpose({ open, close });
   will-change: transform;
 }
 
-.bottom-sheet-handle {
+.bottom-sheet__handle {
   flex-shrink: 0;
   width: 36px;
   height: 4px;
@@ -521,7 +521,7 @@ defineExpose({ open, close });
   margin: 8px auto 4px;
 }
 
-.bottom-sheet-title {
+.bottom-sheet__title {
   flex-shrink: 0;
   padding: 12px 20px 12px;
   font-size: 0.95rem;
@@ -530,13 +530,13 @@ defineExpose({ open, close });
   border-bottom: 1px solid var(--line);
 }
 
-.bottom-sheet-content {
+.bottom-sheet__content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
-.bottom-sheet-content::-webkit-scrollbar {
+.bottom-sheet__content::-webkit-scrollbar {
   width: 0;
   height: 0;
 }

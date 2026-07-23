@@ -2,7 +2,7 @@ import { createApp } from "vue";
 import { registerSW } from "virtual:pwa-register";
 import { createPinia } from "pinia";
 import App from "./App.vue";
-import "./styles.css";
+import "./styles/entry.css";
 
 /* ─── 运行时检测滚动条实际占用宽度 ───────────────────────────────────────────
    overlay scrollbar 不占布局空间时测量值为 0，经典滚动条为实际像素宽度。
