@@ -56,11 +56,9 @@
 }
 
 *,
-*::before,
-*::after {
+::before,
+::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 /* dialog / popover 依赖 margin: auto 实现居中，全局清零后需恢复 */
@@ -70,6 +68,8 @@ dialog,
 }
 
 * {
+  margin: 0;
+  padding: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-muted) transparent;
   -webkit-tap-highlight-color: transparent;
@@ -90,17 +90,17 @@ body {
   background: var(--gradient-bg);
 }
 
-*::-webkit-scrollbar {
+::webkit-scrollbar {
   width: var(--scrollbar-size);
   height: var(--scrollbar-size);
 }
 
-*::-webkit-scrollbar-track {
+::webkit-scrollbar-track {
   background: transparent;
   border-radius: 999px;
 }
 
-*::-webkit-scrollbar-thumb {
+::webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
     var(--accent-muted) 0%,
@@ -110,7 +110,7 @@ body {
   border-radius: 999px;
 }
 
-*::-webkit-scrollbar-thumb:hover {
+::webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
     var(--accent-bright) 0%,
@@ -118,19 +118,20 @@ body {
   );
 }
 
-*::-webkit-scrollbar-button {
+::webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
 
-*::-webkit-scrollbar-corner {
+::webkit-scrollbar-corner {
   background: transparent;
 }
 
 button,
 input {
   font: inherit;
+  background-color: unset;
 }
 
 input,
@@ -144,7 +145,7 @@ button {
   cursor: pointer;
 }
 
-/* ─── 无障碍：焦点可见样式 ──────────────────────────────────────────────────── */
+/* 无障碍：焦点可见样式 */
 :focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--accent-muted);
@@ -159,23 +160,6 @@ img {
   max-width: 100%;
 }
 
-/* ─── 工具类：借用空间滚动条（gutter 不压缩内容） ─────────────────────────── */
-.scroll-borrow {
-  scrollbar-gutter: stable;
-  width: calc(100% + var(--scrollbar-compensation));
-  margin-right: calc(var(--scrollbar-compensation) * -1);
-}
-
-/* ─── 工具类：图片淡入 ─────────────────────────────────────────────────────── */
-.img-fadein {
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.img-fadein.is-loaded {
-  opacity: 1;
-}
-
 svg {
   display: block;
   flex-shrink: 0;
@@ -184,27 +168,27 @@ svg {
 /* PWA 模式下统一使用 default 光标 */
 @media (display-mode: standalone), (display-mode: window-controls-overlay) {
   *,
-  *::before,
-  *::after {
+  ::before,
+  ::after {
     cursor: default !important;
   }
 }
 
 
 
-/* ─── 无障碍：减少动画偏好 ────────────────────────────────────────────────── */
+/* 无障碍：减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
   *,
-  *::before,
-  *::after {
+  ::before,
+  ::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
-/* ─── 无障碍：高对比度偏好 ────────────────────────────────────────────────── */
+/* 无障碍：高对比度偏好 */
 @media (prefers-contrast: more) {
   :root {
     --line: rgba(255, 255, 255, 0.3);
@@ -213,20 +197,7 @@ svg {
     --accent-dim: rgba(30, 215, 96, 0.2);
   }
 
-  .context-menu-item.is-disabled {
+  .context-menu__item--disabled {
     text-decoration: line-through;
   }
-}
-
-/* ─── 无障碍：仅屏幕阅读器可见 ─────────────────────────────────────────────── */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }

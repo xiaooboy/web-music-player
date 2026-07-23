@@ -1,4 +1,5 @@
 import { shallowReactive, useTemplateRef } from "vue";
+import type { ComponentExposed } from "vue-component-type-helpers";
 import { Heart, ListPlus, Play, ListMusic, Trash2 } from "@lucide/vue";
 import {
   usePlayerStore,
@@ -27,9 +28,9 @@ export function useTrackContextMenu() {
   const uiStore = useUIStore();
   const isSmallScreen = useMediaQuery("(max-width: 640px)");
   const contextMenuRef =
-    useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
+    useTemplateRef<ComponentExposed<typeof ContextMenu>>("contextMenu");
   const actionSheetRef =
-    useTemplateRef<InstanceType<typeof ActionSheet>>("actionSheet");
+    useTemplateRef<ComponentExposed<typeof ActionSheet>>("actionSheet");
   const menuProps = shallowReactive({
     title: "",
     menu: [] as MenuItem[],

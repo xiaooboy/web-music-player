@@ -10,7 +10,7 @@ import {
 } from "./shared";
 import type { Track } from "../../types";
 
-// ─── FLAC 块解析 ───
+// FLAC 块解析
 
 function parseFlacBlock(
   metadata: Partial<Track>,
@@ -36,7 +36,7 @@ function parseFlacBlock(
   }
 }
 
-// ─── FLAC 解析入口 ───
+// FLAC 解析入口
 
 export async function parseFlacMetadata(file: File) {
   const MAX_BLOCK_READ = 10 * 1024 * 1024;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
 import EmptyState from "./EmptyState.vue";
@@ -26,7 +26,7 @@ const emit = defineEmits<{
   navigateToAlbum: [albumName: string];
 }>();
 
-// ─── 右键菜单 ────────────────────────────────────────────────────────────────
+// 右键菜单
 const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
@@ -45,10 +45,10 @@ function handleMoreKeydown(event: KeyboardEvent, track: Track) {
   }
 }
 
-// ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
+// 虚拟滚动
 // 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
 // 挂载和切换面板的耗时是 O(1) 而非 O(n)。
-const listRef = ref<HTMLElement | null>(null);
+const listRef = useTemplateRef('listRef');
 
 const rowVirtualizer = useVirtualizer(
   computed(() => ({
@@ -91,7 +91,7 @@ function scrollToCurrentTrack() {
 
 <template>
   <section class="track-table" role="grid" aria-label="歌曲列表">
-    <div v-if="tracks.length" class="track-header" role="row">
+    <div v-if="tracks.length" class="track-table__header" role="row">
       <span role="columnheader">{{ tracks.length }} 首</span>
       <span role="columnheader">专辑</span>
       <span role="columnheader">时长</span>
@@ -100,8 +100,8 @@ function scrollToCurrentTrack() {
 
     <div
       ref="listRef"
-      class="track-list scroll-borrow"
-      :class="{ 'track-list-empty': !tracks.length }"
+      class="track-table__list scroll-borrow"
+      :class="{ 'track-table__list-empty': !tracks.length }"
     >
       <template v-if="tracks.length">
         <!-- 撑起虚拟总高度，行用 absolute + translateY 定位 -->
@@ -115,8 +115,8 @@ function scrollToCurrentTrack() {
           <div
             v-for="{ vRow, item } in virtualItems"
             :key="item.id"
-            class="track-row"
-            :class="{ 'is-active': item.id === currentTrackId }"
+            class="track-table__row"
+            :class="{ 'track-table__row--active': item.id === currentTrackId }"
             tabindex="0"
             role="row"
             :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
@@ -135,24 +135,25 @@ function scrollToCurrentTrack() {
             "
             @contextmenu="handleContextMenu($event, item)"
           >
-            <div class="track-song">
-              <div class="track-thumb">
+            <div class="track-table__song">
+              <div class="track-table__thumb">
                 <img
                   v-if="ensureCoverUrl(item.id, item.coverBlob)"
+                  width="44"
+                  height="44"
                   :src="ensureCoverUrl(item.id, item.coverBlob)"
                   :alt="`${item.title} 封面`"
                   loading="lazy"
                 />
-                <!-- <span v-else>♪</span> -->
               </div>
-              <div class="track-copy">
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.artist }}</span>
+              <div class="track-table__copy">
+                <strong class="truncate--block">{{ item.title }}</strong>
+                <span class="truncate--block">{{ item.artist }}</span>
               </div>
             </div>
-            <div class="track-album">
+            <div class="track-table__album">
               <strong
-                class="album-link"
+                class="track-table__album-link"
                 role="link"
                 tabindex="0"
                 :aria-label="`查看专辑：${item.album}`"
@@ -160,12 +161,12 @@ function scrollToCurrentTrack() {
                 @keydown.enter.stop="emit('navigateToAlbum', item.album)"
               >{{ item.album }}</strong>
             </div>
-            <span class="track-duration">{{ formatTime(item.duration) }}</span>
-            <div class="track-row-action">
+            <span class="track-table__duration">{{ formatTime(item.duration) }}</span>
+            <div class="track-table__row-action">
               <button
-                class="track-row-play"
+                class="icon-btn track-row-play"
                 :class="{
-                  'is-playing': item.id === currentTrackId && isPlaying,
+                  'track-row-play--playing': item.id === currentTrackId && isPlaying,
                 }"
                 type="button"
                 :title="
@@ -187,8 +188,8 @@ function scrollToCurrentTrack() {
                                 <Play v-else :size="20" />
               </button>
               <button
-                class="track-row-like"
-                :class="{ 'is-active': likedTrackIdSet.has(item.id) }"
+                class="icon-btn track-row-like"
+                :class="{ 'track-row-like--active': likedTrackIdSet.has(item.id) }"
                 type="button"
                 :title="likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'"
                 :aria-label="
@@ -202,7 +203,7 @@ function scrollToCurrentTrack() {
                 />
               </button>
               <button
-                class="track-row-more"
+                class="icon-btn track-row-more"
                 type="button"
                 title="更多操作"
                 aria-label="更多操作"
@@ -223,7 +224,7 @@ function scrollToCurrentTrack() {
     <!-- 滚动到当前音乐按钮 -->
     <button
       v-if="currentTrackId && tracks.length"
-      class="scroll-to-current"
+      class="track-table__anchor"
       type="button"
       aria-label="滚动到当前播放音乐"
       title="滚动到当前播放音乐"

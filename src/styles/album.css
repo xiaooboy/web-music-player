@@ -3,56 +3,56 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 18px;
-  min-height: 0;
-  height: 100%;
   align-content: start;
+  height: 100%;
+  min-height: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumGrid — 多列网格 + 虚拟滚动
    ═══════════════════════════════════════════════════════════════════════════ */
-.album-grid-scroll {
-  overflow-y: auto;
+.album-grid {
   height: 100%;
   padding-bottom: var(--dock-height);
+  overflow-y: auto;
 }
 
-.album-grid-row {
+.album-grid__row {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--min-col-width,150px), 1fr));
   gap: 30px;
 }
 
-/* ─── 专辑卡片 ──────────────────────────────────────────────────────────── */
+/* 专辑卡片 */
 .album-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  cursor: pointer;
-  text-align: left;
   color: inherit;
+  text-align: left;
   background: transparent;
+  cursor: pointer;
 }
 
-.album-card-cover {
-  aspect-ratio: 1;
-  border-radius: var(--cover-radius);
+.album-card__cover {
+  position: relative;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.06);
-  position: relative;
+  border-radius: var(--cover-radius);
+  aspect-ratio: 1;
 }
-.album-card-cover img {
+.album-card__cover img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: inherit;
+  object-fit: cover;
 }
 
-.album-card-placeholder {
+.album-card__placeholder {
   color: var(--muted);
 }
 
-.album-card-play {
+.album-card__play {
   position: absolute;
   right: 6px;
   bottom: 6px;
@@ -61,68 +61,57 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(6px);
-  opacity: 0;
   color: #fff;
-  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  backdrop-filter: blur(6px);
+  transform: translateY(4px);
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
-  transform: translateY(4px);
+  cursor: pointer;
+  opacity: 0;
 }
 
-.album-card:hover .album-card-play,
-.album-card:focus .album-card-play,
-.album-card:focus-within .album-card-play {
-  opacity: 1;
+.album-card:hover .album-card__play,
+.album-card:focus .album-card__play,
+.album-card:focus-within .album-card__play {
   transform: translateY(0);
+  opacity: 1;
 }
 
-.album-card-play:hover {
+.album-card__play:hover {
   background: rgba(0, 0, 0, 0.65);
 }
 
-.album-card-copy {
+.album-card__copy {
   min-width: 0;
 }
 
-.album-card-title,
-.album-card-artist {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-.album-card-title {
-  font-weight: 600;
+
+.album-card__title {
   font-size: 0.92rem;
+  font-weight: 600;
 }
 
-.album-card-artist {
-  color: var(--muted);
-  font-size: 0.82rem;
+.album-card__artist {
   margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumDetail — 详情视图
    ═══════════════════════════════════════════════════════════════════════════ */
-.album-detail-view {
+.album-detail {
   width: 100%;
-  min-height: 0;
   height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 16px;
-  align-self: start;
-  align-content: start;
+  min-height: 0;
   overflow: auto;
 }
 
-.album-detail-head {
+.album-detail__head {
   display: grid;
   grid-template-columns: 116px minmax(0, 1fr) auto;
   grid-template-rows: auto auto;
@@ -131,44 +120,44 @@
   border-radius: 24px;
 }
 
-.icon-button.back-button {
+.icon-btn.back-button {
   grid-column: 1 / -1;
   justify-items: flex-start;
 }
 
-.album-detail-cover,
-.album-detail-copy,
-.album-song-copy {
+.album-detail__cover,
+.album-detail__copy,
+.album-detail__song-copy {
   min-width: 0;
 }
 
-.album-detail-cover {
+.album-detail__cover {
   width: 116px;
   height: 116px;
   overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
   border-radius: var(--cover-radius);
+}
+.album-detail__cover:empty {
   background: rgba(255, 255, 255, 0.06);
 }
-.album-detail-cover:empty {
-  background: rgba(255, 255, 255, 0.06);
-}
-.album-detail-cover img {
+.album-detail__cover img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: inherit;
+  object-fit: cover;
 }
 
-.album-detail-copy h3 {
+.album-detail__copy h3 {
   margin: 6px 0 8px;
   font-size: 1.4rem;
 }
 
-.album-detail-copy span {
+.album-detail__copy span {
   color: var(--muted);
 }
 
-.album-detail-stats {
+.album-detail__stats {
   display: flex;
   gap: 16px;
   margin-top: 12px;
@@ -176,79 +165,71 @@
   color: var(--muted);
 }
 
-.album-play-button {
+.album-detail__play-button {
   display: inline-flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   min-width: 116px;
 }
 
-/* ─── 曲目列表 ──────────────────────────────────────────────────────────── */
-.album-song-list {
-  overflow: auto;
-  display: grid;
+/* 曲目列表 */
+.album-detail__song-list {
   padding-bottom: calc(var(--dock-height) + 8px);
-  height: 100%;
-  gap: 8px;
-  align-content: flex-start;
 }
 
-.album-song-row {
+.album-detail__song-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: center;
   align-self: start;
-  gap: 12px;
+  width: 100%;
+  max-width: 100%;
   padding: 12px 14px;
+  color: inherit;
+  text-align: left;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 18px;
-  text-align: left;
-  color: inherit;
-  width: 100%;
-  max-width: 100%;
+  + & {
+    margin-top: 8px;
+  }
 }
 
-.album-song-main {
+.album-detail__song-main {
   display: flex;
-  align-items: center;
   gap: 14px;
+  align-items: center;
   min-width: 0;
 }
 
-.album-song-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+.album-detail__song-icon {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  width: 34px;
+  height: 34px;
   color: var(--text);
-  flex-shrink: 0;
+  border-radius: 12px;
 }
 
-.album-song-icon.is-playing {
+.album-detail__song-icon--playing {
   color: var(--accent);
 }
 
-.album-song-copy strong,
-.album-song-copy span {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-.album-song-copy span {
+
+.album-detail__song-copy span {
   color: var(--muted);
 }
 
-.album-song-actions {
+.album-detail__song-actions {
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 }
 
-.album-song-duration {
+.album-detail__song-duration {
   color: var(--muted);
 }

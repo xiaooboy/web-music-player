@@ -31,7 +31,7 @@ const viewComponents: Record<ViewName, Component> = {
   sources: SourcesView,
 };
 
-// ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────────
+// 无障碍：屏幕阅读器状态播报
 const screenReaderAnnouncement = computed(() => {
   const track = playerStore.currentTrack;
   if (!track) return "";
@@ -105,7 +105,7 @@ function handleKeydown(event: KeyboardEvent) {
 function handleContextMenuBlock(event: MouseEvent) {
   // 允许音乐行上的右键菜单，其他位置阻止默认行为
   const target = event.target as HTMLElement;
-  if (target.closest(".track-row")) return;
+  if (target.closest(".track-table__row")) return;
   event.preventDefault();
 }
 </script>

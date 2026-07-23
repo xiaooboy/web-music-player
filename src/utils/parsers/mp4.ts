@@ -8,7 +8,7 @@ import {
 } from "./shared";
 import type { Track } from "../../types";
 
-// ─── MP4 辅助函数 ───
+// MP4 辅助函数
 
 function isMp4ContainerAtom(atomType: string) {
   return (
@@ -44,7 +44,7 @@ function decodeMp4Text(payload: Uint8Array) {
   }
 }
 
-// ─── MP4 atom 遍历 ───
+// MP4 atom 遍历
 
 function walkMp4Atoms(
   bytes: Uint8Array,
@@ -189,7 +189,7 @@ function parseMp4MetadataAtom(
   }
 }
 
-// ─── moov atom 定位 ───
+// moov atom 定位
 
 async function findMp4MoovAtom(
   file: File,
@@ -228,7 +228,7 @@ async function findMp4MoovAtom(
   return null;
 }
 
-// ─── MP4 解析入口 ───
+// MP4 解析入口
 
 export async function parseMp4Metadata(file: File) {
   const MAX_MOOV_READ = 10 * 1024 * 1024;

@@ -29,10 +29,10 @@ function switchView(name: ViewName) {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'is-collapsed': uiStore.sidebarCollapsed }" role="navigation" aria-label="主导航">
-    <div class="brand brand-placeholder" aria-hidden="true">
+  <aside class="sidebar" :class="{ 'sidebar--collapsed': uiStore.sidebarCollapsed }" role="navigation" aria-label="主导航">
+    <div class="sidebar__brand sidebar__brand-placeholder" aria-hidden="true">
       <button
-        class="collapse-btn"
+        class="sidebar__collapse-btn"
         :aria-label="uiStore.sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'"
         :title="uiStore.sidebarCollapsed ? '展开' : '折叠'"
         type="button"
@@ -42,19 +42,19 @@ function switchView(name: ViewName) {
       </button>
     </div>
 
-    <div class="nav-panel">
+    <div class="sidebar__nav-panel">
       <button
         v-for="item in navItems"
         :key="item.name"
-        class="nav-item"
+        class="sidebar__nav-item"
         :aria-label="item.title"
         :title="item.title"
-        :class="{ 'is-active': uiStore.activeView === item.name || (item.name === 'playlists' && uiStore.activeView === 'playlist-detail') || (item.name === 'albums' && uiStore.activeView === 'album-detail') }"
+        :class="{ 'sidebar__nav-item--active': uiStore.activeView === item.name || (item.name === 'playlists' && uiStore.activeView === 'playlist-detail') || (item.name === 'albums' && uiStore.activeView === 'album-detail') }"
         type="button"
         @click="switchView(item.name)"
       >
-        <span class="nav-icon"><component :is="item.icon" :size="26" /></span>
-        <span class="nav-label">{{ item.title }}</span>
+        <span class="sidebar__nav-icon"><component :is="item.icon" :size="26" /></span>
+        <span class="sidebar__nav-label">{{ item.title }}</span>
       </button>
     </div>
   </aside>

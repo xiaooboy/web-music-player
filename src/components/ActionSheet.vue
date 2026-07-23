@@ -41,13 +41,13 @@ defineExpose({ open, close });
 
 <template>
   <BottomSheet ref="sheetRef" :title="title" :snap-points="[]">
-    <div class="action-sheet-list">
+    <div class="action-sheet__list">
       <template v-for="(item, i) in menu" :key="i">
         <button
-          class="action-sheet-item"
+          class="action-sheet__item"
           :class="{
-            'is-disabled': item.disabled,
-            'is-expanded': expandedIndex === i,
+            'action-sheet__item--disabled': item.disabled,
+            'action-sheet__item--expanded': expandedIndex === i,
           }"
           type="button"
           @click="handleItemClick(item, i)"
@@ -56,12 +56,12 @@ defineExpose({ open, close });
             v-if="item.icon"
             :is="item.icon"
             :size="20"
-            class="action-sheet-icon"
+            class="action-sheet__icon"
           />
           <span>{{ item.label }}</span>
           <svg
             v-if="item.children?.length"
-            class="action-sheet-arrow"
+            class="action-sheet__arrow"
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
@@ -78,15 +78,15 @@ defineExpose({ open, close });
 
         <div
           v-if="item.children?.length"
-          class="action-sheet-submenu"
-          :class="{ 'is-expanded': expandedIndex === i }"
+          class="action-sheet__submenu"
+          :class="{ 'action-sheet__submenu--expanded': expandedIndex === i }"
         >
-          <div class="action-sheet-submenu-inner">
+          <div class="action-sheet__submenu-inner">
             <button
               v-for="(child, ci) in item.children"
               :key="ci"
-              class="action-sheet-item action-sheet-subitem"
-              :class="{ 'is-disabled': child.disabled }"
+              class="action-sheet__item action-sheet__subitem"
+              :class="{ 'action-sheet__item--disabled': child.disabled }"
               type="button"
               @click="handleSubItemClick(child)"
             >
@@ -94,7 +94,7 @@ defineExpose({ open, close });
                 v-if="child.icon"
                 :is="child.icon"
                 :size="18"
-                class="action-sheet-icon"
+                class="action-sheet__icon"
               />
               <span>{{ child.label }}</span>
             </button>
@@ -106,70 +106,70 @@ defineExpose({ open, close });
 </template>
 
 <style>
-.action-sheet-list {
+.action-sheet__list {
   padding: 4px 8px;
 }
 
-.action-sheet-item {
+.action-sheet__item {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   width: 100%;
   min-height: 48px;
   padding: 12px 16px;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text);
-  font-size: 0.95rem;
   font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
   text-align: left;
-  cursor: pointer;
+  background: transparent;
+  border-radius: 10px;
   transition: background 0.15s ease;
+  cursor: pointer;
 }
 
-.action-sheet-item:hover:not(.is-disabled) {
+.action-sheet__item:hover:not(.action-sheet__item--disabled) {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.action-sheet-item.is-disabled {
+.action-sheet__item--disabled {
   color: var(--muted);
-  opacity: 0.5;
   cursor: default;
-}
-
-.action-sheet-icon {
-  flex-shrink: 0;
-  display: inline-flex;
-}
-
-.action-sheet-arrow {
-  margin-left: auto;
-  flex-shrink: 0;
   opacity: 0.5;
-  transition: transform 0.2s ease;
 }
-.action-sheet-item.is-expanded .action-sheet-arrow {
+
+.action-sheet__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.action-sheet__arrow {
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  opacity: 0.5;
+}
+.action-sheet__item--expanded .action-sheet__arrow {
   transform: rotate(180deg);
 }
 
 /* 子菜单展开/收起动画 */
-.action-sheet-submenu {
+.action-sheet__submenu {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 200ms ease;
 }
-.action-sheet-submenu.is-expanded {
+.action-sheet__submenu--expanded {
   grid-template-rows: 1fr;
 }
-.action-sheet-submenu-inner {
+.action-sheet__submenu-inner {
   overflow: hidden;
 }
 
 /* 子菜单项 */
-.action-sheet-subitem {
-  padding-left: 48px;
-  color: var(--muted);
-  font-size: 0.9rem;
+.action-sheet__subitem {
   min-height: 44px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  padding-left: 48px;
 }
 </style>

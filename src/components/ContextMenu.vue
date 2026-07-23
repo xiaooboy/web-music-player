@@ -42,7 +42,7 @@ let closeSubmenuTimer: ReturnType<typeof setTimeout> | null = null;
 /** 关闭过渡结束后待执行的下次行为 */
 let pendingAction: (() => void) | null = null;
 
-// ─── 子菜单 ref 管理 ──────────────────────────────────────────────────────────
+// 子菜单 ref 管理
 interface ContextMenuHandle {
   open: (
     anchorOrEvent?: EventPosition | HTMLElement,
@@ -68,7 +68,7 @@ const hasSubmenuItems = computed(() =>
   props.menu.some((item) => item.children),
 );
 
-// ─── Popover 生命周期 ─────────────────────────────────────────────────────────
+// Popover 生命周期
 function handleToggle(event: ToggleEvent) {
   wasOpen.value = event.newState === "open";
   if (event.newState !== "open") {
@@ -86,7 +86,7 @@ function onTransitionEnd(e: TransitionEvent) {
   requestAnimationFrame(() => action());
 }
 
-// ─── 打开 / 关闭 ──────────────────────────────────────────────────────────────
+// 打开 / 关闭
 /**
  * 打开菜单
  * @param anchorOrEvent 鼠标位置 | 锚点元素（子菜单场景）
@@ -165,7 +165,7 @@ function close() {
   activeSub.value = -1;
 }
 
-// ─── 菜单项点击 ──────────────────────────────────────────────────────────────
+// 菜单项点击
 function handleItemClick(item: MenuItem) {
   if (item.disabled) return;
   item.action?.();
@@ -179,7 +179,7 @@ function handleChildSelect() {
   emit("select");
 }
 
-// ─── 子菜单悬停 / 键盘交互 ────────────────────────────────────────────────────
+// 子菜单悬停 / 键盘交互
 function handleSubmenuEnter(index: number, event: MouseEvent | KeyboardEvent) {
   cancelCloseSubmenu();
   activeSub.value = index;
@@ -201,19 +201,19 @@ function cancelCloseSubmenu() {
   }
 }
 
-// ─── 暴露方法 ─────────────────────────────────────────────────────────────────
+// 暴露方法
 function getWasOpen() {
   return wasOpen.value;
 }
 
-// ─── 键盘导航 ──────────────────────────────────────────────────────────────────
+// 键盘导航
 /** 获取当前菜单中所有可聚焦的菜单项 */
 function getFocusableItems(): HTMLElement[] {
   const el = menuRef.value;
   if (!el) return [];
   return Array.from(
     el.querySelectorAll<HTMLElement>(
-      ':scope > .context-menu-item:not(.is-disabled)',
+      ':scope > .context-menu__item:not(.context-menu__item--disabled)',
     ),
   );
 }
@@ -281,14 +281,14 @@ defineExpose({ open, close, getWasOpen });
     @transitionend="onTransitionEnd"
     @keydown="handleMenuKeydown"
   >
-    <div v-if="title" class="context-menu-header">
+    <div v-if="title" class="context-menu__header truncate">
       {{ title }}
     </div>
     <template v-for="(item, i) in menu" :key="i">
       <!-- 有子菜单的项 -->
       <div
         v-if="item.children?.length"
-        class="context-menu-item has-submenu"
+        class="context-menu__item context-menu__item--has-submenu"
         role="menuitem"
         :aria-label="item.ariaLabel || item.label"
         aria-haspopup="menu"
@@ -302,11 +302,11 @@ defineExpose({ open, close, getWasOpen });
           v-if="item.icon"
           :is="item.icon"
           :size="20"
-          class="context-menu-icon"
+          class="context-menu__icon"
         />
         {{ item.label }}
         <svg
-          class="submenu-arrow"
+          class="context-menu__submenu-arrow"
           xmlns="http://www.w3.org/2000/svg"
           width="14"
           height="14"
@@ -324,9 +324,9 @@ defineExpose({ open, close, getWasOpen });
       <!-- 无子菜单的普通项 -->
       <button
         v-else
-        class="context-menu-item"
+        class="context-menu__item"
         role="menuitem"
-        :class="{ 'is-disabled': item.disabled }"
+        :class="{ 'context-menu__item--disabled': item.disabled }"
         :aria-disabled="item.disabled || undefined"
         :aria-label="item.ariaLabel || item.label"
         tabindex="-1"
@@ -337,7 +337,7 @@ defineExpose({ open, close, getWasOpen });
           v-if="item.icon"
           :is="item.icon"
           :size="20"
-          class="context-menu-icon"
+          class="context-menu__icon"
         />
         {{ item.label }}
       </button>

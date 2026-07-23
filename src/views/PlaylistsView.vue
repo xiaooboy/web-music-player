@@ -11,7 +11,7 @@ const playlistStore = usePlaylistStore();
 const playerStore = usePlayerStore();
 const uiStore = useUIStore();
 
-// ─── 对话框 ──────────────────────────────────────────────────────────────────
+// 对话框
 const dialogVisible = shallowRef(false);
 const dialogMode = shallowRef<"create" | "edit" | "delete">("create");
 const editingPlaylistId = shallowRef("");
@@ -38,7 +38,7 @@ function handleDialogConfirm(name?: string) {
   }
 }
 
-// ─── 歌单交互 ────────────────────────────────────────────────────────────────
+// 歌单交互
 function enterPlaylist(playlistId: string) {
   playlistStore.selectPlaylist(playlistId);
   uiStore.setActiveView("playlist-detail");
@@ -65,7 +65,7 @@ function handlePlayPlaylist(playlistId: string) {
       </template>
       <template #right>
         <button
-          class="icon-button"
+          class="icon-btn"
           type="button"
           title="新建歌单"
           @click="openCreateDialog"

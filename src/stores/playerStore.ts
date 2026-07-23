@@ -20,7 +20,7 @@ type PlaybackConfig = Array<{
 }>;
 
 export const usePlayerStore = defineStore("player", () => {
-  // ─── 播放模式 ───────────────────────────────────────────────────────────
+  // 播放模式
   let playbackIndex = 0;
   const playbackConfig: PlaybackConfig = [
     { mode: "list", label: "列表播放" },
@@ -33,7 +33,7 @@ export const usePlayerStore = defineStore("player", () => {
       playbackConfig.find((c) => c.mode === playbackMode.value)?.label ?? "",
   );
 
-  // ─── 播放队列 ───────────────────────────────────────────────────────────
+  // 播放队列
   const queue = shallowRef<Track[]>([]);
   const playSourceType = shallowRef<
     "tracks" | "favorites" | "albums" | "playlists"
@@ -41,7 +41,7 @@ export const usePlayerStore = defineStore("player", () => {
   let queueIndexMap = new Map<string, number>();
   let queueSourceInitialized = false;
 
-  // ─── 拉模式：根据 playSourceType 自动拉取对应数据源 ─────────────────────
+  // 拉模式：根据 playSourceType 自动拉取对应数据源
   const queueSource = computed<Track[]>(() => {
     const libraryStore = useLibraryStore();
     const favoriteStore = useFavoriteStore();
@@ -61,30 +61,30 @@ export const usePlayerStore = defineStore("player", () => {
     }
   });
 
-  // ─── 当前曲目 ───────────────────────────────────────────────────────────
+  // 当前曲目
   const currentTrackId = shallowRef(loadCurrentTrackId());
   const currentTrack = shallowRef<Track | null>(null);
 
-  // ─── 音频 ───────────────────────────────────────────────────────────────
+  // 音频
   const audio = new Audio();
   const currentAudioUrl = shallowRef("");
   const isPlaying = shallowRef(false);
 
-  // ─── 进度 ───────────────────────────────────────────────────────────────
+  // 进度
   const progressPercent = shallowRef(0);
   const currentTimeSeconds = shallowRef(0);
 
-  // ─── 音量 ───────────────────────────────────────────────────────────────
+  // 音量
   const volumePercent = shallowRef(100);
   const volume = computed(() => volumePercent.value / 100);
-  // ─── 歌词 ───────────────────────────────────────────────────────────────
+  // 歌词
   const currentLyricsLines = computed(() =>
     parseLyricsText(currentTrack.value?.lyricsText || ""),
   );
   const hasTimedLyrics = computed(() =>
     currentLyricsLines.value.some((line) => line.time !== null),
   );
-  // ─── 歌词高亮索引（利用播放时索引单调递增的局部性优化） ──────────────
+  // 歌词高亮索引（利用播放时索引单调递增的局部性优化）
   const activeLyricsIndex = shallowRef(-1);
   let lastLyricsTrackId = "";
 
@@ -126,7 +126,7 @@ export const usePlayerStore = defineStore("player", () => {
     { flush: "sync" },
   )
 
-  // ─── 方法 ─────────────────────────────────────────────────────────────
+  // 方法
   let mediaSessionInitialized = false;
 
   function initMediaSession() {
@@ -332,7 +332,7 @@ export const usePlayerStore = defineStore("player", () => {
     audio.currentTime = line.time;
   }
 
-  // ─── 音频事件处理（内部） ──────────────────────────────────────────────
+  // 音频事件处理（内部）
   function handleTimeUpdate() {
     syncProgress();
   }
@@ -367,7 +367,7 @@ export const usePlayerStore = defineStore("player", () => {
     playByStep(step);
   }
 
-  // ─── 初始化音频 ─────────────────────────────────────────────────────────
+  // 初始化音频
   audio.preload = "metadata";
   audio.addEventListener("timeupdate", handleTimeUpdate);
   audio.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -375,7 +375,7 @@ export const usePlayerStore = defineStore("player", () => {
   audio.addEventListener("pause", handleAudioPause);
   audio.addEventListener("ended", handleAudioEnded);
 
-  // ─── 资源清理 ─────────────────────────────────────────────────────────────
+  // 资源清理
   function dispose() {
     audio.pause();
     audio.removeEventListener("timeupdate", handleTimeUpdate);

@@ -9,15 +9,15 @@ const slots = useSlots();
 
 <template>
   <div class="section-header">
-    <div class="section-header-left" v-if="slots.left">
+    <div class="section-header__left" v-if="slots.left">
       <slot name="left" />
     </div>
-    <div class="section-header-title">
+    <div class="section-header__title">
       <slot name="title">
         <h2>{{ title }}</h2>
       </slot>
     </div>
-    <div class="section-header-right">
+    <div class="section-header__right">
       <slot name="right" />
     </div>
   </div>
@@ -25,23 +25,26 @@ const slots = useSlots();
 
 <style>
 .section-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
-  height: 42px;
   /*justify-content: space-between;*/
   align-items: center;
-  /*gap: 18px;*/
+  height: 42px;
+  background-color: var(--gradient-bg);
 }
-.section-header-left {
+.section-header__left {
   margin-right: 12px;
 }
 .section-header h2 {
-  color: var(--accent);
   font-size: 1.08rem;
   font-weight: 700;
   line-height: 1.2;
+  color: var(--accent);
 }
-.section-header-title {
+.section-header__title {
   flex: 1;
 }
 </style>

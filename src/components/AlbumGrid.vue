@@ -5,11 +5,11 @@ import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
 import { ensureCoverUrl } from "../utils/coverCache";
 
-// ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
+// 事件委托：图片加载完成
 function handleImgLoad(event: Event) {
   const target = event.target as HTMLElement;
   if (target.tagName === "IMG") {
-    target.classList.add("is-loaded");
+    target.classList.add("img-fadein--loaded")
   }
 }
 
@@ -102,7 +102,7 @@ function calcMinColWidth(col: number) {
 </script>
 
 <template>
-  <div ref="scrollRef" class="album-grid-scroll scroll-borrow" @load.capture="handleImgLoad">
+  <div ref="scrollRef" class="album-grid scroll-borrow" @load.capture="handleImgLoad">
     <div
       :style="{
         height: `${totalSize}px`,
@@ -116,7 +116,7 @@ function calcMinColWidth(col: number) {
         :key="String(vRow.key)"
         :ref="(el: any) => rowVirtualizer.measureElement(el)"
         :data-index="vRow.index"
-        class="album-grid-row"
+        class="album-grid__row"
         :style="{
           position: 'absolute',
           top: 0,
@@ -131,12 +131,12 @@ function calcMinColWidth(col: number) {
           :key="album.name + album.artistLabel"
           class="album-card"
           :class="{
-            'is-active': album.name === selectedAlbumName,
+            'album-card--active': album.name === selectedAlbumName,
           }"
           type="button"
           @click="emit('selectAlbum', album.name)"
         >
-          <div class="album-card-cover">
+          <div class="album-card__cover">
             <img
               v-if="ensureCoverUrl(album.name, album.coverBlob)"
               class="img-fadein"
@@ -146,9 +146,9 @@ function calcMinColWidth(col: number) {
               :height="MIN_COL_WIDTH"
               loading="lazy"
             />
-            <Disc3 v-else :size="32" class="album-card-placeholder" />
+            <Disc3 v-else :size="32" class="album-card__placeholder" />
             <button
-              class="album-card-play"
+              class="album-card__play"
               type="button"
               :aria-label="`播放专辑 ${album.name}`"
               @click.stop="emit('playAlbum', album.name)"
@@ -156,9 +156,9 @@ function calcMinColWidth(col: number) {
               <Play :size="20" />
             </button>
           </div>
-          <div class="album-card-copy">
-            <strong class="album-card-title">{{ album.name }}</strong>
-            <span class="album-card-artist">{{ album.artistLabel }}</span>
+          <div class="album-card__copy">
+            <strong class="album-card__title truncate--block">{{ album.name }}</strong>
+            <span class="album-card__artist truncate--block">{{ album.artistLabel }}</span>
           </div>
         </button>
       </div>

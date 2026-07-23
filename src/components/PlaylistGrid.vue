@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, shallowReactive, useTemplateRef } from "vue";
+import type { ComponentExposed } from "vue-component-type-helpers";
 import { MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
@@ -14,11 +15,11 @@ const props = defineProps<{
   selectedPlaylistId?: string;
 }>();
 
-// ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
+// 事件委托：图片加载完成
 function handleImgLoad(event: Event) {
   const target = event.target as HTMLElement;
   if (target.tagName === "IMG") {
-    target.classList.add("is-loaded");
+    target.classList.add("img-fadein--loaded")
   }
 }
 
@@ -43,12 +44,12 @@ const coverUrlMap = computed(() => {
   return map;
 });
 
-// ─── 右键菜单 ────────────────────────────────────────────────────────────────
+// 右键菜单
 const isSmallScreen = useMediaQuery("(max-width: 640px)");
 const contextMenuRef =
-  useTemplateRef<InstanceType<typeof ContextMenu>>("contextMenu");
+  useTemplateRef<ComponentExposed<typeof ContextMenu>>("contextMenu");
 const actionSheetRef =
-  useTemplateRef<InstanceType<typeof ActionSheet>>("actionSheet");
+  useTemplateRef<ComponentExposed<typeof ActionSheet>>("actionSheet");
 const menuProps = shallowReactive({
   title: "",
   menu: [] as MenuItem[],
@@ -88,21 +89,21 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
 </script>
 
 <template>
-  <div class="playlist-grid-scroll" @load.capture="handleImgLoad">
-    <div class="playlist-grid">
+  <div class="playlist-grid" @load.capture="handleImgLoad">
+    <div class="playlist-browser__grid">
       <section
         v-for="playlist in playlists"
         :key="playlist.id"
         class="playlist-card"
         :class="{
-          'is-active': playlist.id === selectedPlaylistId,
+          'playlist-card--active': playlist.id === selectedPlaylistId,
         }"
         tabindex="0"
         :aria-label="`${playlist.name}，${playlist.trackIds.length} 首`"
         @click="emit('selectPlaylist', playlist.id)"
         @keydown.enter="emit('selectPlaylist', playlist.id)"
       >
-        <div class="playlist-card-cover">
+        <div class="playlist-card__cover">
           <img
             v-if="coverUrlMap[playlist.id]"
             class="img-fadein"
@@ -111,7 +112,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
             loading="lazy"
           />
           <button
-            class="playlist-card-play"
+            class="playlist-card__play"
             type="button"
             aria-label="播放歌单"
             @click.stop="emit('playPlaylist', playlist.id)"
@@ -120,18 +121,18 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
             <Play :size="20" />
           </button>
         </div>
-        <div class="playlist-card-copy">
-          <strong class="playlist-card-title">
+        <div class="playlist-card__copy">
+          <strong class="playlist-card__title truncate--block">
             <span
             >{{ playlist.name }}</span
             >
           </strong>
-          <span class="playlist-card-count"
+          <span class="playlist-card__count truncate--block"
             >{{ playlist.trackIds.length }} 首</span
           >
         </div>
         <button
-          class="playlist-card-more"
+          class="playlist-card__more"
           type="button"
           aria-label="更多操作"
           aria-haspopup="menu"

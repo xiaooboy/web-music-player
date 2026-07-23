@@ -33,18 +33,18 @@ const emit = defineEmits<{
 const dialogRef = useTemplateRef("dialogRef");
 const bodyRef = useTemplateRef("bodyRef");
 
-// ─── 模式判定 ──────────────────────────────────────────────────────────────
+// 模式判定
 /** 是否有可切换的锚点（≥2 个才允许拖拽调整高度） */
 const hasResizableSnaps = () => props.snapPoints.length >= 2;
 
-// ─── Snap points ─────────────────────────────────────────────────────────
+// Snap points
 let currentSnapIndex = 0;
 let dragStartTranslateY = 0;
 let dragStartY = 0;
 let dragStartX = 0;
 let isDragging = false;
 
-// ─── 方向锁定（与原生 BottomSheet 对齐） ─────────────────────────────────
+// 方向锁定（与原生 BottomSheet 对齐）
 /** 手势方向锁定状态：pending = 尚未判定，vertical = 垂直拖拽，horizontal = 横向放行 */
 let dragOrientation: "pending" | "vertical" | "horizontal" = "pending";
 /** 方向判定的最小位移阈值（px），近似 Android touchSlop */
@@ -105,7 +105,7 @@ function snapTo(index: number, animate = true) {
   body.style.transform = `translateY(${ty}px)`;
 }
 
-// ─── 拖拽（触摸 + 鼠标） ────────────────────────────────────────────────────
+// 拖拽（触摸 + 鼠标）
 type DragMode = "drag" | "observe" | "ignore";
 
 /**
@@ -166,7 +166,7 @@ function handleObserveStart(clientX: number, clientY: number, scrollEl: HTMLElem
 function handleDragMove(clientX: number, clientY: number): boolean {
   if (!isDragging || !bodyRef.value || !dialogRef.value) return false;
 
-  // ─── 方向锁定：未判定时根据主方向决定是否接管 ──────
+  // 方向锁定：未判定时根据主方向决定是否接管
   if (dragOrientation === "pending") {
     const dx = Math.abs(clientX - dragStartX);
     const dy = Math.abs(clientY - dragStartY);
@@ -183,7 +183,7 @@ function handleDragMove(clientX: number, clientY: number): boolean {
 
   const deltaY = clientY - dragStartY;
 
-  // ─── 适应内容模式（单锚点或无锚点）：只允许下拉关闭 ────
+  // 适应内容模式（单锚点或无锚点）：只允许下拉关闭
   if (!hasResizableSnaps()) {
     if (deltaY <= 0) return false;
     const damped = deltaY * 0.6;
@@ -192,7 +192,7 @@ function handleDragMove(clientX: number, clientY: number): boolean {
     return true;
   }
 
-  // ─── 锚点模式：translateY 拖拽（原生风格） ──────────────
+  // 锚点模式：translateY 拖拽（原生风格）
   const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
 
   if (deltaY > 0) {
@@ -260,7 +260,7 @@ function handleDragEnd() {
   if (!isDragging || !bodyRef.value || !dialogRef.value) return;
   isDragging = false;
 
-  // ─── 适应内容模式：translateY 拖拽 ───────────────────────
+  // 适应内容模式：translateY 拖拽
   if (!hasResizableSnaps()) {
     const currentY = getCurrentTranslateY();
     if (currentY > 48) {
@@ -280,7 +280,7 @@ function handleDragEnd() {
     return;
   }
 
-  // ─── 锚点模式：translateY 拖拽 ───────────────────────────
+  // 锚点模式：translateY 拖拽
   const currentTranslateY = getCurrentTranslateY();
   const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
 
@@ -300,7 +300,7 @@ function handleDragEnd() {
   snapTo(idx);
 }
 
-// ─── 触摸事件适配 ──────────────────────────────────────────────────────────
+// 触摸事件适配
 function handleTouchStart(e: TouchEvent) {
   const mode = getDragMode(e.target);
   if (mode === "ignore") return;
@@ -345,7 +345,7 @@ function handleTouchEnd() {
   handleDragEnd();
 }
 
-// ─── 鼠标事件适配 ──────────────────────────────────────────────────────────
+// 鼠标事件适配
 function handleMouseDown(e: MouseEvent) {
   const mode = getDragMode(e.target);
   if (mode === "ignore") return;
@@ -367,7 +367,7 @@ function handleMouseUp() {
   document.removeEventListener("mouseup", handleMouseUp);
 }
 
-// ─── 非被动触摸事件（阻止默认滚动） ──────────────────────────────────────
+// 非被动触摸事件（阻止默认滚动）
 onMounted(() => {
   bodyRef.value?.addEventListener("touchmove", handleTouchMove, { passive: false });
 });
@@ -423,16 +423,16 @@ defineExpose({ open, close });
   <dialog ref="dialogRef" class="bottom-sheet" @click="handleBackdropClick" @close="handleDialogClose">
     <div
       ref="bodyRef"
-      class="bottom-sheet-body"
+      class="bottom-sheet__body"
       :class="bodyClass"
       @click.stop
       @touchstart.stop="handleTouchStart"
       @touchend.stop="handleTouchEnd"
       @mousedown.stop="handleMouseDown"
     >
-      <div v-if="!hideHandle" class="bottom-sheet-handle" :class="handleClass" aria-hidden="true" />
-      <div v-if="title" class="bottom-sheet-title" :class="titleClass">{{ title }}</div>
-      <div class="bottom-sheet-content" :class="contentClass">
+      <div v-if="!hideHandle" class="bottom-sheet__handle" :class="handleClass" aria-hidden="true" />
+      <div v-if="title" class="bottom-sheet__title" :class="titleClass">{{ title }}</div>
+      <div class="bottom-sheet__content" :class="contentClass">
         <slot />
       </div>
     </div>
@@ -446,37 +446,32 @@ defineExpose({ open, close });
   width: 100%;
   max-width: 100%;
   max-height: calc(100dvh - env(safe-area-inset-top));
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
   overflow: hidden;
   color: var(--text);
-
-  /* 关闭态 */
-  opacity: 0;
+  background: transparent;
+  border: none;
   transform: translateY(100%);
   transition:
     opacity 180ms ease-in,
     transform 180ms ease-in,
     overlay 180ms ease-in allow-discrete,
     display 180ms ease-in allow-discrete;
+  /* 关闭态 */
+  opacity: 0;
 }
 
 /* 打开态 */
 .bottom-sheet[open] {
-  opacity: 1;
   transform: translateY(0);
-
   transition:
     opacity 250ms ease-out,
     transform 250ms ease-out,
     overlay 250ms ease-out allow-discrete,
     display 250ms ease-out allow-discrete;
-
+  opacity: 1;
   @starting-style {
-    opacity: 0;
     transform: translateY(100%);
+    opacity: 0;
   }
 }
 
@@ -502,26 +497,26 @@ defineExpose({ open, close });
 }
 
 /* 内容区 */
-.bottom-sheet-body {
-  max-height: inherit;
-  background: var(--panel);
-  border-radius: 16px 16px 0 0;
-  padding: 8px 0 env(safe-area-inset-bottom, 0);
+.bottom-sheet__body {
   display: flex;
   flex-direction: column;
+  max-height: inherit;
+  padding: 8px 0 env(safe-area-inset-bottom, 0);
+  background: var(--panel);
+  border-radius: 16px 16px 0 0;
   will-change: transform;
 }
 
-.bottom-sheet-handle {
+.bottom-sheet__handle {
   flex-shrink: 0;
   width: 36px;
   height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
   margin: 8px auto 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
-.bottom-sheet-title {
+.bottom-sheet__title {
   flex-shrink: 0;
   padding: 12px 20px 12px;
   font-size: 0.95rem;
@@ -530,13 +525,13 @@ defineExpose({ open, close });
   border-bottom: 1px solid var(--line);
 }
 
-.bottom-sheet-content {
+.bottom-sheet__content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
-.bottom-sheet-content::-webkit-scrollbar {
+.bottom-sheet__content::-webkit-scrollbar {
   width: 0;
   height: 0;
 }

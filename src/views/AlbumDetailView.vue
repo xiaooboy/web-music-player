@@ -9,7 +9,7 @@ import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { useHistoryBack } from "../composables/useHistoryBack";
 import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
 import { ensureCoverUrl } from "../utils/coverCache";
-
+import SectionHeader from "@/components/SectionHeader.vue";
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();
 const uiStore = useUIStore();
@@ -56,34 +56,34 @@ useHistoryBack(navigateBack);
 </script>
 
 <template>
-  <section v-if="albumStore.selectedAlbum" class="main-panel album-detail-view">
-    <div class="album-detail-head">
-      <button
-        class="icon-button back-button"
-        type="button"
-        @click="navigateBack"
-      >
-        <ArrowLeft :size="20" />
-      </button>
-      <div class="album-detail-cover">
+  <section v-if="albumStore.selectedAlbum" class="main-panel album-detail">
+    <SectionHeader>
+      <template #left>
+        <button class="icon-btn" @click="navigateBack">
+          <ArrowLeft :size="20" />
+        </button>
+      </template>
+    </SectionHeader>
+    <div class="album-detail__head">
+      <div class="album-detail__cover">
         <img
           v-if="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
           :src="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
-          class="img-fadein is-loaded"
+          class="img-fadein img-fadein--loaded"
           :alt="`${albumStore.selectedAlbum.name} 封面`"
         />
         <Disc3 v-else :size="34" />
       </div>
-      <div class="album-detail-copy">
+      <div class="album-detail__copy">
         <h3>{{ albumStore.selectedAlbum.name }}</h3>
         <span>{{ albumStore.selectedAlbum.artistLabel }}</span>
-        <div class="album-detail-stats">
+        <div class="album-detail__stats">
           <span>{{ albumStore.selectedAlbum.tracks.length }} 首</span>
           <span>{{ formatTime(albumStore.selectedAlbum.duration) }}</span>
         </div>
       </div>
       <button
-        class="primary-button album-play-button"
+        class="primary-button album-detail__play-button"
         type="button"
         @click="handlePlayAlbum"
       >
@@ -92,21 +92,21 @@ useHistoryBack(navigateBack);
       </button>
     </div>
 
-    <div class="album-song-list">
+    <div class="album-detail__song-list">
       <button
         v-for="(track, songOrder) in albumStore.selectedAlbum.tracks"
         :key="track.id"
-        class="album-song-row"
-        :class="{ 'is-active': track.id === playingTrackId }"
+        class="album-detail__song-row"
+        :class="{ 'album-detail__song-row--active': track.id === playingTrackId }"
         type="button"
         @click="handlePlayTrack(track.id)"
         @contextmenu="handleContextMenu($event, track)"
       >
-        <div class="album-song-main">
+        <div class="album-detail__song-main">
           <div
-            class="album-song-icon"
+            class="album-detail__song-icon"
             :class="{
-              'is-playing': track.id === playingTrackId,
+              'album-detail__song-icon--playing': track.id === playingTrackId,
             }"
           >
             <Pause
@@ -116,17 +116,17 @@ useHistoryBack(navigateBack);
             />
             <Play v-else :size="20" />
           </div>
-          <div class="album-song-copy">
-            <strong>{{ songOrder + 1 }}. {{ track.title }}</strong>
-            <span>{{ track.artist || "未知歌手" }}</span>
+          <div class="album-detail__song-copy">
+            <strong class="truncate--block">{{ songOrder + 1 }}. {{ track.title }}</strong>
+            <span class="truncate--block">{{ track.artist || "未知歌手" }}</span>
           </div>
         </div>
-        <div class="album-song-actions">
-          <span class="album-song-duration">{{
+        <div class="album-detail__song-actions">
+          <span class="album-detail__song-duration">{{
             formatTime(track.duration)
           }}</span>
           <button
-            class="track-row-more"
+            class="icon-btn track-row-more"
             type="button"
             title="更多"
             @click.stop="handleContextMenu($event, track)"
