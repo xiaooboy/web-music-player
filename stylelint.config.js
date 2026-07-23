@@ -162,8 +162,8 @@ export default {
     ],
     "order/order": [
       "at-rules",
-      "rules",
       "declarations",
+      "rules",
       { type: "at-rule", name: "starting-style" },
     ],
   },

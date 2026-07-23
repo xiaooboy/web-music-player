@@ -25,12 +25,15 @@ const slots = useSlots();
 
 <style>
 .section-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   /*justify-content: space-between;*/
   align-items: center;
   height: 42px;
-  /*gap: 18px;*/
+  background-color: var(--gradient-bg);
 }
 .section-header__left {
   margin-right: 12px;

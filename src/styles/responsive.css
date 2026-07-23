@@ -146,7 +146,7 @@
     display: none;
   }
   .player-dock {
-    .icon-button {
+    .icon-btn {
       display: none;
     }
     .play-toggle {

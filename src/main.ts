@@ -4,7 +4,7 @@ import { createPinia } from "pinia";
 import App from "./App.vue";
 import "./styles/entry.css";
 
-/* ─── 运行时检测滚动条实际占用宽度 ───────────────────────────────────────────
+/* 运行时检测滚动条实际占用宽度
    overlay scrollbar 不占布局空间时测量值为 0，经典滚动条为实际像素宽度。
    结果写入 --scrollbar-compensation，供 .scroll-borrow 工具类使用。
    必须在样式加载后、应用挂载前执行，以保证首次渲染即使用正确值。 */

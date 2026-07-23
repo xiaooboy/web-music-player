@@ -5,7 +5,7 @@ import {
 } from "./shared";
 import type { Track } from "../../types";
 
-// ─── OGG 页面结构 ───
+// OGG 页面结构
 //
 // OGG 容器由一系列页面(page)组成，每个页面承载一个或多个数据包(packet)。
 // 对于 Vorbis 和 Opus，元信息（Vorbis Comment）总是第二个数据包：
@@ -89,7 +89,7 @@ function concatUint8Arrays(parts: Uint8Array[]): Uint8Array {
   return result;
 }
 
-// ─── OGG/OPUS 公共解析逻辑 ───
+// OGG/OPUS 公共解析逻辑
 
 /**
  * 从 OGG 容器中提取 Vorbis Comment 数据包。
@@ -145,7 +145,7 @@ async function parseOggVorbisComment(
   return {};
 }
 
-// ─── 解析入口 ───
+// 解析入口
 
 /** 解析 OGG Vorbis 元信息 */
 export async function parseOggMetadata(file: File) {

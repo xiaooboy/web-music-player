@@ -127,7 +127,7 @@ function handleConfirm() {
   }
 }
 
-/* ─── backdrop 动画 ──────────────────────────────────────────────────────── */
+/* backdrop 动画 */
 .form-dialog::backdrop {
   background: rgba(0, 0, 0, 0);
 
@@ -150,7 +150,7 @@ function handleConfirm() {
   }
 }
 
-/* ─── 内容样式 ────────────────────────────────────────────────────────────── */
+/* 内容样式 */
 .form-dialog h3 {
   margin-bottom: 16px;
   font-size: 1.1rem;
@@ -208,7 +208,7 @@ function handleConfirm() {
   background: var(--accent-bright);
 }
 
-/* ─── 删除确认文本 ─────────────────────────────────────────────────────────── */
+/* 删除确认文本 */
 .form-dialog__text {
   font-size: 0.95rem;
   line-height: 1.5;

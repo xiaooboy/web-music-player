@@ -59,7 +59,7 @@ function handleMoreClick(event: MouseEvent) {
   handleClickTrigger(track);
 }
 
-// ─── BottomSheet 打开/关闭 ──────────────────────────────────────────────────
+// BottomSheet 打开/关闭
 function openSheet() {
   sheetRef.value?.open();
 }
@@ -228,7 +228,7 @@ defineExpose({ openSheet, closeSheet });
 
       <header class="now-playing__head">
         <button
-          class="icon-button"
+          class="icon-btn"
           type="button"
           aria-label="返回列表"
           title="返回列表"
@@ -288,7 +288,7 @@ defineExpose({ openSheet, closeSheet });
             <div class="now-playing__transport">
               <div class="now-playing__playback">
                 <button
-                  class="icon-button"
+                  class="icon-btn"
                   type="button"
                   aria-label="上一首"
                   title="上一首"
@@ -297,7 +297,7 @@ defineExpose({ openSheet, closeSheet });
                   <SkipBack :size="26" />
                 </button>
                 <button
-                  class="icon-button play-toggle"
+                  class="icon-btn play-toggle"
                   :class="{ 'play-toggle--active': playerStore.isPlaying }"
                   type="button"
                   aria-label="播放或暂停"
@@ -308,7 +308,7 @@ defineExpose({ openSheet, closeSheet });
                   <Play v-else :size="30" />
                 </button>
                 <button
-                  class="icon-button"
+                  class="icon-btn"
                   type="button"
                   aria-label="下一首"
                   title="下一首"
@@ -319,7 +319,7 @@ defineExpose({ openSheet, closeSheet });
               </div>
               <div class="now-playing__actions">
                 <button
-                  class="icon-button now-playing__playback-mode now-playing__playback-mode--active"
+                  class="icon-btn now-playing__playback-mode now-playing__playback-mode--active"
                   type="button"
                   :aria-label="playerStore.playbackModeLabel"
                   :title="playerStore.playbackModeLabel"
@@ -336,7 +336,7 @@ defineExpose({ openSheet, closeSheet });
                   <Repeat v-else :size="20" />
                 </button>
                 <button
-                  class="icon-button favorite-button"
+                  class="icon-btn favorite-button"
                   :class="{ 'favorite-button--active': isCurrentTrackLiked }"
                   type="button"
                   :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
@@ -353,7 +353,7 @@ defineExpose({ openSheet, closeSheet });
                   />
                 </button>
                 <button
-                  class="icon-button now-playing__queue-button"
+                  class="icon-btn now-playing__queue-button"
                   type="button"
                   aria-label="播放队列"
                   title="播放队列"
@@ -362,7 +362,7 @@ defineExpose({ openSheet, closeSheet });
                   <List :size="20" />
                 </button>
                 <button
-                  class="icon-button player-dock__volume-button"
+                  class="icon-btn player-dock__volume-button"
                   type="button"
                   :aria-label="
                     playerStore.volumePercent === 0 ? '取消静音' : '音量'
@@ -374,7 +374,7 @@ defineExpose({ openSheet, closeSheet });
                   <Volume2 v-else :size="20" />
                 </button>
                 <button
-                  class="icon-button now-playing__more-button"
+                  class="icon-btn now-playing__more-button"
                   type="button"
                   aria-label="更多操作"
                   aria-haspopup="menu"

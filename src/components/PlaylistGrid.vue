@@ -15,7 +15,7 @@ const props = defineProps<{
   selectedPlaylistId?: string;
 }>();
 
-// ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
+// 事件委托：图片加载完成
 function handleImgLoad(event: Event) {
   const target = event.target as HTMLElement;
   if (target.tagName === "IMG") {
@@ -44,7 +44,7 @@ const coverUrlMap = computed(() => {
   return map;
 });
 
-// ─── 右键菜单 ────────────────────────────────────────────────────────────────
+// 右键菜单
 const isSmallScreen = useMediaQuery("(max-width: 640px)");
 const contextMenuRef =
   useTemplateRef<ComponentExposed<typeof ContextMenu>>("contextMenu");

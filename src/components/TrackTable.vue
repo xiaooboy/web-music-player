@@ -26,7 +26,7 @@ const emit = defineEmits<{
   navigateToAlbum: [albumName: string];
 }>();
 
-// ─── 右键菜单 ────────────────────────────────────────────────────────────────
+// 右键菜单
 const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 
 function handleContextMenu(event: MouseEvent, track: Track) {
@@ -45,7 +45,7 @@ function handleMoreKeydown(event: KeyboardEvent, track: Track) {
   }
 }
 
-// ─── 虚拟滚动 ────────────────────────────────────────────────────────────────
+// 虚拟滚动
 // 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
 // 挂载和切换面板的耗时是 O(1) 而非 O(n)。
 const listRef = useTemplateRef('listRef');
@@ -164,7 +164,7 @@ function scrollToCurrentTrack() {
             <span class="track-table__duration">{{ formatTime(item.duration) }}</span>
             <div class="track-table__row-action">
               <button
-                class="track-row-play"
+                class="icon-btn track-row-play"
                 :class="{
                   'track-row-play--playing': item.id === currentTrackId && isPlaying,
                 }"
@@ -188,7 +188,7 @@ function scrollToCurrentTrack() {
                                 <Play v-else :size="20" />
               </button>
               <button
-                class="track-row-like"
+                class="icon-btn track-row-like"
                 :class="{ 'track-row-like--active': likedTrackIdSet.has(item.id) }"
                 type="button"
                 :title="likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'"
@@ -203,7 +203,7 @@ function scrollToCurrentTrack() {
                 />
               </button>
               <button
-                class="track-row-more"
+                class="icon-btn track-row-more"
                 type="button"
                 title="更多操作"
                 aria-label="更多操作"

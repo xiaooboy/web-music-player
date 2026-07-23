@@ -1,0 +1,75 @@
+/* 借用空间滚动条（gutter 不压缩内容） */
+.scroll-borrow {
+  width: calc(100% + var(--scrollbar-compensation));
+  margin-right: calc(var(--scrollbar-compensation) * -1);
+  scrollbar-gutter: stable;
+}
+
+/* 文本单行溢出省略 */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncate--block {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 纯图标按钮 */
+.icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+
+  /* 触摸区扩大至 44×44（图标 20px + 两侧各 12px） */
+  &::before {
+    position: absolute;
+    inset: -12px;
+    content: "";
+  }
+
+  svg {
+    stroke-width: 2.1;
+  }
+
+  & + & {
+    margin-left: 20px;
+  }
+}
+
+/* 图片淡入 */
+.img-fadein {
+  transition: opacity 0.35s ease;
+  opacity: 0;
+}
+
+.img-fadein--loaded {
+  opacity: 1;
+}
+
+/* 仅屏幕阅读器可见 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border-width: 0;
+  clip: rect(0, 0, 0, 0);
+}

@@ -12,7 +12,7 @@ import {
 } from "./shared";
 import type { Track } from "../../types";
 
-// ─── 常量 ───
+// 常量
 
 /** MP3 时长探测读取量：覆盖 Xing/VBRI 头所需的最大搜索范围 */
 const MP3_PROBE_SIZE = 10244;
@@ -20,7 +20,7 @@ const MP3_PROBE_SIZE = 10244;
 /** APIC/PIC 帧头部预读量，用于定位图片数据起始偏移 */
 const COVER_PEEK_SIZE = 512;
 
-// ─── 二进制读取 ───
+// 二进制读取
 
 function readSynchsafe(bytes: Uint8Array, offset: number) {
   return (
@@ -47,7 +47,7 @@ function removeUnsynchronization(bytes: Uint8Array) {
   return new Uint8Array(result);
 }
 
-// ─── 帧解码 ───
+// 帧解码
 
 function decodeTextFrame(frameBytes: Uint8Array) {
   const encoding = frameBytes[0];
@@ -204,7 +204,7 @@ async function decodePicFrameFromSlice(
   return { coverBlob };
 }
 
-// ─── 时长探测 ───
+// 时长探测
 
 function parseMp3FrameDuration(bytes: Uint8Array, searchStart: number): number {
   if (searchStart >= bytes.length - 4) return 0;
@@ -275,7 +275,7 @@ function parseMp3FrameDuration(bytes: Uint8Array, searchStart: number): number {
   return 0;
 }
 
-// ─── ID3 解析入口 ───
+// ID3 解析入口
 
 /**
  * 解析 ID3 标签（按需读取优化版）

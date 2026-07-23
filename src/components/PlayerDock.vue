@@ -85,7 +85,7 @@ function handleQueueClick() {
 
     <div class="player-dock__center">
       <button
-        class="icon-button player-dock__playback-mode player-dock__playback-mode--active"
+        class="icon-btn player-dock__playback-mode player-dock__playback-mode--active"
         type="button"
         :aria-label="playerStore.playbackModeLabel"
         :title="playerStore.playbackModeLabel"
@@ -96,7 +96,7 @@ function handleQueueClick() {
         <Repeat v-else :size="20" />
       </button>
       <button
-        class="icon-button"
+        class="icon-btn"
         type="button"
         aria-label="上一首"
         title="上一首"
@@ -105,7 +105,7 @@ function handleQueueClick() {
         <SkipBack :size="20" />
       </button>
       <button
-        class="icon-button play-toggle"
+        class="icon-btn play-toggle"
         :class="{ 'play-toggle--active': playerStore.isPlaying }"
         type="button"
         aria-label="播放或暂停"
@@ -116,7 +116,7 @@ function handleQueueClick() {
         <Play v-else :size="22" />
       </button>
       <button
-        class="icon-button"
+        class="icon-btn"
         type="button"
         aria-label="下一首"
         title="下一首"
@@ -125,7 +125,7 @@ function handleQueueClick() {
         <SkipForward :size="20" />
       </button>
       <button
-        class="icon-button favorite-button"
+        class="icon-btn favorite-button"
         :class="{ 'favorite-button--active': isCurrentTrackLiked }"
         type="button"
         :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
@@ -140,7 +140,7 @@ function handleQueueClick() {
         />
       </button>
       <button
-        class="icon-button player-dock__queue-button"
+        class="icon-btn player-dock__queue-button"
         type="button"
         aria-label="播放队列"
         title="播放队列"

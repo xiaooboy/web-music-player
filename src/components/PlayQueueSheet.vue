@@ -208,7 +208,7 @@ defineExpose({ open, close,getWasOpen });
 </template>
 
 <style>
-/* ─── 大屏 Popover 样式 ──────────────────────────────────────────────────── */
+/* 大屏 Popover 样式 */
 .queue-popover {
   width: min(340px, calc(100vw - 24px));
   max-height: 320px;
@@ -313,7 +313,7 @@ defineExpose({ open, close,getWasOpen });
   text-align: center;
 }
 
-/* ─── 小屏 BottomSheet 样式 ──────────────────────────────────────────────── */
+/* 小屏 BottomSheet 样式 */
 .queue-sheet__list {
   min-height: 80px;
   padding: 4px 8px;

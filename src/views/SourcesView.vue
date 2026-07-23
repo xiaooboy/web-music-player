@@ -45,7 +45,7 @@ async function openFolder(type: "picker" | "webkitDirectory") {
   libraryStore.addSource(nextSource);
 }
 
-// ─── 删除确认对话框 ──────────────────────────────────────────────────────────────
+// 删除确认对话框
 const confirmVisible = ref(false);
 const removingSourceId = ref("");
 const removingSourceName = ref("");
@@ -74,7 +74,7 @@ function confirmRemove() {
         <div class="sources__actions-inline">
           <button
             v-if="showAddButton"
-            class="icon-button"
+            class="icon-btn"
             type="button"
             title="添加音乐源"
             @click="openFolder('picker')"
@@ -83,7 +83,7 @@ function confirmRemove() {
           </button>
           <button
             v-if="showTempButton"
-            class="icon-button"
+            class="icon-btn"
             type="button"
             title="导入临时文件夹"
             @click="openFolder('webkitDirectory')"
@@ -92,7 +92,7 @@ function confirmRemove() {
           </button>
           <button
             v-if="pendingReauthCount"
-            class="icon-button"
+            class="icon-btn"
             type="button"
             title="重新授权"
             :disabled="libraryStore.isReauthorizing"
@@ -128,7 +128,7 @@ function confirmRemove() {
           }}</span>
         </div>
         <button
-          class="sources__remove icon-button"
+          class="sources__remove icon-btn"
           type="button"
           title="移除"
           @click="requestRemoveSource(source.id)"

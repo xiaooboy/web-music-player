@@ -61,11 +61,6 @@
   box-sizing: border-box;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-}
-
 /* dialog / popover 依赖 margin: auto 实现居中，全局清零后需恢复 */
 dialog,
 [popover] {
@@ -73,6 +68,8 @@ dialog,
 }
 
 * {
+  margin: 0;
+  padding: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-muted) transparent;
   -webkit-tap-highlight-color: transparent;
@@ -148,7 +145,7 @@ button {
   cursor: pointer;
 }
 
-/* ─── 无障碍：焦点可见样式 ──────────────────────────────────────────────────── */
+/* 无障碍：焦点可见样式 */
 :focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--accent-muted);
@@ -161,37 +158,6 @@ button {
 img {
   display: block;
   max-width: 100%;
-}
-
-/* ─── 工具类：借用空间滚动条（gutter 不压缩内容） ─────────────────────────── */
-.scroll-borrow {
-  width: calc(100% + var(--scrollbar-compensation));
-  margin-right: calc(var(--scrollbar-compensation) * -1);
-  scrollbar-gutter: stable;
-}
-
-/* ─── 工具类：文本单行溢出省略 ─────────────────────────────────────────────── */
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.truncate--block {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ─── 工具类：图片淡入 ─────────────────────────────────────────────────────── */
-.img-fadein {
-  transition: opacity 0.35s ease;
-  opacity: 0;
-}
-
-.img-fadein--loaded {
-  opacity: 1;
 }
 
 svg {
@@ -210,7 +176,7 @@ svg {
 
 
 
-/* ─── 无障碍：减少动画偏好 ────────────────────────────────────────────────── */
+/* 无障碍：减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -222,7 +188,7 @@ svg {
   }
 }
 
-/* ─── 无障碍：高对比度偏好 ────────────────────────────────────────────────── */
+/* 无障碍：高对比度偏好 */
 @media (prefers-contrast: more) {
   :root {
     --line: rgba(255, 255, 255, 0.3);
@@ -234,17 +200,4 @@ svg {
   .context-menu__item--disabled {
     text-decoration: line-through;
   }
-}
-
-/* ─── 无障碍：仅屏幕阅读器可见 ─────────────────────────────────────────────── */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  border-width: 0;
-  clip: rect(0, 0, 0, 0);
 }

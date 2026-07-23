@@ -31,7 +31,7 @@ const viewComponents: Record<ViewName, Component> = {
   sources: SourcesView,
 };
 
-// ─── 无障碍：屏幕阅读器状态播报 ──────────────────────────────────────────────────
+// 无障碍：屏幕阅读器状态播报
 const screenReaderAnnouncement = computed(() => {
   const track = playerStore.currentTrack;
   if (!track) return "";

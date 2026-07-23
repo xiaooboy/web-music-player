@@ -1,6 +1,6 @@
 import type { Track } from "../../types";
 
-// ─── 封面结果 ───
+// 封面结果
 
 interface CoverResult {
   coverBlob?: Blob;
@@ -14,7 +14,7 @@ function createCoverBlob(
   return { coverBlob: blob };
 }
 
-// ─── 文本解码 ───
+// 文本解码
 
 function decodeLatin1(bytes: Uint8Array) {
   return Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
@@ -66,7 +66,7 @@ function findEncodedTextEnd(
   return bytes.length;
 }
 
-// ─── 二进制读取 ───
+// 二进制读取
 
 function readUint24(bytes: Uint8Array, offset: number) {
   return (
@@ -100,7 +100,7 @@ function readUint64(bytes: Uint8Array, offset: number) {
   return high * 0x1_0000_0000 + low;
 }
 
-// ─── MIME 类型 ───
+// MIME 类型
 
 function formatToMimeType(format: string) {
   if (format === "PNG") {
@@ -169,7 +169,7 @@ function detectImageMimeType(bytes: Uint8Array) {
   return "image/jpeg";
 }
 
-// ─── Vorbis Comment 解码 ───
+// Vorbis Comment 解码
 
 /** base64 解码为 Uint8Array */
 function base64ToUint8Array(base64: string): Uint8Array {
@@ -247,7 +247,7 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
   return metadata;
 }
 
-// ─── FLAC Picture Block 解码 ───
+// FLAC Picture Block 解码
 
 function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   let offset = 0;
@@ -296,5 +296,3 @@ export {
   decodeVorbisCommentBlock,
   decodeFlacPictureBlock,
 };
-
-

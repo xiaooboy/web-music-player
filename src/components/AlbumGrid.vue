@@ -5,7 +5,7 @@ import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
 import { ensureCoverUrl } from "../utils/coverCache";
 
-// ─── 事件委托：图片加载完成 ──────────────────────────────────────────────────────
+// 事件委托：图片加载完成
 function handleImgLoad(event: Event) {
   const target = event.target as HTMLElement;
   if (target.tagName === "IMG") {

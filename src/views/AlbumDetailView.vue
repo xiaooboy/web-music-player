@@ -9,7 +9,7 @@ import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { useHistoryBack } from "../composables/useHistoryBack";
 import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
 import { ensureCoverUrl } from "../utils/coverCache";
-
+import SectionHeader from "@/components/SectionHeader.vue";
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();
 const uiStore = useUIStore();
@@ -57,14 +57,14 @@ useHistoryBack(navigateBack);
 
 <template>
   <section v-if="albumStore.selectedAlbum" class="main-panel album-detail">
+    <SectionHeader>
+      <template #left>
+        <button class="icon-btn" @click="navigateBack">
+          <ArrowLeft :size="20" />
+        </button>
+      </template>
+    </SectionHeader>
     <div class="album-detail__head">
-      <button
-        class="icon-button back-button"
-        type="button"
-        @click="navigateBack"
-      >
-        <ArrowLeft :size="20" />
-      </button>
       <div class="album-detail__cover">
         <img
           v-if="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
@@ -126,7 +126,7 @@ useHistoryBack(navigateBack);
             formatTime(track.duration)
           }}</span>
           <button
-            class="track-row-more"
+            class="icon-btn track-row-more"
             type="button"
             title="更多"
             @click.stop="handleContextMenu($event, track)"

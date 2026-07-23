@@ -47,13 +47,8 @@ useHistoryBack(navigateBack);
 <template>
   <section v-if="playlistStore.selectedPlaylist" class="main-panel playlist-detail">
     <SectionHeader :title="playlistStore.selectedPlaylist.name">
-      <template #title>
-        <h2>
-          <span>{{ playlistStore.selectedPlaylist!.name }}</span>
-        </h2>
-      </template>
       <template #left>
-        <button class="icon-button back-button" @click="navigateBack">
+        <button class="icon-btn" @click="navigateBack">
           <ArrowLeft :size="20" />
         </button>
       </template>

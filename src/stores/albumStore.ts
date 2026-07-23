@@ -76,7 +76,7 @@ export const useAlbumStore = defineStore("album", () => {
     playingAlbumName.value = valid ? albumName : "";
   }
 
-  // ─── 拉模式：watch libraryStore.tracks 自动重建 albumMap ─────────────────
+  // 拉模式：watch libraryStore.tracks 自动重建 albumMap
   watch(
     () => useLibraryStore().tracks,
     (newTracks) => rebuildAlbumMap(newTracks),

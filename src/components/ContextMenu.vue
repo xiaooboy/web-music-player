@@ -42,7 +42,7 @@ let closeSubmenuTimer: ReturnType<typeof setTimeout> | null = null;
 /** 关闭过渡结束后待执行的下次行为 */
 let pendingAction: (() => void) | null = null;
 
-// ─── 子菜单 ref 管理 ──────────────────────────────────────────────────────────
+// 子菜单 ref 管理
 interface ContextMenuHandle {
   open: (
     anchorOrEvent?: EventPosition | HTMLElement,
@@ -68,7 +68,7 @@ const hasSubmenuItems = computed(() =>
   props.menu.some((item) => item.children),
 );
 
-// ─── Popover 生命周期 ─────────────────────────────────────────────────────────
+// Popover 生命周期
 function handleToggle(event: ToggleEvent) {
   wasOpen.value = event.newState === "open";
   if (event.newState !== "open") {
@@ -86,7 +86,7 @@ function onTransitionEnd(e: TransitionEvent) {
   requestAnimationFrame(() => action());
 }
 
-// ─── 打开 / 关闭 ──────────────────────────────────────────────────────────────
+// 打开 / 关闭
 /**
  * 打开菜单
  * @param anchorOrEvent 鼠标位置 | 锚点元素（子菜单场景）
@@ -165,7 +165,7 @@ function close() {
   activeSub.value = -1;
 }
 
-// ─── 菜单项点击 ──────────────────────────────────────────────────────────────
+// 菜单项点击
 function handleItemClick(item: MenuItem) {
   if (item.disabled) return;
   item.action?.();
@@ -179,7 +179,7 @@ function handleChildSelect() {
   emit("select");
 }
 
-// ─── 子菜单悬停 / 键盘交互 ────────────────────────────────────────────────────
+// 子菜单悬停 / 键盘交互
 function handleSubmenuEnter(index: number, event: MouseEvent | KeyboardEvent) {
   cancelCloseSubmenu();
   activeSub.value = index;
@@ -201,12 +201,12 @@ function cancelCloseSubmenu() {
   }
 }
 
-// ─── 暴露方法 ─────────────────────────────────────────────────────────────────
+// 暴露方法
 function getWasOpen() {
   return wasOpen.value;
 }
 
-// ─── 键盘导航 ──────────────────────────────────────────────────────────────────
+// 键盘导航
 /** 获取当前菜单中所有可聚焦的菜单项 */
 function getFocusableItems(): HTMLElement[] {
   const el = menuRef.value;
