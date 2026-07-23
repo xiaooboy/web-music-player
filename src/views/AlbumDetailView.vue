@@ -117,8 +117,8 @@ useHistoryBack(navigateBack);
             <Play v-else :size="20" />
           </div>
           <div class="album-detail__song-copy">
-            <strong>{{ songOrder + 1 }}. {{ track.title }}</strong>
-            <span>{{ track.artist || "未知歌手" }}</span>
+            <strong class="truncate--block">{{ songOrder + 1 }}. {{ track.title }}</strong>
+            <span class="truncate--block">{{ track.artist || "未知歌手" }}</span>
           </div>
         </div>
         <div class="album-detail__song-actions">

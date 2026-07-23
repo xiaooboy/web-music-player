@@ -116,8 +116,8 @@ function confirmRemove() {
         class="sources__item"
       >
         <div class="sources__copy">
-          <strong>{{ source.name }}</strong>
-          <span>{{
+          <strong class="truncate--block">{{ source.name }}</strong>
+          <span class="truncate--block">{{
             source.kind === "file-launch"
               ? "系统打开文件"
               : source.persistent

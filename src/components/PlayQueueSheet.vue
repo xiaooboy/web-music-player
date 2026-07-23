@@ -125,8 +125,8 @@ defineExpose({ open, close,getWasOpen });
             @click="emit('play', vRow.index)"
             @keydown.enter="emit('play', vRow.index)"
           >
-            <span class="queue-sheet__title">{{ item.title }}</span>
-            <span class="queue-sheet__artist">{{ item.artist }}</span>
+            <span class="queue-sheet__title truncate">{{ item.title }}</span>
+            <span class="queue-sheet__artist truncate">{{ item.artist }}</span>
             <button
               class="queue-sheet__remove"
               type="button"
@@ -187,8 +187,8 @@ defineExpose({ open, close,getWasOpen });
             @click="emit('play', vRow.index)"
             @keydown.enter="emit('play', vRow.index)"
           >
-            <span class="queue-popover__track-title">{{ item.title }}</span>
-            <span class="queue-popover__track-artist">{{ item.artist }}</span>
+            <span class="queue-popover__track-title truncate">{{ item.title }}</span>
+            <span class="queue-popover__track-artist truncate">{{ item.artist }}</span>
             <button
               class="queue-popover__track-remove"
               type="button"
@@ -210,60 +210,60 @@ defineExpose({ open, close,getWasOpen });
 <style>
 /* ─── 大屏 Popover 样式 ──────────────────────────────────────────────────── */
 .queue-popover {
-  border-radius: 12px;
-  background: rgba(32, 32, 32, 0.9);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
   width: min(340px, calc(100vw - 24px));
   max-height: 320px;
   overflow: hidden;
+  background: rgba(32, 32, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(12px);
 }
 
 .queue-popover__header {
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   padding: 12px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .queue-popover__title {
-  font-weight: 600;
   font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .queue-popover__count {
-  color: var(--muted, #888);
   font-size: 0.85rem;
+  color: var(--muted, #888);
 }
 
 .queue-popover__close {
   margin-left: auto;
   padding: 4px;
-  border-radius: 6px;
-  background: transparent;
   color: var(--muted, #888);
+  background: transparent;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .queue-popover__close:hover {
-  background: rgba(255, 255, 255, 0.1);
   color: var(--text, #fff);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .queue-popover__list {
-  overflow-y: auto;
-  max-height: 260px;
   min-height: 80px;
+  max-height: 260px;
   padding: 6px;
+  overflow-y: auto;
   list-style: none;
 }
 
 .queue-popover__item {
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 0 10px;
   border-radius: 8px;
   cursor: pointer;
@@ -284,54 +284,48 @@ defineExpose({ open, close,getWasOpen });
 .queue-popover__track-title {
   flex: 1;
   font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .queue-popover__track-artist {
   flex: 1;
   font-size: 0.8rem;
   color: var(--muted, #888);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .queue-popover__track-remove {
   padding: 4px;
-  border-radius: 4px;
-  background: transparent;
   color: var(--muted, #888);
+  background: transparent;
+  border-radius: 4px;
   transition: opacity 100ms ease;
   cursor: pointer;
 }
 
 .queue-popover__track-remove:hover {
-  background: rgba(255, 255, 255, 0.1);
   color: var(--text, #fff);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .queue-popover__empty {
   padding: 32px 16px;
-  text-align: center;
-  color: var(--muted, #888);
   font-size: 0.9rem;
+  color: var(--muted, #888);
+  text-align: center;
 }
 
 /* ─── 小屏 BottomSheet 样式 ──────────────────────────────────────────────── */
 .queue-sheet__list {
-  padding: 4px 8px;
   min-height: 80px;
+  padding: 4px 8px;
   list-style: none;
 }
 
 .queue-sheet__item {
   display: flex;
-  align-items: center;
   gap: 10px;
-  padding: 0 10px;
+  align-items: center;
   min-height: 48px;
+  padding: 0 10px;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -351,37 +345,31 @@ defineExpose({ open, close,getWasOpen });
 .queue-sheet__title {
   flex: 1;
   font-size: 0.95rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .queue-sheet__artist {
   flex: 1;
   font-size: 0.85rem;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .queue-sheet__remove {
   padding: 8px;
-  border-radius: 8px;
-  background: transparent;
   color: var(--muted);
+  background: transparent;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .queue-sheet__remove:hover {
-  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .queue-sheet__empty {
   padding: 32px 16px;
-  text-align: center;
-  color: var(--muted);
   font-size: 0.9rem;
+  color: var(--muted);
+  text-align: center;
 }
 </style>

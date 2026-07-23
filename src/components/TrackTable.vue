@@ -139,15 +139,16 @@ function scrollToCurrentTrack() {
               <div class="track-table__thumb">
                 <img
                   v-if="ensureCoverUrl(item.id, item.coverBlob)"
+                  width="44"
+                  height="44"
                   :src="ensureCoverUrl(item.id, item.coverBlob)"
                   :alt="`${item.title} 封面`"
                   loading="lazy"
                 />
-                <!-- <span v-else>♪</span> -->
               </div>
               <div class="track-table__copy">
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.artist }}</span>
+                <strong class="truncate--block">{{ item.title }}</strong>
+                <span class="truncate--block">{{ item.artist }}</span>
               </div>
             </div>
             <div class="track-table__album">
@@ -223,7 +224,7 @@ function scrollToCurrentTrack() {
     <!-- 滚动到当前音乐按钮 -->
     <button
       v-if="currentTrackId && tracks.length"
-      class="track-table__scroll-to-current"
+      class="track-table__anchor"
       type="button"
       aria-label="滚动到当前播放音乐"
       title="滚动到当前播放音乐"

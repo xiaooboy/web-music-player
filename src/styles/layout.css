@@ -1,18 +1,18 @@
 .region-bar {
   position: fixed;
   top: 0;
-  left: 0;
   right: 0;
+  left: 0;
+  z-index: var(--z-drag-region);
   height: var(--window-safe-top);
   app-region: drag;
-  z-index: var(--z-drag-region);
 }
 .app-shell {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
+  height: 100dvh;
   min-height: 100dvh;
   max-height: 100dvh;
-  height: 100dvh;
   overflow: hidden;
 }
 
@@ -26,22 +26,22 @@
   justify-items: start;
 }
 .track-table__list {
-  align-content: start;
   grid-auto-rows: max-content;
+  align-content: start;
   padding-bottom: var(--dock-height);
 }
 
 .main-stage {
-  gap: 24px;
   grid-template-rows: minmax(0, 1fr);
-  min-height: 0;
+  gap: 24px;
+  align-content: stretch;
   height: 100%;
+  min-height: 0;
+  padding-top: calc(var(--shell-gap) + var(--window-safe-top));
+  padding-right: var(--shell-gap);
   overflow: hidden;
   scrollbar-width: none;
-  align-content: stretch;
-  padding-top: calc(var(--shell-gap) + var(--window-safe-top));
   padding-left: var(--shell-gap);
-  padding-right: var(--shell-gap);
 }
 
 .main-stage::-webkit-scrollbar {
@@ -50,11 +50,11 @@
 }
 
 .main-stage > .tracks__view {
+  align-self: stretch;
+  justify-self: stretch;
   width: 100%;
   height: 100%;
   min-height: 0;
-  justify-self: stretch;
-  align-self: stretch;
 }
 
 .player-dock__track,
@@ -64,23 +64,23 @@
 }
 
 .search-field {
-  min-width: min(360px, 72vw);
   display: flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
+  min-width: min(360px, 72vw);
+  padding: 8px 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  padding: 8px 10px;
   transition: border-color 0.15s ease;
 }
 
 .search-field input {
   width: 100%;
+  color: var(--text);
+  background: transparent;
   border: 0;
   outline: none;
   box-shadow: none;
-  background: transparent;
-  color: var(--text);
 }
 
 .search-field:focus-within {
@@ -94,44 +94,44 @@
 
 .main-panel {
   width: 100%;
-  border-radius: var(--radius-xl);
-  min-height: 0;
   height: 100%;
+  min-height: 0;
+  border-radius: var(--radius-xl);
 }
 
 .cover-art {
   position: relative;
   overflow: hidden;
-  border-radius: var(--cover-radius);
   background: linear-gradient(135deg, #2c2c2c 0%, #171717 100%);
+  border-radius: var(--cover-radius);
 }
 
 .cover-art::before {
-  content: "";
   position: absolute;
   inset: 16px;
-  border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  content: "";
 }
 
 .cover-art img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  position: absolute;
-  inset: 0;
 }
 
 .cover-art span {
   font-family: var(--font-display);
-  letter-spacing: 0.18em;
   font-size: 1.1rem;
+  letter-spacing: 0.18em;
   color: rgba(255, 255, 255, 0.38);
 }
 
 .library-status {
-  color: var(--accent-light);
   font-weight: 600;
+  color: var(--accent-light);
 }
 
 /* ─── 视图切换过渡（Vue Transition slide） ─────────────────────────────────── */
@@ -140,10 +140,10 @@
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 .section-slide-enter-from {
-  opacity: 0;
   transform: translateX(20px);
+  opacity: 0;
 }
 .section-slide-leave-to {
-  opacity: 0;
   transform: translateX(-20px);
+  opacity: 0;
 }

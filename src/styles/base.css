@@ -165,15 +165,29 @@ img {
 
 /* ─── 工具类：借用空间滚动条（gutter 不压缩内容） ─────────────────────────── */
 .scroll-borrow {
-  scrollbar-gutter: stable;
   width: calc(100% + var(--scrollbar-compensation));
   margin-right: calc(var(--scrollbar-compensation) * -1);
+  scrollbar-gutter: stable;
+}
+
+/* ─── 工具类：文本单行溢出省略 ─────────────────────────────────────────────── */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncate--block {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ─── 工具类：图片淡入 ─────────────────────────────────────────────────────── */
 .img-fadein {
-  opacity: 0;
   transition: opacity 0.35s ease;
+  opacity: 0;
 }
 
 .img-fadein--loaded {
@@ -201,10 +215,10 @@ svg {
   *,
   ::before,
   ::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
@@ -227,10 +241,10 @@ svg {
   position: absolute;
   width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
+  padding: 0;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+  clip: rect(0, 0, 0, 0);
 }

@@ -281,7 +281,7 @@ defineExpose({ open, close, getWasOpen });
     @transitionend="onTransitionEnd"
     @keydown="handleMenuKeydown"
   >
-    <div v-if="title" class="context-menu__header">
+    <div v-if="title" class="context-menu__header truncate">
       {{ title }}
     </div>
     <template v-for="(item, i) in menu" :key="i">

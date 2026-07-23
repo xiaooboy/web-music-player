@@ -22,9 +22,9 @@ const {
 }
 .empty-state strong {
   display: block;
-  color: var(--text);
-  font-size: 1.08rem;
   margin-bottom: 10px;
+  font-size: 1.08rem;
+  color: var(--text);
 }
 .empty-state--fill {
   display: grid;

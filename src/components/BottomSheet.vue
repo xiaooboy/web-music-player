@@ -446,37 +446,32 @@ defineExpose({ open, close });
   width: 100%;
   max-width: 100%;
   max-height: calc(100dvh - env(safe-area-inset-top));
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
   overflow: hidden;
   color: var(--text);
-
-  /* 关闭态 */
-  opacity: 0;
+  background: transparent;
+  border: none;
   transform: translateY(100%);
   transition:
     opacity 180ms ease-in,
     transform 180ms ease-in,
     overlay 180ms ease-in allow-discrete,
     display 180ms ease-in allow-discrete;
+  /* 关闭态 */
+  opacity: 0;
 }
 
 /* 打开态 */
 .bottom-sheet[open] {
-  opacity: 1;
   transform: translateY(0);
-
   transition:
     opacity 250ms ease-out,
     transform 250ms ease-out,
     overlay 250ms ease-out allow-discrete,
     display 250ms ease-out allow-discrete;
-
+  opacity: 1;
   @starting-style {
-    opacity: 0;
     transform: translateY(100%);
+    opacity: 0;
   }
 }
 
@@ -503,12 +498,12 @@ defineExpose({ open, close });
 
 /* 内容区 */
 .bottom-sheet__body {
-  max-height: inherit;
-  background: var(--panel);
-  border-radius: 16px 16px 0 0;
-  padding: 8px 0 env(safe-area-inset-bottom, 0);
   display: flex;
   flex-direction: column;
+  max-height: inherit;
+  padding: 8px 0 env(safe-area-inset-bottom, 0);
+  background: var(--panel);
+  border-radius: 16px 16px 0 0;
   will-change: transform;
 }
 
@@ -516,9 +511,9 @@ defineExpose({ open, close });
   flex-shrink: 0;
   width: 36px;
   height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
   margin: 8px auto 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
 .bottom-sheet__title {

@@ -3,18 +3,18 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 18px;
-  min-height: 0;
-  height: 100%;
   align-content: start;
+  height: 100%;
+  min-height: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumGrid — 多列网格 + 虚拟滚动
    ═══════════════════════════════════════════════════════════════════════════ */
 .album-grid {
-  overflow-y: auto;
   height: 100%;
   padding-bottom: var(--dock-height);
+  overflow-y: auto;
 }
 
 .album-grid__row {
@@ -28,24 +28,24 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  cursor: pointer;
-  text-align: left;
   color: inherit;
+  text-align: left;
   background: transparent;
+  cursor: pointer;
 }
 
 .album-card__cover {
-  aspect-ratio: 1;
-  border-radius: var(--cover-radius);
+  position: relative;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.06);
-  position: relative;
+  border-radius: var(--cover-radius);
+  aspect-ratio: 1;
 }
 .album-card__cover img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: inherit;
+  object-fit: cover;
 }
 
 .album-card__placeholder {
@@ -61,23 +61,23 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(6px);
-  opacity: 0;
   color: #fff;
-  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  backdrop-filter: blur(6px);
+  transform: translateY(4px);
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
-  transform: translateY(4px);
+  cursor: pointer;
+  opacity: 0;
 }
 
 .album-card:hover .album-card__play,
 .album-card:focus .album-card__play,
 .album-card:focus-within .album-card__play {
-  opacity: 1;
   transform: translateY(0);
+  opacity: 1;
 }
 
 .album-card__play:hover {
@@ -88,37 +88,31 @@
   min-width: 0;
 }
 
-.album-card__title,
-.album-card__artist {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
 
 .album-card__title {
-  font-weight: 600;
   font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .album-card__artist {
-  color: var(--muted);
-  font-size: 0.82rem;
   margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AlbumDetail — 详情视图
    ═══════════════════════════════════════════════════════════════════════════ */
 .album-detail {
-  width: 100%;
-  min-height: 0;
-  height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
   align-self: start;
   align-content: start;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -146,8 +140,8 @@
   width: 116px;
   height: 116px;
   overflow: hidden;
-  border-radius: var(--cover-radius);
   background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--cover-radius);
 }
 .album-detail__cover:empty {
   background: rgba(255, 255, 255, 0.06);
@@ -155,8 +149,8 @@
 .album-detail__cover img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: inherit;
+  object-fit: cover;
 }
 
 .album-detail__copy h3 {
@@ -178,66 +172,60 @@
 
 .album-detail__play-button {
   display: inline-flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   min-width: 116px;
 }
 
 /* ─── 曲目列表 ──────────────────────────────────────────────────────────── */
 .album-detail__song-list {
-  overflow: auto;
   display: grid;
-  padding-bottom: calc(var(--dock-height) + 8px);
-  height: 100%;
   gap: 8px;
   align-content: flex-start;
+  height: 100%;
+  padding-bottom: calc(var(--dock-height) + 8px);
+  overflow: auto;
 }
 
 .album-detail__song-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: center;
   align-self: start;
-  gap: 12px;
+  width: 100%;
+  max-width: 100%;
   padding: 12px 14px;
+  color: inherit;
+  text-align: left;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 18px;
-  text-align: left;
-  color: inherit;
-  width: 100%;
-  max-width: 100%;
 }
 
 .album-detail__song-main {
   display: flex;
-  align-items: center;
   gap: 14px;
+  align-items: center;
   min-width: 0;
 }
 
 .album-detail__song-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  width: 34px;
+  height: 34px;
   color: var(--text);
-  flex-shrink: 0;
+  border-radius: 12px;
 }
 
 .album-detail__song-icon--playing {
   color: var(--accent);
 }
 
-.album-detail__song-copy strong,
-.album-detail__song-copy span {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
 
 .album-detail__song-copy span {
   color: var(--muted);
@@ -245,8 +233,8 @@
 
 .album-detail__song-actions {
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 }
 
 .album-detail__song-duration {

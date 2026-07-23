@@ -27,19 +27,19 @@ const slots = useSlots();
 .section-header {
   display: flex;
   align-items: center;
-  height: 42px;
   /*justify-content: space-between;*/
   align-items: center;
+  height: 42px;
   /*gap: 18px;*/
 }
 .section-header__left {
   margin-right: 12px;
 }
 .section-header h2 {
-  color: var(--accent);
   font-size: 1.08rem;
   font-weight: 700;
   line-height: 1.2;
+  color: var(--accent);
 }
 .section-header__title {
   flex: 1;

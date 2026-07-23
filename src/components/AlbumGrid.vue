@@ -157,8 +157,8 @@ function calcMinColWidth(col: number) {
             </button>
           </div>
           <div class="album-card__copy">
-            <strong class="album-card__title">{{ album.name }}</strong>
-            <span class="album-card__artist">{{ album.artistLabel }}</span>
+            <strong class="album-card__title truncate--block">{{ album.name }}</strong>
+            <span class="album-card__artist truncate--block">{{ album.artistLabel }}</span>
           </div>
         </button>
       </div>

@@ -21,23 +21,23 @@ const toastList = toasts;
   position: fixed;
   bottom: 80px;
   left: 50%;
-  transform: translateX(-50%);
   z-index: var(--z-toast);
   display: flex;
   flex-direction: column-reverse;
   gap: 8px;
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
 .toast-container__item {
   padding: 10px 20px;
-  border-radius: 8px;
-  background: rgba(32, 32, 32, 0.9);
-  backdrop-filter: blur(12px);
-  color: #fff;
   font-size: 0.9rem;
+  color: #fff;
   white-space: nowrap;
+  background: rgba(32, 32, 32, 0.9);
+  border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(12px);
 }
 
 .toast-enter-active {
@@ -53,12 +53,12 @@ const toastList = toasts;
 }
 
 .toast-enter-from {
-  opacity: 0;
   transform: translateY(12px);
+  opacity: 0;
 }
 
 .toast-leave-to {
-  opacity: 0;
   transform: translateY(-8px);
+  opacity: 0;
 }
 </style>

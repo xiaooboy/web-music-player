@@ -12,8 +12,8 @@
 
 @media (max-width: 1080px) {
   .search-field {
-    min-width: 0;
     flex: 1;
+    min-width: 0;
   }
 }
 
@@ -107,34 +107,34 @@
   }
   .now-playing__meta,
   .now-playing__lyrics {
-    width: 100%;
     flex: 0 0 100%;
-    scroll-snap-align: start;
     justify-content: space-evenly;
+    width: 100%;
+    scroll-snap-align: start;
   }
 
   .now-playing__meta {
-    border-right: 0;
     overflow: visible;
+    border-right: 0;
   }
 }
 
 @media (max-width: 480px) {
   #app {
-    overflow: hidden;
     height: 100dvh;
+    overflow: hidden;
   }
   .app-shell {
+    grid-template-columns: auto 100vw;
+    /* 将滚动条推出视口底部，由 body overflow:hidden 裁切 */
+    height: calc(100dvh + 20px);
+    max-height: unset;
+    padding-bottom: 20px;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    grid-template-columns: auto 100vw;
-    max-height: unset;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
-    /* 将滚动条推出视口底部，由 body overflow:hidden 裁切 */
-    height: calc(100dvh + 20px);
-    padding-bottom: 20px;
   }
   .main-stage {
     scroll-snap-align: start;

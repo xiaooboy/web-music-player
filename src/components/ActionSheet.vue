@@ -112,19 +112,19 @@ defineExpose({ open, close });
 
 .action-sheet__item {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   width: 100%;
   min-height: 48px;
   padding: 12px 16px;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text);
-  font-size: 0.95rem;
   font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
   text-align: left;
-  cursor: pointer;
+  background: transparent;
+  border-radius: 10px;
   transition: background 0.15s ease;
+  cursor: pointer;
 }
 
 .action-sheet__item:hover:not(.action-sheet__item--disabled) {
@@ -133,20 +133,20 @@ defineExpose({ open, close });
 
 .action-sheet__item--disabled {
   color: var(--muted);
-  opacity: 0.5;
   cursor: default;
+  opacity: 0.5;
 }
 
 .action-sheet__icon {
-  flex-shrink: 0;
   display: inline-flex;
+  flex-shrink: 0;
 }
 
 .action-sheet__arrow {
-  margin-left: auto;
   flex-shrink: 0;
-  opacity: 0.5;
+  margin-left: auto;
   transition: transform 0.2s ease;
+  opacity: 0.5;
 }
 .action-sheet__item--expanded .action-sheet__arrow {
   transform: rotate(180deg);
@@ -167,9 +167,9 @@ defineExpose({ open, close });
 
 /* 子菜单项 */
 .action-sheet__subitem {
-  padding-left: 48px;
-  color: var(--muted);
-  font-size: 0.9rem;
   min-height: 44px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  padding-left: 48px;
 }
 </style>

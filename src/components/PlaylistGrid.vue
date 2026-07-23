@@ -122,12 +122,12 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
           </button>
         </div>
         <div class="playlist-card__copy">
-          <strong class="playlist-card__title">
+          <strong class="playlist-card__title truncate--block">
             <span
             >{{ playlist.name }}</span
             >
           </strong>
-          <span class="playlist-card__count"
+          <span class="playlist-card__count truncate--block"
             >{{ playlist.trackIds.length }} 首</span
           >
         </div>
