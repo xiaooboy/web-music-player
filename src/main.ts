@@ -15,9 +15,13 @@ import "./styles/entry.css";
   document.body.appendChild(el);
   const w = el.offsetWidth - el.clientWidth;
   el.remove();
-  if (w !== 10) document.documentElement.style.setProperty("--scrollbar-compensation", `${w}px`);
+  const i = 16 - w;
+  const o = 16
+  const html = document.documentElement;
+  html.style.setProperty("--scrollbar-size", `${w}px`);
+  html.style.setProperty("--scrollbar-compensation-i", `${i}px`);
+  html.style.setProperty("--scrollbar-compensation-o", `${o}px`);
 }
-
 const app = createApp(App);
 app.use(createPinia());
 app.mount("#app");

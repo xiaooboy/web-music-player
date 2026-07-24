@@ -30,7 +30,6 @@
   justify-self: stretch;
   width: 100%;
   height: 100%;
-  padding-right: 0;
   padding-left: 0;
   span {
     color: var(--muted);
@@ -42,12 +41,6 @@
   height: 100%;
   min-height: 0;
   overflow: auto;
-}
-
-.track-table__list-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .track-table__row {
@@ -63,7 +56,7 @@
 
 .track-table__anchor {
   position: absolute;
-  right: 3px;
+  right: 4px;
   bottom: calc(var(--dock-height) + 20px);
   display: inline-flex;
   align-items: center;
@@ -153,5 +146,9 @@
   }
 }
 .track-row-more {
-  margin-inline: 12px;
+  margin-left: 12px;
+}
+.main-panel .empty-state {
+  align-self: flex-end;
+  margin-bottom: 40dvh;
 }

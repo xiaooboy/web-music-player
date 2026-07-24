@@ -43,7 +43,8 @@
    */
   --gradient-bg: #0b0f0c;
   --scrollbar-size: 10px;
-  --scrollbar-compensation: var(--scrollbar-size); /* JS 运行时测量后会覆盖 */
+  --scrollbar-compensation-i: 0; /* JS 运行时测量后会覆盖 */
+  --scrollbar-compensation-o: var(--scrollbar-size); /* JS 运行时测量后会覆盖 */
 }
 
 @supports (top: env(titlebar-area-height)) {
@@ -100,21 +101,27 @@ body {
   border-radius: 999px;
 }
 
-::webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background: linear-gradient(
     180deg,
-    var(--accent-muted) 0%,
-    var(--accent-deep) 100%
+    transparent 0%,
+    var(--accent-muted) 25%,
+    var(--accent-deep) 75%,
+    transparent 100%
   );
   border: 2px solid rgba(15, 15, 15, 0.92);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
   border-radius: 999px;
 }
 
-::webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    var(--accent-bright) 0%,
-    var(--accent-muted) 100%
+    transparent 0%,
+    var(--accent-bright) 25%,
+    var(--accent-muted) 75%,
+    transparent 100%
   );
 }
 

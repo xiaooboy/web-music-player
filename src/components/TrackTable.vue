@@ -2,7 +2,6 @@
 import { computed, useTemplateRef } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Heart, MoreVertical, Pause, Play, LocateFixed } from "@lucide/vue";
-import EmptyState from "./EmptyState.vue";
 import ContextMenu from "./ContextMenu.vue";
 import ActionSheet from "./ActionSheet.vue";
 import type { Track } from "../types";
@@ -15,8 +14,6 @@ const props = defineProps<{
   currentTrackId: string;
   isPlaying: boolean;
   likedTrackIdSet: Set<string>;
-  emptyTitle?: string;
-  emptyDescription?: string;
 }>();
 
 const emit = defineEmits<{
@@ -217,8 +214,6 @@ function scrollToCurrentTrack() {
           </div>
         </div>
       </template>
-
-      <EmptyState v-else :title="emptyTitle" :content="emptyDescription" />
     </div>
 
     <!-- 滚动到当前音乐按钮 -->

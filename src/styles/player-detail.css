@@ -18,7 +18,7 @@
   gap: 14px;
   align-items: center;
   height: var(--dock-height);
-  padding: 0 20px 0 16px;
+  padding-inline: var(--shell-gap);
   background: rgba(24, 24, 24, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: var(--shadow);
@@ -422,6 +422,7 @@ input[type="range"].now-playing__volume-slider {
 .now-playing__actions {
   display: flex;
   gap: 20px;
+  height: 44px;
   align-items: center;
   justify-content: center;
 }
