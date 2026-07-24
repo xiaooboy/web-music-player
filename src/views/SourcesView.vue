@@ -9,19 +9,12 @@ import EmptyState from "../components/EmptyState.vue";
 import SectionHeader from "../components/SectionHeader.vue";
 import BaseDialog from "../components/BaseDialog.vue";
 
+const isSupported = supportsDirectoryPicker();
 const libraryStore = useLibraryStore();
 
 // 根据环境和浏览器支持情况决定是否显示添加按钮
-const showAddButton = import.meta.env.DEV ? true : supportsDirectoryPicker();
-const showTempButton = import.meta.env.DEV ? true : !supportsDirectoryPicker();
-
-const libraryHint = computed(() =>
-  supportsDirectoryPicker()
-    ? libraryStore.musicSources.some((source) => source.persistent)
-      ? "已支持多个音乐源；缓存目录下次会自动恢复，失效目录会提示重新授权。"
-      : "当前浏览器支持目录授权，添加后会把多个音乐源一起缓存。"
-    : "当前环境将使用系统目录选择器导入；若要直接目录授权并自动恢复，请在 Chrome 或 Edge 的 localhost / HTTPS 环境打开",
-);
+const showAddButton = import.meta.env.DEV ? true : isSupported;
+const showTempButton = import.meta.env.DEV ? true : !isSupported;
 
 const pendingReauthCount = computed(
   () =>
@@ -32,6 +25,10 @@ const pendingReauthCount = computed(
 async function openFolder(type: "picker" | "webkitDirectory") {
   if (libraryStore.isFileLaunch) {
     showToast("本地文件启动，不支持添加音乐源");
+    return;
+  }
+  if (type === "picker" && !isSupported) {
+    showToast("不支持音乐缓存，请添加临时音乐源");
     return;
   }
   const nextSource = await (type === "webkitDirectory"
@@ -104,8 +101,9 @@ function confirmRemove() {
       </template>
     </SectionHeader>
 
-    <p class="sources__hint">{{ libraryHint }}</p>
-
+    <p class="sources__hint">
+      当前环境：音乐缓存 {{ isSupported?'✔️':'❌'}} {{ pendingReauthCount?`，待重新授权(${pendingReauthCount})`:'' }}
+    </p>
     <div
       v-if="libraryStore.musicSources.length"
       class="sources__list sources__list-panel scroll-borrow"
@@ -139,20 +137,18 @@ function confirmRemove() {
     </div>
     <EmptyState
       v-else
-      fill
-      title="还没有添加音乐源"
-      content="添加一个或多个本地文件夹后，播放器会合并生成统一播放列表。"
+      title="没有音乐源"
+      content="添加文件夹后，生成播放列表。"
     />
 
     <!-- 删除确认对话框 -->
-    <BaseDialog
-      v-model="confirmVisible"
-      class="form-dialog"
-    >
+    <BaseDialog v-model="confirmVisible" class="form-dialog">
       <form method="dialog" @submit.prevent="confirmRemove">
         <h3>移除音乐源</h3>
         <p class="form-dialog__text">
-          确定移除「{{ removingSourceName }}」吗？移除后该目录中的歌曲将从播放列表中消失。
+          确定移除「{{
+            removingSourceName
+          }}」吗？移除后该目录中的歌曲将从播放列表中消失。
         </p>
         <div class="form-dialog__actions">
           <button
@@ -162,7 +158,10 @@ function confirmRemove() {
           >
             取消
           </button>
-          <button type="submit" class="form-dialog__btn form-dialog__btn--danger">
+          <button
+            type="submit"
+            class="form-dialog__btn form-dialog__btn--danger"
+          >
             移除
           </button>
         </div>

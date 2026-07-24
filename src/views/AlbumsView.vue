@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { shallowRef } from "vue";
 import AlbumGrid from "../components/AlbumGrid.vue";
 import SectionHeader from "../components/SectionHeader.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -29,7 +28,7 @@ function enterAlbum(albumName: string) {
           {{
             albumStore.albums.length
               ? `${albumStore.albums.length} 张`
-              : "等待扫描"
+              : ""
           }}
         </span>
       </template>
@@ -44,9 +43,8 @@ function enterAlbum(albumName: string) {
     />
     <EmptyState
       v-else
-      title="还没有可展示的专辑"
-      content="导入音乐后，这里会按专辑自动整理并展示其中的歌曲。"
-      fill
+      title="没有专辑"
+      content="导入音乐后，自动整理专辑。"
     />
   </section>
 </template>

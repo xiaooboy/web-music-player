@@ -8,6 +8,7 @@ import { useUIStore } from "../stores/uiStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
 import SectionHeader from "@/components/SectionHeader.vue";
+import EmptyState from "@/components/EmptyState.vue";
 
 const favoriteStore = useFavoriteStore();
 const playerStore = usePlayerStore();
@@ -36,7 +37,7 @@ function handleNavigateToAlbum(albumName: string) {
 </script>
 
 <template>
-  <div class="tracks__view favorites-view">
+  <div class="main-panel tracks__view favorites-view">
     <header class="tracks__searchbar">
       <label class="search-field">
         <Search :size="18" aria-hidden="true" />
@@ -51,19 +52,23 @@ function handleNavigateToAlbum(albumName: string) {
 
     <SectionHeader title="收藏" />
 
-    <div class="tracks__scroll">
-      <TrackTable
-        :tracks="visibleTracks"
-        :current-track-id="playerStore.currentTrackId"
-        :is-playing="playerStore.isPlaying"
-        :liked-track-id-set="favoriteStore.likedTrackIdSet"
-        empty-title="收藏为空"
-        empty-description="点亮心形按钮，这里会自动收集你收藏的音乐。"
-        @play="handleFavoriteTrackSelect"
-        @toggle-play="playerStore.togglePlay"
-        @toggle-favorite="favoriteStore.toggleTrackFavorite"
-        @navigate-to-album="handleNavigateToAlbum"
-      />
-    </div>
+    <TrackTable
+      v-if="favoriteStore.favoriteTracks.length"
+      :tracks="visibleTracks"
+      :current-track-id="playerStore.currentTrackId"
+      :is-playing="playerStore.isPlaying"
+      :liked-track-id-set="favoriteStore.likedTrackIdSet"
+      empty-title=""
+      empty-description=""
+      @play="handleFavoriteTrackSelect"
+      @toggle-play="playerStore.togglePlay"
+      @toggle-favorite="favoriteStore.toggleTrackFavorite"
+      @navigate-to-album="handleNavigateToAlbum"
+    />
+    <EmptyState
+      v-else
+      title="收藏为空"
+      content="点亮心形按钮，收藏音乐。"
+    ></EmptyState>
   </div>
 </template>

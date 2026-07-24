@@ -9,6 +9,7 @@ import { useUIStore } from "../stores/uiStore";
 import { useTrackSearch } from "../composables/useTrackSearch";
 import TrackTable from "@/components/TrackTable.vue";
 import SectionHeader from "@/components/SectionHeader.vue";
+import EmptyState from "@/components/EmptyState.vue";
 
 const libraryStore = useLibraryStore();
 const playerStore = usePlayerStore();
@@ -29,12 +30,6 @@ const { searchQuery, visibleTracks } = useTrackSearch(
   () => libraryStore.tracks,
 );
 
-const playlistStatus = computed(() => {
-  if (libraryStore.tracks.length) {
-    return `${libraryStore.tracks.length} 首`;
-  }
-  return "";
-});
 const emptyTitle = computed(() => {
   const { loading, tracks } = libraryStore;
   // 避免闪烁
@@ -65,7 +60,7 @@ function handleNavigateToAlbum(albumName: string) {
 </script>
 
 <template>
-  <div class="tracks__view">
+  <div class="main-panel tracks__view">
     <header class="tracks__searchbar">
       <label class="search-field">
         <Search :size="18" aria-hidden="true" />
@@ -78,20 +73,17 @@ function handleNavigateToAlbum(albumName: string) {
       </label>
     </header>
     <SectionHeader title="歌曲" />
-
-    <div class="tracks__scroll">
       <TrackTable
+        v-if="libraryStore.tracks.length"
         :tracks="visibleTracks"
         :current-track-id="playerStore.currentTrackId"
         :is-playing="playerStore.isPlaying"
-        :empty-title="emptyTitle"
-        :empty-description="emptyDescription"
         :liked-track-id-set="favoriteStore.likedTrackIdSet"
         @play="handleSelectTrack"
         @toggle-play="playerStore.togglePlay"
         @toggle-favorite="favoriteStore.toggleTrackFavorite"
         @navigate-to-album="handleNavigateToAlbum"
       />
-    </div>
+      <EmptyState v-else :title="emptyTitle" :content="emptyDescription"></EmptyState>
   </div>
 </template>

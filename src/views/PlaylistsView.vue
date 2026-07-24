@@ -88,7 +88,6 @@ function handlePlayPlaylist(playlistId: string) {
       v-else
       title="还没有歌单"
       content="创建一个歌单，开始整理你的音乐。"
-      fill
     />
 
     <PlaylistFormDialog

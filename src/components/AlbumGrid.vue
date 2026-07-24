@@ -18,7 +18,6 @@ interface Props {
   selectedAlbumName: string;
 }
 const ROW_GAP = 30;
-const PADDING_RIGHT = 0;
 const ROW_HEIGHT = 190;
 // 最少两列
 const MIN_COL_WIDTH = calcMinColWidth(2)
@@ -41,7 +40,7 @@ const columnCount = computed(() =>
   Math.max(
     1,
     Math.floor(
-      (containerWidth.value - PADDING_RIGHT + ROW_GAP) /
+      (containerWidth.value + ROW_GAP) /
         (MIN_COL_WIDTH + ROW_GAP),
     ),
   ),
@@ -85,6 +84,7 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 onMounted(() => {
   if (scrollRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
+      console.log(entries[0].contentRect)
       containerWidth.value = entries[0].contentRect.width;
     });
     resizeObserver.observe(scrollRef.value);
@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
 });
 function calcMinColWidth(col: number) {
   const width = window.innerWidth
-  const value = Math.min(150, (width - ROW_GAP - PADDING_RIGHT - 2 * 16) / col)
+  const value = Math.min(150, (width - ROW_GAP - 2 * 16) / col)
   return Math.floor(value);
 }
 </script>
@@ -119,10 +119,7 @@ function calcMinColWidth(col: number) {
         class="album-grid__row"
         :style="{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          paddingRight: `${PADDING_RIGHT}px`,
-          right: 0,
+          inset:'0 0 auto',
           transform: `translateY(${vRow.start}px)`,
         }"
       >

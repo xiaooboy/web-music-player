@@ -17,7 +17,6 @@ const {
 </template>
 <style>
 .empty-state {
-  padding: 72px 16px 82px;
   text-align: center;
 }
 .empty-state strong {
