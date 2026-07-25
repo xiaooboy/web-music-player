@@ -91,12 +91,12 @@ body {
   background: var(--gradient-bg);
 }
 
-::webkit-scrollbar {
+::-webkit-scrollbar {
   width: var(--scrollbar-size);
   height: var(--scrollbar-size);
 }
 
-::webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 999px;
 }
@@ -125,13 +125,13 @@ body {
   );
 }
 
-::webkit-scrollbar-button {
+::-webkit-scrollbar-button {
   display: none;
   width: 0;
   height: 0;
 }
 
-::webkit-scrollbar-corner {
+::-webkit-scrollbar-corner {
   background: transparent;
 }
 

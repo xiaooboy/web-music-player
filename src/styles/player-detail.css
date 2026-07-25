@@ -416,9 +416,9 @@ input[type="range"].now-playing__volume-slider {
 .now-playing__actions {
   display: flex;
   gap: 20px;
-  height: 44px;
   align-items: center;
   justify-content: center;
+  height: 44px;
 }
 
 .now-playing__actions {

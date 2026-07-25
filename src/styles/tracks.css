@@ -56,7 +56,7 @@
 
 .track-table__anchor {
   position: absolute;
-  right: 4px;
+  right: -8px;
   bottom: calc(var(--dock-height) + 20px);
   display: inline-flex;
   align-items: center;

@@ -1,27 +1,27 @@
 /* 借用空间滚动条（gutter 不压缩内容） */
 .scroll-borrow {
   width: auto;
-  padding-right: var(--scrollbar-compensation-i);
   margin-right: calc(var(--scrollbar-compensation-o) * -1);
+  padding-right: var(--scrollbar-compensation-i);
   scrollbar-gutter: stable;
 }
 /* 视觉 overlay-scrollbar */
 .overlay-scrollbar {
   width: auto;
   height: auto;
-  scrollbar-gutter: stable;
   margin-right: calc(0px - var(--scrollbar-size));
   margin-bottom: calc(0px - var(--scrollbar-size));
+  scrollbar-gutter: stable;
 }
 .overlay-scrollbar-x {
   width: auto;
-  scrollbar-gutter: stable;
   margin-right: calc(0px - var(--scrollbar-size));
+  scrollbar-gutter: stable;
 }
 .overlay-scrollbar-y {
   height: auto;
-  scrollbar-gutter: stable;
   margin-bottom: calc(0px - var(--scrollbar-size));
+  scrollbar-gutter: stable;
 }
 /* 文本单行溢出省略 */
 .truncate {
