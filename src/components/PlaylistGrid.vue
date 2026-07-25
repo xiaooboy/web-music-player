@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, shallowReactive, useTemplateRef } from "vue";
 import type { ComponentExposed } from "vue-component-type-helpers";
-import { MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
+import { Download, MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
 import ContextMenu from "./ContextMenu.vue";
@@ -28,6 +28,7 @@ const emit = defineEmits<{
   (e: "playPlaylist", id: string): void;
   (e: "editPlaylist", id: string): void;
   (e: "deletePlaylist", id: string): void;
+  (e: "exportPlaylist", id: string): void;
 }>();
 
 const libraryStore = useLibraryStore();
@@ -57,8 +58,14 @@ const menuProps = shallowReactive({
 
 function openMenu(event: MouseEvent, playlist: Playlist) {
   event.stopPropagation();
+  event.preventDefault();
   menuProps.title = playlist.name;
   menuProps.menu = [
+    {
+      label: "导出歌单",
+      icon: Download,
+      action: () => emit("exportPlaylist", playlist.id),
+    },
     {
       label: "编辑歌单",
       icon: Pencil,
@@ -103,7 +110,8 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
         @click="emit('selectPlaylist', playlist.id)"
         @keydown.enter="emit('selectPlaylist', playlist.id)"
       >
-        <div class="playlist-card__cover">
+
+        <div class="playlist-card__cover" @contextmenu="openMenu($event, playlist)">
           <img
             v-if="coverUrlMap[playlist.id]"
             class="img-fadein"

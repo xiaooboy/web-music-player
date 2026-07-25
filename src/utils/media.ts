@@ -139,7 +139,7 @@ export function entriesFromInput(files: FileList | null) {
 }
 
 export function generateTrackId(path: string, file: File) {
-  return `${normalizeSlashes(path)}::${file.lastModified}`;
+  return `${normalizeSlashes(path)}`;
 }
 
 export async function buildTrack(
