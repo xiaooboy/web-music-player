@@ -39,7 +39,7 @@ const slots = useSlots();
   margin-right: 12px;
 }
 .section-header h2 {
-  font-size: 1.08rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   line-height: 1.2;
   color: var(--accent);

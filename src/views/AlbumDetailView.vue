@@ -16,6 +16,10 @@ const uiStore = useUIStore();
 
 const playingTrackId = computed(() => playerStore.isPlaying ? playerStore.currentTrackId : "");
 
+const isCurrentAlbumPlaying = computed(
+  () => albumStore.playingAlbumName === albumStore.selectedAlbumName && playerStore.isPlaying,
+);
+
 const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
 const contextMenuHeader = ref("");
 
@@ -36,13 +40,13 @@ function handlePlayTrack(trackId: string) {
 }
 
 function handlePlayAlbum() {
+  if (isCurrentAlbumPlaying.value) {
+    playerStore.togglePlay();
+    return;
+  }
   albumStore.updatePlayingAlbum(albumStore.selectedAlbumName);
   playerStore.setPlaySourceType("albums");
   playerStore.playTrack(0, true);
-}
-
-function handleStop() {
-  playerStore.togglePlay();
 }
 
 function navigateBack() {
@@ -56,7 +60,7 @@ useHistoryBack(navigateBack);
 </script>
 
 <template>
-  <section v-if="albumStore.selectedAlbum" class="main-panel album-detail">
+  <section v-if="albumStore.selectedAlbum" class="album-detail scroll-borrow">
     <SectionHeader>
       <template #left>
         <button class="icon-btn" @click="navigateBack">
@@ -83,12 +87,15 @@ useHistoryBack(navigateBack);
         </div>
       </div>
       <button
-        class="primary-button album-detail__play-button"
+        class="icon-btn--sized album-detail__play-button"
+        :class="{ 'album-detail__play-button--playing': isCurrentAlbumPlaying }"
         type="button"
+        :title="isCurrentAlbumPlaying ? '暂停' : '播放'"
+        :aria-label="isCurrentAlbumPlaying ? '暂停' : '播放'"
         @click="handlePlayAlbum"
       >
-        <Play :size="20" />
-        <span>播放专辑</span>
+        <Pause v-if="isCurrentAlbumPlaying" :size="20" />
+        <Play v-else :size="20" />
       </button>
     </div>
 
@@ -103,19 +110,7 @@ useHistoryBack(navigateBack);
         @contextmenu="handleContextMenu($event, track)"
       >
         <div class="album-detail__song-main">
-          <div
-            class="album-detail__song-icon"
-            :class="{
-              'album-detail__song-icon--playing': track.id === playingTrackId,
-            }"
-          >
-            <Pause
-              v-if="track.id === playingTrackId"
-              @click.stop="handleStop()"
-              :size="20"
-            />
-            <Play v-else :size="20" />
-          </div>
+          <span class="album-detail__song-order">{{ songOrder + 1 }}</span>
           <div class="album-detail__song-copy">
             <strong class="truncate--block">{{ track.title }}</strong>
             <span class="truncate--block">{{ track.artist || "未知歌手" }}</span>

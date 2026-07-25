@@ -25,6 +25,23 @@
   --cover-radius-circled: 50%;
   --font-display: system-ui;
   --font-body: system-ui;
+  /* 字体尺寸 token — 参考 Tailwind font-size 比例 */
+  --text-xs: 0.75rem;     /* 12px 辅助标签 */
+  --text-xs--lh: 1rem;
+  --text-sm: 0.875rem;    /* 14px 次要信息 */
+  --text-sm--lh: 1.25rem;
+  --text-base: 1rem;      /* 16px 正文基准 */
+  --text-base--lh: 1.5rem;
+  --text-lg: 1.125rem;    /* 18px 小标题 */
+  --text-lg--lh: 1.75rem;
+  --text-xl: 1.25rem;     /* 20px 标题 */
+  --text-xl--lh: 1.75rem;
+  --text-2xl: 1.5rem;     /* 24px 大标题 */
+  --text-2xl--lh: 2rem;
+  --text-3xl: 1.875rem;   /* 30px 页面标题 */
+  --text-3xl--lh: 2.25rem;
+  --text-4xl: 2.25rem;    /* 36px 英雄标题 */
+  --text-4xl--lh: 2.5rem;
   --window-safe-top: 0px;
   --dock-height: 70px;
   --shell-gap: 16px;

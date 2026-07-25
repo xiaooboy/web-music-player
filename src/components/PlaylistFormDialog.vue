@@ -163,14 +163,14 @@ async function handleKeydown(e: KeyboardEvent) {
 /* 内容样式 */
 .form-dialog h3 {
   margin-bottom: 16px;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 
 .form-dialog__input {
   width: 100%;
   padding: 10px 14px;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -192,7 +192,7 @@ async function handleKeydown(e: KeyboardEvent) {
 
 .form-dialog__btn {
   padding: 8px 18px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -220,7 +220,7 @@ async function handleKeydown(e: KeyboardEvent) {
 
 /* 删除确认文本 */
 .form-dialog__text {
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
   color: var(--muted);
 }

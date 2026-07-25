@@ -30,7 +30,9 @@ const {
   isSmallScreen,
 } = useTrackContextMenu();
 
-const hasPlayingTrack = computed(() => props.tracks.some(t => t.id === props.currentTrackId));
+const hasPlayingTrack = computed(() =>
+  props.tracks.some((t) => t.id === props.currentTrackId),
+);
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
@@ -127,7 +129,6 @@ function scrollToCurrentTrack() {
               position: 'absolute',
               top: 0,
               left: 0,
-              width: '100%',
               transform: `translateY(${vRow.start}px)`,
             }"
             @click="$emit('play', item.id)"
@@ -151,7 +152,10 @@ function scrollToCurrentTrack() {
               </div>
               <div class="track-table__copy">
                 <strong class="truncate--block">{{ item.title }}</strong>
-                <span class="truncate--block">{{ item.artist }}</span>
+                <div class="truncate--block">
+                  <span>{{ item.artist }}</span>
+                  <span class="track-table__copy-album"> - {{ item.album }}</span>
+                </div>
               </div>
             </div>
             <div class="track-table__album">

@@ -7,7 +7,7 @@
 }
 /* 视觉 overlay-scrollbar */
 .overlay-scrollbar {
-  width: auto;
+  width: calc(100% + var(--scrollbar-size));
   height: auto;
   margin-right: calc(0px - var(--scrollbar-size));
   margin-bottom: calc(0px - var(--scrollbar-size));
@@ -38,7 +38,7 @@
 }
 
 /* 纯图标按钮 */
-.icon-btn {
+.icon-btn,.icon-btn--sized {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -62,10 +62,21 @@
 
   svg {
     stroke-width: 2.1;
+    z-index: var(--z-base);
   }
 
   & + & {
     margin-left: 20px;
+  }
+}
+
+/* 实心尺寸变体：按钮本身占据 44×44 布局空间，::before 填满而非溢出 */
+.icon-btn--sized {
+  width: 44px;
+  height: 44px;
+
+  &::before {
+    inset: 0;
   }
 }
 
