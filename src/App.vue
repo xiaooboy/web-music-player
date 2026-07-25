@@ -94,10 +94,13 @@ function handleKeydown(event: KeyboardEvent) {
     case " ":
       event.preventDefault();
       playerStore.togglePlay();
+      // 播放切换后移除焦点，避免焦点环残留
+      if (target !== document.body) target.blur();
       break;
     case "f":
     case "F":
       uiStore.openNowPlaying();
+      if (target !== document.body) target.blur();
       break;
   }
 }

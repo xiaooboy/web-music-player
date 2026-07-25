@@ -69,6 +69,7 @@ function handleNavigateToAlbum(albumName: string) {
           type="search"
           placeholder="搜索歌曲、歌手、专辑"
           autocomplete="off"
+          @keydown.enter="($event.target as HTMLInputElement).blur()"
         />
       </label>
     </header>

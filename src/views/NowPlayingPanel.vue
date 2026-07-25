@@ -260,131 +260,128 @@ defineExpose({ openSheet, closeSheet });
             </p>
           </div>
 
-          <div class="now-playing__controls">
-            <div class="now-playing__progress">
-              <input
-                class="player-dock__progress-slider"
-                type="range"
-                min="0"
-                max="100"
-                aria-label="播放进度"
-                :value="playerStore.progressPercent"
-                :style="{ '--slider-value': playerStore.progressPercent + '%' }"
-                :step="0.1"
-                @input="
-                  playerStore.seekToPercent(
-                    Number(($event.target as HTMLInputElement).value),
-                  )
-                "
-              />
-              <div class="now-playing__progress-times">
-                <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
-                <span>{{
-                  formatTime(playerStore.currentTrack?.duration || 0)
-                }}</span>
-              </div>
+          <div class="now-playing__progress">
+            <input
+              class="player-dock__progress-slider"
+              type="range"
+              min="0"
+              max="100"
+              aria-label="播放进度"
+              :value="playerStore.progressPercent"
+              :style="{ '--slider-value': playerStore.progressPercent + '%' }"
+              :step="0.1"
+              @input="
+                playerStore.seekToPercent(
+                  Number(($event.target as HTMLInputElement).value),
+                )
+              "
+            />
+            <div class="now-playing__progress-times">
+              <span>{{ formatTime(playerStore.currentTimeSeconds) }}</span>
+              <span>{{
+                formatTime(playerStore.currentTrack?.duration || 0)
+              }}</span>
             </div>
+          </div>
 
-            <div class="now-playing__transport">
-              <div class="now-playing__playback">
-                <button
-                  class="icon-btn"
-                  type="button"
-                  aria-label="上一首"
-                  title="上一首"
-                  @click="playerStore.playByStep(-1)"
-                >
-                  <SkipBack :size="26" />
-                </button>
-                <button
-                  class="icon-btn play-toggle"
-                  :class="{ 'play-toggle--active': playerStore.isPlaying }"
-                  type="button"
-                  aria-label="播放或暂停"
-                  title="播放或暂停"
-                  @click="playerStore.togglePlay()"
-                >
-                  <Pause v-if="playerStore.isPlaying" :size="30" />
-                  <Play v-else :size="30" />
-                </button>
-                <button
-                  class="icon-btn"
-                  type="button"
-                  aria-label="下一首"
-                  title="下一首"
-                  @click="playerStore.playByStep(1)"
-                >
-                  <SkipForward :size="26" />
-                </button>
-              </div>
-              <div class="now-playing__actions">
-                <button
-                  class="icon-btn now-playing__playback-mode now-playing__playback-mode--active"
-                  type="button"
-                  :aria-label="playerStore.playbackModeLabel"
-                  :title="playerStore.playbackModeLabel"
-                  @click="playerStore.nextPlaybackMode()"
-                >
-                  <Shuffle
-                    v-if="playerStore.playbackMode === 'shuffle'"
-                    :size="20"
-                  />
-                  <Repeat1
-                    v-else-if="playerStore.playbackMode === 'one'"
-                    :size="20"
-                  />
-                  <Repeat v-else :size="20" />
-                </button>
-                <button
-                  class="icon-btn favorite-button"
-                  :class="{ 'favorite-button--active': isCurrentTrackLiked }"
-                  type="button"
-                  :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
-                  :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
-                  @click="
-                    favoriteStore.toggleTrackFavorite(
-                      playerStore.currentTrackId,
-                    )
-                  "
-                >
-                  <Heart
-                    :size="20"
-                    :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
-                  />
-                </button>
-                <button
-                  class="icon-btn now-playing__queue-button"
-                  type="button"
-                  aria-label="播放队列"
-                  title="播放队列"
-                  @click="handleQueueClick"
-                >
-                  <List :size="20" />
-                </button>
-                <button
-                  class="icon-btn player-dock__volume-button"
-                  type="button"
-                  :aria-label="
-                    playerStore.volumePercent === 0 ? '取消静音' : '音量'
-                  "
-                  :title="playerStore.volumePercent === 0 ? '取消静音' : '音量'"
-                  :popovertarget="VOLUME_POPOVER_ID"
-                >
-                  <VolumeX v-if="playerStore.volumePercent === 0" :size="20" />
-                  <Volume2 v-else :size="20" />
-                </button>
-                <button
-                  class="icon-btn now-playing__more-button"
-                  type="button"
-                  aria-label="更多操作"
-                  aria-haspopup="menu"
-                  title="更多操作"
-                  @click="handleMoreClick($event)"
-                >
-                  <MoreVertical :size="20" />
-                </button>
-              </div>
-            </div>
+          <div class="now-playing__playback">
+            <button
+              class="icon-btn"
+              type="button"
+              aria-label="上一首"
+              title="上一首"
+              @click="playerStore.playByStep(-1)"
+            >
+              <SkipBack :size="26" />
+            </button>
+            <button
+              class="icon-btn play-toggle"
+              :class="{ 'play-toggle--active': playerStore.isPlaying }"
+              type="button"
+              aria-label="播放或暂停"
+              title="播放或暂停"
+              @click="playerStore.togglePlay()"
+            >
+              <Pause v-if="playerStore.isPlaying" :size="30" />
+              <Play v-else :size="30" />
+            </button>
+            <button
+              class="icon-btn"
+              type="button"
+              aria-label="下一首"
+              title="下一首"
+              @click="playerStore.playByStep(1)"
+            >
+              <SkipForward :size="26" />
+            </button>
+          </div>
+
+          <div class="now-playing__actions">
+            <button
+              class="icon-btn now-playing__playback-mode now-playing__playback-mode--active"
+              type="button"
+              :aria-label="playerStore.playbackModeLabel"
+              :title="playerStore.playbackModeLabel"
+              @click="playerStore.nextPlaybackMode()"
+            >
+              <Shuffle
+                v-if="playerStore.playbackMode === 'shuffle'"
+                :size="20"
+              />
+              <Repeat1
+                v-else-if="playerStore.playbackMode === 'one'"
+                :size="20"
+              />
+              <Repeat v-else :size="20" />
+            </button>
+            <button
+              class="icon-btn favorite-button"
+              :class="{ 'favorite-button--active': isCurrentTrackLiked }"
+              type="button"
+              :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
+              :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
+              @click="
+                favoriteStore.toggleTrackFavorite(
+                  playerStore.currentTrackId,
+                )
+              "
+            >
+              <Heart
+                :size="20"
+                :fill="isCurrentTrackLiked ? 'currentColor' : 'none'"
+              />
+            </button>
+            <button
+              class="icon-btn now-playing__queue-button"
+              type="button"
+              aria-label="播放队列"
+              title="播放队列"
+              @click="handleQueueClick"
+            >
+              <List :size="20" />
+            </button>
+            <button
+              class="icon-btn player-dock__volume-button"
+              type="button"
+              :aria-label="
+                playerStore.volumePercent === 0 ? '取消静音' : '音量'
+              "
+              :title="playerStore.volumePercent === 0 ? '取消静音' : '音量'"
+              :popovertarget="VOLUME_POPOVER_ID"
+            >
+              <VolumeX v-if="playerStore.volumePercent === 0" :size="20" />
+              <Volume2 v-else :size="20" />
+            </button>
+            <button
+              class="icon-btn now-playing__more-button"
+              type="button"
+              aria-label="更多操作"
+              aria-haspopup="menu"
+              title="更多操作"
+              @click="handleMoreClick($event)"
+            >
+              <MoreVertical :size="20" />
+            </button>
           </div>
         </div>
 

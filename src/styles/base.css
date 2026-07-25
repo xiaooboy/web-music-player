@@ -162,6 +162,19 @@ button {
   outline: none;
 }
 
+/* 触屏设备：仅在键盘导航（Tab）时显示焦点环，点击/触摸不显示 */
+@media (pointer: coarse) {
+  :focus-visible {
+    box-shadow: none;
+  }
+
+  /* 触屏设备仍保留输入框的焦点指示，方便用户知道当前输入位置 */
+  input:focus-visible,
+  textarea:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--accent-muted);
+  }
+}
+
 img {
   display: block;
   max-width: 100%;

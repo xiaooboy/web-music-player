@@ -80,10 +80,6 @@
     padding-right: 18px;
   }
 
-  .now-playing__transport {
-    gap: 10px;
-  }
-
   .now-playing__lyrics-line {
     font-size: 1.08rem;
   }

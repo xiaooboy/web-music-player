@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import BaseDialog from "./BaseDialog.vue";
 
 const visible = defineModel<boolean>();
@@ -32,6 +32,15 @@ function handleConfirm() {
   }
   visible.value = false;
 }
+
+/** 拦截输入框 Enter 键，避免焦点转移到外部触发按钮 */
+async function handleKeydown(e: KeyboardEvent) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  handleConfirm();
+  await nextTick();
+  (document.activeElement as HTMLElement)?.blur();
+}
 </script>
 
 <template>
@@ -60,6 +69,7 @@ function handleConfirm() {
         placeholder="歌单名称"
         autofocus
         class="form-dialog__input"
+        @keydown="handleKeydown"
       />
       <div class="form-dialog__actions">
         <button
