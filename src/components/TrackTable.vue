@@ -125,12 +125,7 @@ function scrollToCurrentTrack() {
             tabindex="0"
             role="row"
             :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
-            :style="{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              transform: `translateY(${vRow.start}px)`,
-            }"
+            :style="{  transform: `translateY(${vRow.start}px)` }"
             @click="$emit('play', item.id)"
             @keydown.enter="
               ($event.target as HTMLElement).closest('button')
@@ -142,7 +137,8 @@ function scrollToCurrentTrack() {
             <div class="track-table__song">
               <div class="track-table__thumb">
                 <img
-                  v-if="ensureCoverUrl(item.id, item.coverBlob)"
+                  v-if="item.coverBlob"
+                  class="img-fadein"
                   width="44"
                   height="44"
                   :src="ensureCoverUrl(item.id, item.coverBlob)"

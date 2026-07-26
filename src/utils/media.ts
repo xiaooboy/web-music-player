@@ -93,9 +93,31 @@ export async function collectAudioFiles(
   handle: FileSystemDirectoryHandle,
   parentPath = "",
 ): Promise<FileEntry[]> {
-  return collectDirectoryFiles(handle, parentPath).then((entries) =>
-    entries.filter(({ file }) => isAudioFile(file.name, file.type)),
-  );
+  const directory = handle as IterableDirectoryHandle;
+  const filePromises: Promise<FileEntry>[] = [];
+  const dirPromises: Promise<FileEntry[]>[] = [];
+
+  for await (const [, entry] of directory.entries()) {
+    const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+    if (entry.kind === "directory") {
+      if (/^[._-]/.test(entry.name)) continue;
+      dirPromises.push(
+        collectAudioFiles(entry, currentPath),
+      );
+    } else if (isAudioFile(entry.name) || isLyricsFile(entry.name)) {
+      filePromises.push(
+        entry.getFile()
+          .then((file) => ({ file, relativePath: currentPath })),
+      );
+    }
+  }
+
+  const [fileEntries, ...dirEntries] = await Promise.all([
+    Promise.all(filePromises),
+    ...dirPromises,
+  ]);
+
+  return [...fileEntries, ...dirEntries.flat()];
 }
 
 export async function collectDirectoryFiles(

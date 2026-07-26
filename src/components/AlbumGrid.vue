@@ -1,26 +1,29 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
 import { ensureCoverUrl } from "../utils/coverCache";
-
-// 事件委托：图片加载完成
-function handleImgLoad(event: Event) {
-  const target = event.target as HTMLElement;
-  if (target.tagName === "IMG") {
-    target.classList.add("img-fadein--loaded")
-  }
-}
 
 interface Props {
   albums: Album[];
   selectedAlbumName: string;
 }
 const ROW_GAP = 30;
-const ROW_HEIGHT = 190;
-// 最少两列
-const MIN_COL_WIDTH = calcMinColWidth(2)
+
+// 最少两列，基于容器宽度计算最小列宽
+const MIN_COL_COUNT = 2;
+const MAX_COL_WIDTH = 150;
+const minColWidth = computed(() =>
+  Math.floor(Math.min(MAX_COL_WIDTH, (containerWidth.value - ROW_GAP - 2 * 16) / MIN_COL_COUNT)),
+);
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
@@ -29,21 +32,20 @@ const emit = defineEmits<{
 }>();
 
 const scrollRef = ref<HTMLElement | null>(null);
-const containerWidth = shallowRef(800);
-const measureCache = ref({
-  containerWidth: containerWidth.value,
-  rowHeight: -1,
-});
+const containerWidth = shallowRef(window.innerWidth - 32);
+
 let resizeObserver: ResizeObserver | null = null;
 
 const columnCount = computed(() =>
   Math.max(
     1,
-    Math.floor(
-      (containerWidth.value + ROW_GAP) /
-        (MIN_COL_WIDTH + ROW_GAP),
-    ),
+    Math.floor((containerWidth.value + ROW_GAP) / (minColWidth.value + ROW_GAP)),
   ),
+);
+const colWidth = computed(
+  () =>
+    (containerWidth.value - (columnCount.value - 1) * ROW_GAP) /
+    columnCount.value,
 );
 const albumRows = computed(() => {
   const cols = columnCount.value;
@@ -57,20 +59,15 @@ const rowVirtualizer = useVirtualizer(
   computed(() => ({
     count: albumRows.value.length,
     getScrollElement: () => scrollRef.value,
-    estimateSize: () => ROW_HEIGHT + ROW_GAP,
-    overscan: 2,
-    measureElement: (el: Element) => {
-      const { containerWidth: cachedWidth, rowHeight: cachedHeight } =
-        measureCache.value;
-      if (cachedHeight !== -1 && cachedWidth === containerWidth.value)
-        return cachedHeight;
-      const height = ((el as HTMLElement).offsetHeight ?? 0) + ROW_GAP;
-      measureCache.value.rowHeight = height;
-      measureCache.value.containerWidth = containerWidth.value;
-      return height;
-    },
+    estimateSize: () => colWidth.value + 50 + ROW_GAP,
+    overscan: 1,
   })),
 );
+
+// 列宽变化时清空尺寸缓存，使虚拟滚动器用新的 estimateSize 重新计算
+watch(colWidth, () => {
+  rowVirtualizer.value.measure();
+});
 
 const virtualRows = computed(() =>
   rowVirtualizer.value.getVirtualItems().map((vRow) => ({
@@ -84,7 +81,6 @@ const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
 onMounted(() => {
   if (scrollRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
-      console.log(entries[0].contentRect)
       containerWidth.value = entries[0].contentRect.width;
     });
     resizeObserver.observe(scrollRef.value);
@@ -94,38 +90,35 @@ onMounted(() => {
 onBeforeUnmount(() => {
   resizeObserver?.disconnect();
 });
-function calcMinColWidth(col: number) {
-  const width = window.innerWidth
-  const value = Math.min(150, (width - ROW_GAP - 2 * 16) / col)
-  return Math.floor(value);
-}
+
 </script>
 
 <template>
-  <div ref="scrollRef" class="album-grid scroll-borrow" @load.capture="handleImgLoad">
+  <div ref="scrollRef" class="album-grid scroll-borrow">
     <div
       :style="{
         height: `${totalSize}px`,
         position: 'relative',
         width: '100%',
-        '--min-col-width': `${MIN_COL_WIDTH}px`,
+        '--min-col-width': `${minColWidth}px`,
+        '--col-count': columnCount,
       }"
     >
       <div
         v-for="{ vRow, albums } in virtualRows"
         :key="String(vRow.key)"
-        :ref="(el: any) => rowVirtualizer.measureElement(el)"
         :data-index="vRow.index"
         class="album-grid__row"
         :style="{
           position: 'absolute',
-          inset:'0 0 auto',
+          inset: '0 0 auto',
+          height: `${vRow.size}px`,
           transform: `translateY(${vRow.start}px)`,
         }"
       >
         <button
           v-for="album in albums"
-          :key="album.name + album.artistLabel"
+          :key="album.name"
           class="album-card"
           :class="{
             'album-card--active': album.name === selectedAlbumName,
@@ -135,12 +128,12 @@ function calcMinColWidth(col: number) {
         >
           <div class="album-card__cover">
             <img
-              v-if="ensureCoverUrl(album.name, album.coverBlob)"
+              v-if="album.coverBlob"
               class="img-fadein"
               :src="ensureCoverUrl(album.name, album.coverBlob)"
               :alt="`${album.name} 封面`"
-              :width="MIN_COL_WIDTH"
-              :height="MIN_COL_WIDTH"
+              :width="colWidth"
+              :height="colWidth"
               loading="lazy"
             />
             <Disc3 v-else :size="32" class="album-card__placeholder" />
@@ -154,8 +147,12 @@ function calcMinColWidth(col: number) {
             </button>
           </div>
           <div class="album-card__copy">
-            <strong class="album-card__title truncate--block">{{ album.name }}</strong>
-            <span class="album-card__artist truncate--block">{{ album.artistLabel }}</span>
+            <strong class="album-card__title truncate--block">{{
+              album.name
+            }}</strong>
+            <span class="album-card__artist truncate--block">{{
+              album.artistLabel
+            }}</span>
           </div>
         </button>
       </div>

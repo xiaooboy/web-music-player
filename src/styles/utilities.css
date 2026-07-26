@@ -82,12 +82,12 @@
 
 /* 图片淡入 */
 .img-fadein {
-  transition: opacity 0.35s ease;
-  opacity: 0;
+  animation: imgFadeIn 0.35s ease;
 }
 
-.img-fadein--loaded {
-  opacity: 1;
+@keyframes imgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* 仅屏幕阅读器可见 */

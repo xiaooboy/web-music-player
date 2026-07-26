@@ -15,14 +15,6 @@ const props = defineProps<{
   selectedPlaylistId?: string;
 }>();
 
-// 事件委托：图片加载完成
-function handleImgLoad(event: Event) {
-  const target = event.target as HTMLElement;
-  if (target.tagName === "IMG") {
-    target.classList.add("img-fadein--loaded")
-  }
-}
-
 const emit = defineEmits<{
   (e: "selectPlaylist", id: string): void;
   (e: "playPlaylist", id: string): void;
@@ -96,7 +88,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
 </script>
 
 <template>
-  <div class="playlist-grid" @load.capture="handleImgLoad">
+  <div class="playlist-grid">
     <div class="playlist-browser__grid">
       <section
         v-for="playlist in playlists"

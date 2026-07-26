@@ -516,5 +516,7 @@ input[type="range"].now-playing__volume-slider {
 @media (display-mode: window-controls-overlay) {
   .now-playing__head {
     padding-top: 0;
+    height: var(--window-safe-top);
+    align-items: center;
   }
 }
