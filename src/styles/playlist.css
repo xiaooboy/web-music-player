@@ -115,7 +115,7 @@
 }
 
 .playlist-card__count {
-  margin-top: 2px;
+  margin-top: 4px;
   color: var(--muted);
 }
 

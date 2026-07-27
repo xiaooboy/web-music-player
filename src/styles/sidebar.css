@@ -88,7 +88,7 @@
 
 .sidebar__nav-label {
   overflow: hidden;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   white-space: nowrap;
   transition:

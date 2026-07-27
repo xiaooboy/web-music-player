@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import BaseDialog from "./BaseDialog.vue";
 
 const visible = defineModel<boolean>();
@@ -32,6 +32,15 @@ function handleConfirm() {
   }
   visible.value = false;
 }
+
+/** 拦截输入框 Enter 键，避免焦点转移到外部触发按钮 */
+async function handleKeydown(e: KeyboardEvent) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  handleConfirm();
+  await nextTick();
+  (document.activeElement as HTMLElement)?.blur();
+}
 </script>
 
 <template>
@@ -60,6 +69,7 @@ function handleConfirm() {
         placeholder="歌单名称"
         autofocus
         class="form-dialog__input"
+        @keydown="handleKeydown"
       />
       <div class="form-dialog__actions">
         <button
@@ -153,14 +163,14 @@ function handleConfirm() {
 /* 内容样式 */
 .form-dialog h3 {
   margin-bottom: 16px;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 
 .form-dialog__input {
   width: 100%;
   padding: 10px 14px;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -182,7 +192,7 @@ function handleConfirm() {
 
 .form-dialog__btn {
   padding: 8px 18px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -210,7 +220,7 @@ function handleConfirm() {
 
 /* 删除确认文本 */
 .form-dialog__text {
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
   color: var(--muted);
 }

@@ -1,27 +1,27 @@
 /* 借用空间滚动条（gutter 不压缩内容） */
 .scroll-borrow {
   width: auto;
-  padding-right: var(--scrollbar-compensation-i);
   margin-right: calc(var(--scrollbar-compensation-o) * -1);
+  padding-right: var(--scrollbar-compensation-i);
   scrollbar-gutter: stable;
 }
 /* 视觉 overlay-scrollbar */
 .overlay-scrollbar {
-  width: auto;
+  width: calc(100% + var(--scrollbar-size));
   height: auto;
-  scrollbar-gutter: stable;
   margin-right: calc(0px - var(--scrollbar-size));
   margin-bottom: calc(0px - var(--scrollbar-size));
+  scrollbar-gutter: stable;
 }
 .overlay-scrollbar-x {
   width: auto;
-  scrollbar-gutter: stable;
   margin-right: calc(0px - var(--scrollbar-size));
+  scrollbar-gutter: stable;
 }
 .overlay-scrollbar-y {
   height: auto;
-  scrollbar-gutter: stable;
   margin-bottom: calc(0px - var(--scrollbar-size));
+  scrollbar-gutter: stable;
 }
 /* 文本单行溢出省略 */
 .truncate {
@@ -38,7 +38,7 @@
 }
 
 /* 纯图标按钮 */
-.icon-btn {
+.icon-btn,.icon-btn--sized {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -62,6 +62,7 @@
 
   svg {
     stroke-width: 2.1;
+    z-index: var(--z-base);
   }
 
   & + & {
@@ -69,14 +70,24 @@
   }
 }
 
-/* 图片淡入 */
-.img-fadein {
-  transition: opacity 0.35s ease;
-  opacity: 0;
+/* 实心尺寸变体：按钮本身占据 44×44 布局空间，::before 填满而非溢出 */
+.icon-btn--sized {
+  width: 44px;
+  height: 44px;
+
+  &::before {
+    inset: 0;
+  }
 }
 
-.img-fadein--loaded {
-  opacity: 1;
+/* 图片淡入 */
+.img-fadein {
+  animation: imgFadeIn 0.35s ease;
+}
+
+@keyframes imgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* 仅屏幕阅读器可见 */

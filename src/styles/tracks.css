@@ -35,20 +35,19 @@
     color: var(--muted);
   }
 }
+
 .track-table__list {
   flex: 1;
-  justify-items: stretch;
-  height: 100%;
   min-height: 0;
+  padding-bottom: var(--dock-height);
   overflow: auto;
 }
 
 .track-table__row {
-  align-self: start;
-  justify-self: stretch;
-  width: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 100%;
   transition:
     background 160ms ease,
     transform 160ms ease;
@@ -56,7 +55,7 @@
 
 .track-table__anchor {
   position: absolute;
-  right: 4px;
+  right: -8px;
   bottom: calc(var(--dock-height) + 20px);
   display: inline-flex;
   align-items: center;
@@ -79,7 +78,7 @@
 
 .track-table__header {
   margin-bottom: 12px;
-  font-size: 0.84rem;
+  font-size: var(--text-xs);
   :last-child {
     justify-self: end;
     padding-right: 20px;
@@ -106,12 +105,18 @@
     object-fit: cover;
   }
 }
+.track-table__copy :last-child {
+  margin-top: 4px;
+  font-size: var(--text-sm);
+}
 .track-table__copy,
 .track-table__album,
 .player-dock__copy {
   min-width: 0;
 }
-
+.track-table__copy-album {
+  display: none;
+}
 .player-dock span {
   color: var(--muted);
 }

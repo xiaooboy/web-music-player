@@ -22,7 +22,7 @@ const {
 .empty-state strong {
   display: block;
   margin-bottom: 10px;
-  font-size: 1.08rem;
+  font-size: var(--text-lg);
   color: var(--text);
 }
 .empty-state--fill {

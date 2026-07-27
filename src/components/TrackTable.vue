@@ -24,7 +24,15 @@ const emit = defineEmits<{
 }>();
 
 // 右键菜单
-const { menuProps, open: openContextMenu, isSmallScreen } = useTrackContextMenu();
+const {
+  menuProps,
+  open: openContextMenu,
+  isSmallScreen,
+} = useTrackContextMenu();
+
+const hasPlayingTrack = computed(() =>
+  props.tracks.some((t) => t.id === props.currentTrackId),
+);
 
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
@@ -33,10 +41,10 @@ function handleContextMenu(event: MouseEvent, track: Track) {
 }
 
 function handleMoreKeydown(event: KeyboardEvent, track: Track) {
-  if (event.key === 'F10' && event.shiftKey) {
+  if (event.key === "F10" && event.shiftKey) {
     event.preventDefault();
     openContextMenu(track);
-  } else if (event.key === 'ContextMenu') {
+  } else if (event.key === "ContextMenu") {
     event.preventDefault();
     openContextMenu(track);
   }
@@ -45,7 +53,7 @@ function handleMoreKeydown(event: KeyboardEvent, track: Track) {
 // 虚拟滚动
 // 无论曲库有多大，都只渲染视口内可见的行（约 15–20 行），
 // 挂载和切换面板的耗时是 O(1) 而非 O(n)。
-const listRef = useTemplateRef('listRef');
+const listRef = useTemplateRef("listRef");
 
 const rowVirtualizer = useVirtualizer(
   computed(() => ({
@@ -117,13 +125,7 @@ function scrollToCurrentTrack() {
             tabindex="0"
             role="row"
             :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
-            :style="{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              transform: `translateY(${vRow.start}px)`,
-            }"
+            :style="{  transform: `translateY(${vRow.start}px)` }"
             @click="$emit('play', item.id)"
             @keydown.enter="
               ($event.target as HTMLElement).closest('button')
@@ -135,7 +137,8 @@ function scrollToCurrentTrack() {
             <div class="track-table__song">
               <div class="track-table__thumb">
                 <img
-                  v-if="ensureCoverUrl(item.id, item.coverBlob)"
+                  v-if="item.coverBlob"
+                  class="img-fadein"
                   width="44"
                   height="44"
                   :src="ensureCoverUrl(item.id, item.coverBlob)"
@@ -145,7 +148,10 @@ function scrollToCurrentTrack() {
               </div>
               <div class="track-table__copy">
                 <strong class="truncate--block">{{ item.title }}</strong>
-                <span class="truncate--block">{{ item.artist }}</span>
+                <div class="truncate--block">
+                  <span>{{ item.artist }}</span>
+                  <span class="track-table__copy-album"> - {{ item.album }}</span>
+                </div>
               </div>
             </div>
             <div class="track-table__album">
@@ -156,14 +162,18 @@ function scrollToCurrentTrack() {
                 :aria-label="`查看专辑：${item.album}`"
                 @click.stop="emit('navigateToAlbum', item.album)"
                 @keydown.enter.stop="emit('navigateToAlbum', item.album)"
-              >{{ item.album }}</strong>
+                >{{ item.album }}</strong
+              >
             </div>
-            <span class="track-table__duration">{{ formatTime(item.duration) }}</span>
+            <span class="track-table__duration">{{
+              formatTime(item.duration)
+            }}</span>
             <div class="track-table__row-action">
               <button
                 class="icon-btn track-row-play"
                 :class="{
-                  'track-row-play--playing': item.id === currentTrackId && isPlaying,
+                  'track-row-play--playing':
+                    item.id === currentTrackId && isPlaying,
                 }"
                 type="button"
                 :title="
@@ -179,14 +189,16 @@ function scrollToCurrentTrack() {
                 "
               >
                 <Pause
-                                  v-if="item.id === currentTrackId && isPlaying"
-                                  :size="20"
-                                />
-                                <Play v-else :size="20" />
+                  v-if="item.id === currentTrackId && isPlaying"
+                  :size="20"
+                />
+                <Play v-else :size="20" />
               </button>
               <button
                 class="icon-btn track-row-like"
-                :class="{ 'track-row-like--active': likedTrackIdSet.has(item.id) }"
+                :class="{
+                  'track-row-like--active': likedTrackIdSet.has(item.id),
+                }"
                 type="button"
                 :title="likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'"
                 :aria-label="
@@ -195,7 +207,7 @@ function scrollToCurrentTrack() {
                 @click.stop="$emit('toggleFavorite', item.id)"
               >
                 <Heart
-                                  :size="20"
+                  :size="20"
                   :fill="likedTrackIdSet.has(item.id) ? 'currentColor' : 'none'"
                 />
               </button>
@@ -218,7 +230,7 @@ function scrollToCurrentTrack() {
 
     <!-- 滚动到当前音乐按钮 -->
     <button
-      v-if="currentTrackId && tracks.length"
+      v-if="hasPlayingTrack"
       class="track-table__anchor"
       type="button"
       aria-label="滚动到当前播放音乐"

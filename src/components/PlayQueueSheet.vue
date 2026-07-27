@@ -229,12 +229,12 @@ defineExpose({ open, close,getWasOpen });
 }
 
 .queue-popover__title {
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
 .queue-popover__count {
-  font-size: 0.85rem;
+  font-size: var(--text-xs);
   color: var(--muted, #888);
 }
 
@@ -283,12 +283,12 @@ defineExpose({ open, close,getWasOpen });
 
 .queue-popover__track-title {
   flex: 1;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
 }
 
 .queue-popover__track-artist {
   flex: 1;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: var(--muted, #888);
 }
 
@@ -308,7 +308,7 @@ defineExpose({ open, close,getWasOpen });
 
 .queue-popover__empty {
   padding: 32px 16px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--muted, #888);
   text-align: center;
 }
@@ -344,12 +344,12 @@ defineExpose({ open, close,getWasOpen });
 
 .queue-sheet__title {
   flex: 1;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
 }
 
 .queue-sheet__artist {
   flex: 1;
-  font-size: 0.85rem;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
@@ -368,7 +368,7 @@ defineExpose({ open, close,getWasOpen });
 
 .queue-sheet__empty {
   padding: 32px 16px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   text-align: center;
 }

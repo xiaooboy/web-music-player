@@ -236,6 +236,7 @@ export const useLibraryStore = defineStore("library", () => {
     musicSources,
     isReauthorizing,
     tracks,
+    trackMap,
     isFileLaunch,
     disposeLibrary,
     restoreCachedLibrary,

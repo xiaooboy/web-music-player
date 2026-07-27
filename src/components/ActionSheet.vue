@@ -118,7 +118,7 @@ defineExpose({ open, close });
   min-height: 48px;
   padding: 12px 16px;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--text-sm);
   color: var(--text);
   text-align: left;
   background: transparent;
@@ -168,7 +168,7 @@ defineExpose({ open, close });
 /* 子菜单项 */
 .action-sheet__subitem {
   min-height: 44px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   padding-left: 48px;
 }

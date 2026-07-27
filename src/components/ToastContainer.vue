@@ -31,7 +31,7 @@ const toastList = toasts;
 
 .toast-container__item {
   padding: 10px 20px;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: #fff;
   white-space: nowrap;
   background: rgba(32, 32, 32, 0.9);

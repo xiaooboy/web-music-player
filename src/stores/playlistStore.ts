@@ -1,5 +1,6 @@
 import type { Playlist, Track } from "@/types";
 import { loadPlaylists, savePlaylists } from "@/utils/persistence";
+import { defaultStringCompare } from "@/utils/sort";
 import { defineStore } from "pinia";
 import { computed, shallowRef } from "vue";
 import { useLibraryStore } from "./libraryStore";
@@ -18,9 +19,7 @@ export const usePlaylistStore = defineStore("playlist", () => {
   const selectedPlaylistTracks = computed(() => {
     const playlist = selectedPlaylist.value;
     if (!playlist) return [];
-    const trackMap = new Map(
-      useLibraryStore().tracks.map((t) => [t.id, t]),
-    );
+    const { trackMap } = useLibraryStore();
     return playlist.trackIds
       .map((id) => trackMap.get(id))
       .filter(Boolean) as Track[];
@@ -32,9 +31,7 @@ export const usePlaylistStore = defineStore("playlist", () => {
       (p) => p.id === playingPlaylistId.value,
     );
     if (!playlist) return [];
-    const trackMap = new Map(
-      useLibraryStore().tracks.map((t) => [t.id, t]),
-    );
+    const { trackMap } = useLibraryStore();
     return playlist.trackIds
       .map((id) => trackMap.get(id))
       .filter(Boolean) as Track[];
@@ -44,12 +41,50 @@ export const usePlaylistStore = defineStore("playlist", () => {
     savePlaylists(playlists.value);
   }
 
-  function createPlaylist(name: string): Playlist {
+  /** 在已按标题升序排列的 trackIds 中，找到新曲目的插入位置 */
+  function findInsertIndex(
+    trackIds: string[],
+    newTrack: Track,
+    trackMap: Map<string, Track>,
+  ): number {
+    let lo = 0;
+    let hi = trackIds.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      const existing = trackMap.get(trackIds[mid]);
+      if (
+        existing &&
+        defaultStringCompare(existing.title, newTrack.title) < 0
+      ) {
+        lo = mid + 1;
+      } else {
+        hi = mid;
+      }
+    }
+    return lo;
+  }
+
+  /** 按标题排序 trackIds */
+  function sortTrackIdsByTitle(trackIds: string[]): string[] {
+    const { trackMap } = useLibraryStore();
+    return trackIds.toSorted((a, b) => {
+      const ta = trackMap.get(a);
+      const tb = trackMap.get(b);
+      if (!ta) return 1;
+      if (!tb) return -1;
+      return defaultStringCompare(ta.title, tb.title);
+    });
+  }
+
+  function createPlaylist(name: string, trackIds?: string[]): Playlist {
     const now = Date.now();
+    const sortedIds = trackIds?.length
+      ? sortTrackIdsByTitle(trackIds)
+      : [];
     const playlist: Playlist = {
       id: crypto.randomUUID(),
       name,
-      trackIds: [],
+      trackIds: sortedIds,
       createdAt: now,
       updatedAt: now,
     };
@@ -78,9 +113,17 @@ export const usePlaylistStore = defineStore("playlist", () => {
     if (idx === -1) return;
     const playlist = playlists.value[idx];
     if (playlist.trackIds.includes(trackId)) return;
+
+    // 按标题二分插入，保持歌单内歌曲有序
+    const { trackMap } = useLibraryStore();
+    const newTrack = trackMap.get(trackId);
+    const insertPos = newTrack
+      ? findInsertIndex(playlist.trackIds, newTrack, trackMap)
+      : playlist.trackIds.length;
+
     const updated = {
       ...playlist,
-      trackIds: [...playlist.trackIds, trackId],
+      trackIds: playlist.trackIds.toSpliced(insertPos, 0, trackId),
       updatedAt: Date.now(),
     };
     playlists.value = playlists.value.with(idx, updated);
