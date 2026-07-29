@@ -6,7 +6,10 @@
   height: 100%;
   min-height: 0;
 }
-
+.tracks__source-btn {
+  color: var(--accent);
+  cursor: pointer;
+}
 .tracks__searchbar {
   position: relative;
   z-index: var(--z-sticky);
@@ -50,7 +53,7 @@
   width: 100%;
   transition:
     background 160ms ease,
-    transform 160ms ease;
+    transform 300ms ease;
 }
 
 .track-table__anchor {

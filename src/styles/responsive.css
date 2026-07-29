@@ -68,12 +68,6 @@
     flex-wrap: wrap;
   }
 
-  .now-playing__head,
-  .now-playing__meta,
-  .now-playing__lyrics {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
 
   .now-playing__lyrics-line {
     font-size: var(--text-lg);
@@ -85,7 +79,9 @@
     scroll-snap-type: x mandatory;
     border-right: none;
   }
-
+  .now-playing__meta {
+    border-right: none;
+  }
   .now-playing__body::-webkit-scrollbar {
     width: 0;
     height: 0;
@@ -93,9 +89,7 @@
   .now-playing__cover {
     width: min(100%, clamp(180px, 90vw, 300px));
   }
-  .now-playing__meta::after {
-    display: none;
-  }
+
   .now-playing__meta,
   .now-playing__lyrics {
     flex: 0 0 100%;
@@ -143,5 +137,8 @@
     .play-toggle {
       display: inline-flex;
     }
+  }
+  .now-playing__cover {
+    width: 100%;
   }
 }
