@@ -75,12 +75,12 @@
 
 .player-dock__copy strong {
   width: 100%;
-  line-height: 1.1;
 }
 
 .player-dock__copy span {
   width: 100%;
   font-size: var(--text-sm);
+  color: var(--muted);
 }
 
 .player-dock__center {
@@ -242,6 +242,7 @@ input[type="range"].now-playing__volume-slider {
 }
 
 .now-playing {
+  --playing-gap:calc(2 * var(--shell-gap));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -294,7 +295,7 @@ input[type="range"].now-playing__volume-slider {
   position: relative;
   z-index: var(--z-base);
   align-items: center;
-  padding: 16px 24px 0;
+  padding: var(--shell-gap) var(--playing-gap) 0;
   app-region: drag;
 }
 
@@ -307,6 +308,7 @@ input[type="range"].now-playing__volume-slider {
   z-index: var(--z-base);
   flex: 1;
   min-height: 0;
+  padding-block: var(--playing-gap);
   overflow: hidden;
 }
 
@@ -321,19 +323,10 @@ input[type="range"].now-playing__volume-slider {
   flex: 0 0 44%;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
-  padding: 20px 24px 18px;
+  justify-content: space-between;
+  padding-inline: var(--playing-gap);
   overflow: auto;
-}
-
-.now-playing__meta::after {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 28px;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.06);
-  content: "";
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .now-playing__lyrics {
@@ -341,7 +334,6 @@ input[type="range"].now-playing__volume-slider {
   display: flex;
   flex: 1 1 56%;
   flex-direction: column;
-  padding-block: 20px 28px;
   overflow: hidden;
 }
 
@@ -386,7 +378,6 @@ input[type="range"].now-playing__volume-slider {
 .now-playing__copy h3 {
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 2.2vw, 2.4rem);
-  line-height: 1.06;
 }
 
 .now-playing__copy p {
@@ -436,8 +427,8 @@ input[type="range"].now-playing__volume-slider {
   display: block;
   flex: 1;
   min-height: 0;
-  padding-inline: max(16px, 3%);
-  padding-block: 56px 76px;
+  padding-inline: max(var(--playing-gap), 3%);
+  padding-block: 56px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
@@ -515,8 +506,8 @@ input[type="range"].now-playing__volume-slider {
 
 @media (display-mode: window-controls-overlay) {
   .now-playing__head {
-    padding-top: 0;
-    height: var(--window-safe-top);
     align-items: center;
+    height: var(--window-safe-top);
+    padding-top: 0;
   }
 }

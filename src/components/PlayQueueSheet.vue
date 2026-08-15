@@ -5,7 +5,7 @@ import { computed, ref, shallowRef, useTemplateRef, watch } from "vue";
 import { useVirtualizer } from "@tanstack/vue-virtual";
 import { useMediaQuery } from "@/composables/useMediaQuery";
 import BottomSheet from "./BottomSheet.vue";
-import type { ComponentExposed } from 'vue-component-type-helpers';
+import type { ComponentExposed } from "vue-component-type-helpers";
 const props = defineProps<{
   tracks: Track[];
   currentTrackId: string;
@@ -18,11 +18,11 @@ const emit = defineEmits<{
 
 const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
-const ITEM_HEIGHT = 40;
-const wasOpen = shallowRef(false)
-const listRef = useTemplateRef('listRef');
+const ITEM_HEIGHT = 48;
+const wasOpen = shallowRef(false);
+const listRef = useTemplateRef("listRef");
 const sheetRef = ref<ComponentExposed<typeof BottomSheet>>();
-const popoverRef = useTemplateRef('popoverRef');
+const popoverRef = useTemplateRef("popoverRef");
 
 const rowVirtualizer = useVirtualizer(
   computed(() => ({
@@ -35,6 +35,7 @@ const rowVirtualizer = useVirtualizer(
       return listRef.value;
     },
     estimateSize: () => ITEM_HEIGHT,
+    gap: 8,
     overscan: 3,
   })),
 );
@@ -90,13 +91,17 @@ function close() {
   }
 }
 
-defineExpose({ open, close,getWasOpen });
+defineExpose({ open, close, getWasOpen });
 </script>
 
 <template>
   <!-- 小屏：BottomSheet -->
-  <BottomSheet v-if="isSmallScreen" ref="sheetRef" title="播放队列"
-  :snap-points="[0.6,1]">
+  <BottomSheet
+    v-if="isSmallScreen"
+    ref="sheetRef"
+    :title="`播放队列 ( ${tracks.length}首 )`"
+    :snap-points="[0.6, 1]"
+  >
     <div ref="listRef" class="queue-sheet__list">
       <template v-if="tracks.length">
         <div
@@ -110,7 +115,9 @@ defineExpose({ open, close,getWasOpen });
             v-for="{ vRow, item } in virtualItems"
             :key="item.id"
             class="queue-sheet__item"
-            :class="{ 'queue-sheet__item--playing': item.id === currentTrackId }"
+            :class="{
+              'queue-sheet__item--playing': item.id === currentTrackId,
+            }"
             :data-index="vRow.index"
             tabindex="0"
             :aria-label="`${item.title}，${item.artist}`"
@@ -125,8 +132,14 @@ defineExpose({ open, close,getWasOpen });
             @click="emit('play', vRow.index)"
             @keydown.enter="emit('play', vRow.index)"
           >
-            <span class="queue-sheet__title truncate">{{ item.title }}</span>
-            <span class="queue-sheet__artist truncate">{{ item.artist }}</span>
+            <section class="queue-sheet__track-copy">
+              <strong class="queue-sheet__track-title truncate">{{
+                item.title
+              }}</strong>
+              <span class="queue-sheet__track-artist truncate"
+                >{{ item.artist }} - {{ item.album }}</span
+              >
+            </section>
             <button
               class="queue-sheet__remove"
               type="button"
@@ -144,10 +157,15 @@ defineExpose({ open, close,getWasOpen });
   </BottomSheet>
 
   <!-- 大屏：Popover -->
-  <div v-else ref="popoverRef" class="queue-popover" popover="auto" @toggle="handleToggle">
+  <div
+    v-else
+    ref="popoverRef"
+    class="queue-popover"
+    popover="auto"
+    @toggle="handleToggle"
+  >
     <header class="queue-popover__header">
-      <span class="queue-popover__title">播放队列</span>
-      <span class="queue-popover__count">({{ tracks.length }}首)</span>
+      <span class="queue-popover__title">播放队列 ( {{ tracks.length }}首 )</span>
       <button
         class="queue-popover__close"
         type="button"
@@ -172,7 +190,9 @@ defineExpose({ open, close,getWasOpen });
             v-for="{ vRow, item } in virtualItems"
             :key="item.id"
             class="queue-popover__item"
-            :class="{ 'queue-popover__item--playing': item.id === currentTrackId }"
+            :class="{
+              'queue-popover__item--playing': item.id === currentTrackId,
+            }"
             :data-index="vRow.index"
             tabindex="0"
             :aria-label="`${item.title}，${item.artist}`"
@@ -187,8 +207,14 @@ defineExpose({ open, close,getWasOpen });
             @click="emit('play', vRow.index)"
             @keydown.enter="emit('play', vRow.index)"
           >
-            <span class="queue-popover__track-title truncate">{{ item.title }}</span>
-            <span class="queue-popover__track-artist truncate">{{ item.artist }}</span>
+            <section class="queue-popover__track-copy">
+              <strong class="queue-popover__track-title truncate">{{
+                item.title
+              }}</strong>
+              <span class="queue-popover__track-artist truncate"
+                >{{ item.artist }} - {{ item.album }}</span
+              >
+            </section>
             <button
               class="queue-popover__track-remove"
               type="button"
@@ -210,7 +236,7 @@ defineExpose({ open, close,getWasOpen });
 <style>
 /* 大屏 Popover 样式 */
 .queue-popover {
-  width: min(340px, calc(100vw - 24px));
+  width: max(320px, 40vw);
   max-height: 320px;
   overflow: hidden;
   background: rgba(32, 32, 32, 0.9);
@@ -229,13 +255,8 @@ defineExpose({ open, close,getWasOpen });
 }
 
 .queue-popover__title {
-  font-size: var(--text-sm);
   font-weight: 600;
-}
-
-.queue-popover__count {
-  font-size: var(--text-xs);
-  color: var(--muted, #888);
+  color: var(--muted);
 }
 
 .queue-popover__close {
@@ -264,7 +285,7 @@ defineExpose({ open, close,getWasOpen });
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 0 10px;
+  padding: 4px 10px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -273,23 +294,14 @@ defineExpose({ open, close,getWasOpen });
   background: rgba(255, 255, 255, 0.06);
 }
 
-.queue-popover__item--playing {
-  color: var(--accent, #646cff);
-}
-
-.queue-popover__item--playing .queue-popover__track-title {
-  font-weight: 600;
-}
-
 .queue-popover__track-title {
   flex: 1;
   font-size: var(--text-sm);
 }
 
-.queue-popover__track-artist {
+.queue-popover__track-artist,
+.queue-sheet__track-artist {
   flex: 1;
-  font-size: var(--text-xs);
-  color: var(--muted, #888);
 }
 
 .queue-popover__track-remove {
@@ -319,7 +331,25 @@ defineExpose({ open, close,getWasOpen });
   padding: 4px 8px;
   list-style: none;
 }
-
+.queue-sheet__list,
+.queue-popover__list {
+  span {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+  strong {
+    font-weight: 700;
+  }
+}
+.queue-sheet__item--playing,
+.queue-popover__item--playing {
+  strong {
+    color: var(--accent);
+  }
+  span {
+    color: var(--accent-light);
+  }
+}
 .queue-sheet__item {
   display: flex;
   gap: 10px;
@@ -334,23 +364,20 @@ defineExpose({ open, close,getWasOpen });
   background: rgba(255, 255, 255, 0.06);
 }
 
-.queue-sheet__item--playing {
-  color: var(--accent, #646cff);
+.queue-popover__track-copy,
+.queue-sheet__track-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
 }
-
 .queue-sheet__item--playing .queue-sheet__title {
   font-weight: 600;
 }
 
-.queue-sheet__title {
-  flex: 1;
-  font-size: var(--text-sm);
-}
-
+.queue-sheet__title,
 .queue-sheet__artist {
   flex: 1;
-  font-size: var(--text-xs);
-  color: var(--muted);
 }
 
 .queue-sheet__remove {

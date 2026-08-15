@@ -11,8 +11,12 @@ const {
 </script>
 <template>
   <div :class="{ 'empty-state': true, 'empty-state--fill': fill }">
-    <strong>{{ title }}</strong>
-    <p>{{ content }}</p>
+    <slot name="title">
+      <strong>{{ title }}</strong>
+    </slot>
+    <slot name="content">
+      <p>{{ content }}</p>
+    </slot>
   </div>
 </template>
 <style>
