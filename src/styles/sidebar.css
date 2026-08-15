@@ -75,10 +75,11 @@
 .sidebar__nav-item--active .sidebar__nav-label {
   color: var(--accent-deep);
 }
-
+.sidebar__nav-item--active:hover .sidebar__nav-label {
+  color: var(--accent-deep);
+}
 .sidebar__nav-item--active .sidebar__nav-icon {
   color: var(--accent-deep);
-  transition: color 0.5s ease;
 }
 
 .sidebar__nav-icon {

@@ -7,36 +7,6 @@
   gap: 2px;
   min-width: 160px;
   padding: 6px;
-  background: rgba(32, 32, 32, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(12px);
-  transform: scale(0.92);
-  transform-origin: top left;
-
-  transition:
-    opacity 120ms ease-in,
-    transform 120ms ease-in,
-    overlay 120ms ease-in allow-discrete,
-    display 120ms ease-in allow-discrete;
-  opacity: 0;
-}
-
-.context-menu:popover-open {
-  transform: scale(1);
-
-  transition:
-    opacity 150ms ease-out,
-    transform 150ms ease-out,
-    overlay 150ms ease-out allow-discrete,
-    display 150ms ease-out allow-discrete;
-  opacity: 1;
-
-  @starting-style {
-    transform: scale(0.92);
-    opacity: 0;
-  }
 }
 
 .context-menu__header {

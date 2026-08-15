@@ -253,7 +253,6 @@ defineExpose({ openSheet, closeSheet });
               "
               alt="歌曲封面"
             />
-            <span v-else>LM</span>
           </div>
 
           <div class="now-playing__copy">

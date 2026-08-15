@@ -192,13 +192,7 @@ function handleHeaderPopoverAction(action: () => void) {
   display: flex;
   flex-direction: column;
   min-width: 140px;
-  margin: 0;
   padding: 4px;
-  background: rgba(32, 32, 32, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(12px);
   position-anchor: --more-btn;
 }
 
