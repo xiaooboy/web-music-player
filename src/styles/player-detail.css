@@ -163,14 +163,10 @@ input[type="range"] {
   height: 180px;
   margin-top: 8px;
   overflow: hidden;
-  background: rgba(32, 32, 32, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(12px);
   position-anchor: --volume-anchor;
   position-area: top center;
   position-try-fallbacks: bottom center;
+  margin-bottom: 16px;
 }
 .now-playing__more-button {
   anchor-name: --more-anchor;
@@ -179,6 +175,7 @@ input[type="range"] {
   position-anchor: --more-anchor;
   position-area: top center;
   position-try-fallbacks: bottom center;
+  margin-bottom: 16px;
 }
 input[type="range"].now-playing__volume-slider {
   width: 6px;

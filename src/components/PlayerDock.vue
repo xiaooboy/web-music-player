@@ -76,7 +76,6 @@ function handleQueueClick() {
           :height="44"
           alt="底部播放器封面"
         ></ChangeableImg>
-        <span v-else aria-hidden="true">LM</span>
       </div>
 
       <div class="player-dock__copy">

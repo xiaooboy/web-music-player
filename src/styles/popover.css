@@ -2,27 +2,27 @@
 
 /* 退场动画终态 */
 [popover] {
-  transform: scale(0.95) translateY(4px);
+  transform: scale(0.95) translateY(20px);
   transition:
-    opacity 180ms ease-in,
-    transform 180ms ease-in,
-    overlay 180ms ease-in allow-discrete,
-    display 180ms ease-in allow-discrete;
+    opacity 250ms ease-in,
+    transform 250ms ease-in,
+    overlay 250ms ease-in allow-discrete,
+    display 250ms ease-in allow-discrete;
   opacity: 0;
+  background: rgba(32, 32, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(12px);
 }
 
 /* 进场动画终态 */
 [popover]:popover-open {
   transform: scale(1) translateY(0);
-  transition:
-    opacity 200ms ease-out,
-    transform 200ms ease-out,
-    overlay 200ms ease-out allow-discrete,
-    display 200ms ease-out allow-discrete;
   opacity: 1;
   /* 进场起始帧 */
   @starting-style {
-    transform: scale(0.95) translateY(-6px);
+    transform: scale(0.95) translateY(20px);
     opacity: 0;
   }
 }

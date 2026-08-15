@@ -124,7 +124,7 @@ export const usePlayerStore = defineStore("player", () => {
       activeLyricsIndex.value = i;
     },
     { flush: "sync" },
-  )
+  );
 
   // 方法
   let mediaSessionInitialized = false;
@@ -329,12 +329,11 @@ export const usePlayerStore = defineStore("player", () => {
   function seekToLyricsLine(index: number) {
     const line = currentLyricsLines.value[index];
     if (!line || line.time === null) return;
+    // 读取上次播放曲目且未播放时，点击歌词进行进度跳转时，需要先设置src才能触发事件
+    if (!audio.src) {
+      playTrackById(currentTrackId.value, false);
+    }
     audio.currentTime = line.time;
-  }
-
-  // 音频事件处理（内部）
-  function handleTimeUpdate() {
-    syncProgress();
   }
 
   function handleLoadedMetadata() {
@@ -369,7 +368,7 @@ export const usePlayerStore = defineStore("player", () => {
 
   // 初始化音频
   audio.preload = "metadata";
-  audio.addEventListener("timeupdate", handleTimeUpdate);
+  audio.addEventListener("timeupdate", syncProgress);
   audio.addEventListener("loadedmetadata", handleLoadedMetadata);
   audio.addEventListener("play", handleAudioPlay);
   audio.addEventListener("pause", handleAudioPause);
@@ -378,7 +377,7 @@ export const usePlayerStore = defineStore("player", () => {
   // 资源清理
   function dispose() {
     audio.pause();
-    audio.removeEventListener("timeupdate", handleTimeUpdate);
+    audio.removeEventListener("timeupdate", syncProgress);
     audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
     audio.removeEventListener("play", handleAudioPlay);
     audio.removeEventListener("pause", handleAudioPause);

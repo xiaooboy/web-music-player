@@ -20,7 +20,7 @@ const getSize = (size: number | string | undefined): string => {
 </script>
 <template>
   <div class="changeable-img" :style="{ width, height }">
-    <Transition name="opacity-fade">
+    <Transition name="opacity-fade" appear>
       <img class="changeable-img__img" :key="src" :src="src" :alt="alt" />
     </Transition>
   </div>

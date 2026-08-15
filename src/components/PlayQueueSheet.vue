@@ -99,6 +99,7 @@ defineExpose({ open, close, getWasOpen });
   <BottomSheet
     v-if="isSmallScreen"
     ref="sheetRef"
+    class="queue-sheet"
     :title="`播放队列 ( ${tracks.length}首 )`"
     :snap-points="[0.6, 1]"
   >
@@ -165,7 +166,9 @@ defineExpose({ open, close, getWasOpen });
     @toggle="handleToggle"
   >
     <header class="queue-popover__header">
-      <span class="queue-popover__title">播放队列 ( {{ tracks.length }}首 )</span>
+      <span class="queue-popover__title"
+        >播放队列 ( {{ tracks.length }}首 )</span
+      >
       <button
         class="icon-btn queue__btn"
         type="button"
@@ -238,11 +241,6 @@ defineExpose({ open, close, getWasOpen });
 .queue-popover {
   width: max(320px, 40vw);
   overflow: hidden;
-  background: rgba(32, 32, 32, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(12px);
 }
 
 .queue-popover__header {
@@ -259,12 +257,19 @@ defineExpose({ open, close, getWasOpen });
 }
 
 .queue__list {
-  height: min(400px,65dvh);
+  height: min(400px, 65dvh);
   padding: 6px;
   overflow-y: auto;
   list-style: none;
+  span {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+  strong {
+    font-weight: 700;
+  }
 }
-.bottom-sheet .queue__list {
+.queue-sheet .queue__list {
   height: auto;
   min-height: 80px;
   padding: 4px 8px;
@@ -286,16 +291,6 @@ defineExpose({ open, close, getWasOpen });
   text-align: center;
 }
 
-
-.queue__list {
-  span {
-    font-size: var(--text-sm);
-    color: var(--muted);
-  }
-  strong {
-    font-weight: 700;
-  }
-}
 .queue__item--playing {
   strong {
     color: var(--accent);
