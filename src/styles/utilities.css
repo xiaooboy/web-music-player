@@ -82,7 +82,7 @@
 
 /* 图片淡入 */
 .img-fadein {
-  animation: imgFadeIn 0.35s ease;
+  animation: imgFadeIn .5s ease;
 }
 
 @keyframes imgFadeIn {

@@ -102,9 +102,9 @@ defineExpose({ open, close, getWasOpen });
     :title="`播放队列 ( ${tracks.length}首 )`"
     :snap-points="[0.6, 1]"
   >
-    <div ref="listRef" class="queue-sheet__list">
+    <div ref="listRef" class="queue__list">
       <template v-if="tracks.length">
-        <div
+        <ul
           :style="{
             height: `${totalSize}px`,
             width: '100%',
@@ -114,9 +114,9 @@ defineExpose({ open, close, getWasOpen });
           <li
             v-for="{ vRow, item } in virtualItems"
             :key="item.id"
-            class="queue-sheet__item"
+            class="queue__item"
             :class="{
-              'queue-sheet__item--playing': item.id === currentTrackId,
+              'queue__item--playing': item.id === currentTrackId,
             }"
             :data-index="vRow.index"
             tabindex="0"
@@ -132,16 +132,16 @@ defineExpose({ open, close, getWasOpen });
             @click="emit('play', vRow.index)"
             @keydown.enter="emit('play', vRow.index)"
           >
-            <section class="queue-sheet__track-copy">
-              <strong class="queue-sheet__track-title truncate">{{
+            <section class="queue__track-copy">
+              <strong class="queue__track-title truncate">{{
                 item.title
               }}</strong>
-              <span class="queue-sheet__track-artist truncate"
+              <span class="queue__track-artist truncate"
                 >{{ item.artist }} - {{ item.album }}</span
               >
             </section>
             <button
-              class="queue-sheet__remove"
+              class="icon-btn queue__btn"
               type="button"
               title="从队列移除"
               aria-label="从队列移除"
@@ -150,9 +150,9 @@ defineExpose({ open, close, getWasOpen });
               <Minus :size="20" />
             </button>
           </li>
-        </div>
+        </ul>
       </template>
-      <div v-else class="queue-sheet__empty">播放队列为空</div>
+      <div v-else class="queue__empty">播放队列为空</div>
     </div>
   </BottomSheet>
 
@@ -167,7 +167,7 @@ defineExpose({ open, close, getWasOpen });
     <header class="queue-popover__header">
       <span class="queue-popover__title">播放队列 ( {{ tracks.length }}首 )</span>
       <button
-        class="queue-popover__close"
+        class="icon-btn queue__btn"
         type="button"
         title="关闭播放队列"
         aria-label="关闭播放队列"
@@ -177,9 +177,9 @@ defineExpose({ open, close, getWasOpen });
       </button>
     </header>
 
-    <ul ref="listRef" class="queue-popover__list">
+    <div ref="listRef" class="queue__list">
       <template v-if="tracks.length">
-        <div
+        <ul
           :style="{
             height: `${totalSize}px`,
             width: '100%',
@@ -189,9 +189,9 @@ defineExpose({ open, close, getWasOpen });
           <li
             v-for="{ vRow, item } in virtualItems"
             :key="item.id"
-            class="queue-popover__item"
+            class="queue__item"
             :class="{
-              'queue-popover__item--playing': item.id === currentTrackId,
+              'queue__item--playing': item.id === currentTrackId,
             }"
             :data-index="vRow.index"
             tabindex="0"
@@ -207,16 +207,16 @@ defineExpose({ open, close, getWasOpen });
             @click="emit('play', vRow.index)"
             @keydown.enter="emit('play', vRow.index)"
           >
-            <section class="queue-popover__track-copy">
-              <strong class="queue-popover__track-title truncate">{{
+            <section class="queue__track-copy">
+              <strong class="queue__track-title truncate">{{
                 item.title
               }}</strong>
-              <span class="queue-popover__track-artist truncate"
+              <span class="queue__track-artist truncate"
                 >{{ item.artist }} - {{ item.album }}</span
               >
             </section>
             <button
-              class="queue-popover__track-remove"
+              class="icon-btn queue__btn"
               type="button"
               title="从队列移除"
               aria-label="从队列移除"
@@ -225,11 +225,11 @@ defineExpose({ open, close, getWasOpen });
               <Minus :size="20" />
             </button>
           </li>
-        </div>
+        </ul>
       </template>
 
-      <li v-else class="queue-popover__empty">播放队列为空</li>
-    </ul>
+      <div v-else class="queue__empty">播放队列为空</div>
+    </div>
   </div>
 </template>
 
@@ -237,7 +237,6 @@ defineExpose({ open, close, getWasOpen });
 /* 大屏 Popover 样式 */
 .queue-popover {
   width: max(320px, 40vw);
-  max-height: 320px;
   overflow: hidden;
   background: rgba(32, 32, 32, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -248,40 +247,30 @@ defineExpose({ open, close, getWasOpen });
 
 .queue-popover__header {
   display: flex;
-  gap: 6px;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--muted);
 }
 
 .queue-popover__title {
   font-weight: 600;
-  color: var(--muted);
 }
 
-.queue-popover__close {
-  margin-left: auto;
-  padding: 4px;
-  color: var(--muted, #888);
-  background: transparent;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.queue-popover__close:hover {
-  color: var(--text, #fff);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.queue-popover__list {
-  min-height: 80px;
-  max-height: 260px;
+.queue__list {
+  height: min(400px,65dvh);
   padding: 6px;
   overflow-y: auto;
   list-style: none;
 }
-
-.queue-popover__item {
+.bottom-sheet .queue__list {
+  height: auto;
+  min-height: 80px;
+  padding: 4px 8px;
+  list-style: none;
+}
+.queue__item {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -290,49 +279,15 @@ defineExpose({ open, close, getWasOpen });
   cursor: pointer;
 }
 
-.queue-popover__item:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.queue-popover__track-title {
-  flex: 1;
-  font-size: var(--text-sm);
-}
-
-.queue-popover__track-artist,
-.queue-sheet__track-artist {
-  flex: 1;
-}
-
-.queue-popover__track-remove {
-  padding: 4px;
-  color: var(--muted, #888);
-  background: transparent;
-  border-radius: 4px;
-  transition: opacity 100ms ease;
-  cursor: pointer;
-}
-
-.queue-popover__track-remove:hover {
-  color: var(--text, #fff);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.queue-popover__empty {
+.queue__empty {
   padding: 32px 16px;
   font-size: var(--text-sm);
   color: var(--muted, #888);
   text-align: center;
 }
 
-/* 小屏 BottomSheet 样式 */
-.queue-sheet__list {
-  min-height: 80px;
-  padding: 4px 8px;
-  list-style: none;
-}
-.queue-sheet__list,
-.queue-popover__list {
+
+.queue__list {
   span {
     font-size: var(--text-sm);
     color: var(--muted);
@@ -341,8 +296,7 @@ defineExpose({ open, close, getWasOpen });
     font-weight: 700;
   }
 }
-.queue-sheet__item--playing,
-.queue-popover__item--playing {
+.queue__item--playing {
   strong {
     color: var(--accent);
   }
@@ -350,7 +304,7 @@ defineExpose({ open, close, getWasOpen });
     color: var(--accent-light);
   }
 }
-.queue-sheet__item {
+.queue__item {
   display: flex;
   gap: 10px;
   align-items: center;
@@ -360,43 +314,27 @@ defineExpose({ open, close, getWasOpen });
   cursor: pointer;
 }
 
-.queue-sheet__item:hover {
+.queue__item:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.queue-popover__track-copy,
-.queue-sheet__track-copy {
+.queue__track-copy {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 4px;
-}
-.queue-sheet__item--playing .queue-sheet__title {
-  font-weight: 600;
+  min-width: 0;
 }
 
-.queue-sheet__title,
-.queue-sheet__artist {
-  flex: 1;
+.queue__title,
+.queue__artist {
+  width: 100%;
 }
 
-.queue-sheet__remove {
-  padding: 8px;
+.queue__btn.icon-btn {
   color: var(--muted);
-  background: transparent;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.queue-sheet__remove:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.queue-sheet__empty {
-  padding: 32px 16px;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  text-align: center;
+  &:hover {
+    color: var(--text);
+  }
 }
 </style>

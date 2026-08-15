@@ -1,13 +1,5 @@
 @media (max-width: 1260px) {
-  .player-dock {
-    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
-  }
-  .player-dock__center {
-    justify-content: flex-end;
-  }
-  .player-dock__extra {
-    display: none;
-  }
+
 }
 
 @media (max-width: 1080px) {
@@ -15,9 +7,16 @@
     flex: 1;
     min-width: 0;
   }
+
 }
 
 @media (max-width: 820px) {
+  .player-dock {
+    grid-template-columns: 1fr auto;
+  }
+  .player-dock__extra {
+    display: none;
+  }
   .track-table__row {
     .track-row-play {
       display: none;
@@ -126,11 +125,13 @@
   }
   .sidebar {
     scroll-snap-align: end;
+    background-color: var(--sidebar);
   }
   .sidebar__brand-placeholder .sidebar__collapse-btn {
     display: none;
   }
   .player-dock {
+    grid-template-columns: 1fr auto;
     .icon-btn {
       display: none;
     }
