@@ -518,8 +518,7 @@ defineExpose({ open, close });
 
 .bottom-sheet__title {
   flex-shrink: 0;
-  padding: 12px 20px 12px;
-  font-size: var(--text-sm);
+  padding: 0px 20px 16px;
   font-weight: 600;
   color: var(--muted);
   border-bottom: 1px solid var(--line);

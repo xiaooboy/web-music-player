@@ -77,7 +77,7 @@ function handleQueueClick() {
         }}</strong>
         <span class="truncate--block">{{
           playerStore.currentTrack
-            ? `${playerStore.currentTrack.artist} · ${playerStore.currentTrack.album}`
+            ? `${playerStore.currentTrack.artist} - ${playerStore.currentTrack.album}`
             : "点击歌曲后播放"
         }}</span>
       </div>

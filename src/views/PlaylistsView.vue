@@ -184,22 +184,22 @@ function handleHeaderPopoverAction(action: () => void) {
   anchor-name: --more-btn;
 }
 .header-popover {
-  position-anchor: --more-btn;
   position: fixed;
   inset: auto;
   top: calc(anchor(bottom) + 10px);
   right: calc(anchor(right) + 10px);
-  margin: 0;
   z-index: var(--z-popover);
   display: flex;
   flex-direction: column;
   min-width: 140px;
+  margin: 0;
   padding: 4px;
   background: rgba(32, 32, 32, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(12px);
+  position-anchor: --more-btn;
 }
 
 .header-popover__item {
@@ -214,8 +214,8 @@ function handleHeaderPopoverAction(action: () => void) {
   text-align: left;
   background: transparent;
   border-radius: 8px;
-  cursor: pointer;
   transition: background 0.15s ease;
+  cursor: pointer;
 }
 
 .header-popover__item:hover {

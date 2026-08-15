@@ -75,12 +75,12 @@
 
 .player-dock__copy strong {
   width: 100%;
-  line-height: 1.1;
 }
 
 .player-dock__copy span {
   width: 100%;
   font-size: var(--text-sm);
+  color: var(--muted);
 }
 
 .player-dock__center {
@@ -308,8 +308,8 @@ input[type="range"].now-playing__volume-slider {
   z-index: var(--z-base);
   flex: 1;
   min-height: 0;
-  overflow: hidden;
   padding-block: var(--playing-gap);
+  overflow: hidden;
 }
 
 .now-playing__meta,
@@ -378,7 +378,6 @@ input[type="range"].now-playing__volume-slider {
 .now-playing__copy h3 {
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 2.2vw, 2.4rem);
-  line-height: 1.06;
 }
 
 .now-playing__copy p {
@@ -507,8 +506,8 @@ input[type="range"].now-playing__volume-slider {
 
 @media (display-mode: window-controls-overlay) {
   .now-playing__head {
-    padding-top: 0;
-    height: var(--window-safe-top);
     align-items: center;
+    height: var(--window-safe-top);
+    padding-top: 0;
   }
 }

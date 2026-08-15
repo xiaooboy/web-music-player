@@ -120,9 +120,6 @@
 .track-table__copy-album {
   display: none;
 }
-.player-dock span {
-  color: var(--muted);
-}
 
 .track-table__album-link {
   transition: color 160ms ease;
