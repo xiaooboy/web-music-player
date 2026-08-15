@@ -26,20 +26,20 @@ import type { ComponentExposed } from "vue-component-type-helpers";
 import { formatTime } from "../utils/media";
 import { usePlayerStore, useFavoriteStore, useUIStore } from "../stores";
 import BottomSheet from "../components/BottomSheet.vue";
-import EmptyState from "../components/EmptyState.vue";
 import PlayQueueSheet from "../components/PlayQueueSheet.vue";
 import ContextMenu from "../components/ContextMenu.vue";
 import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { ensureCoverUrl } from "../utils/coverCache";
-
+import ChangeableImg from "@/components/ChangeableImg.vue";
 const VOLUME_POPOVER_ID = crypto.randomUUID();
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const uiStore = useUIStore();
 
-const sheetRef = useTemplateRef<ComponentExposed<typeof BottomSheet>>("sheetRef");
+const sheetRef =
+  useTemplateRef<ComponentExposed<typeof BottomSheet>>("sheetRef");
 const queueRef =
   useTemplateRef<ComponentExposed<typeof PlayQueueSheet>>("queueRef");
 
@@ -214,7 +214,7 @@ defineExpose({ openSheet, closeSheet });
     @close="handleSheetClose"
   >
     <section class="now-playing">
-      <Transition name="backdrop-fade">
+      <Transition name="opacity-fade">
         <div
           class="now-playing__backdrop"
           :key="displayCoverUrl"
@@ -241,9 +241,16 @@ defineExpose({ openSheet, closeSheet });
       <div ref="detailBodyRef" class="now-playing__body">
         <div class="now-playing__meta">
           <div class="cover-art now-playing__cover">
-            <img
+            <ChangeableImg
               v-if="playerStore.currentTrack?.coverBlob"
-              :src="ensureCoverUrl(playerStore.currentTrack!.id, playerStore.currentTrack!.coverBlob)"
+              height="100%"
+              width="100%"
+              :src="
+                ensureCoverUrl(
+                  playerStore.currentTrack!.id,
+                  playerStore.currentTrack!.coverBlob,
+                )
+              "
               alt="歌曲封面"
             />
             <span v-else>LM</span>
@@ -254,7 +261,7 @@ defineExpose({ openSheet, closeSheet });
             <p>
               {{
                 playerStore.currentTrack
-                  ? `${playerStore.currentTrack.artist} · ${playerStore.currentTrack.album}`
+                  ? `${playerStore.currentTrack.artist} - ${playerStore.currentTrack.album}`
                   : "点击歌曲后播放"
               }}
             </p>
@@ -341,9 +348,7 @@ defineExpose({ openSheet, closeSheet });
               :aria-label="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
               :title="isCurrentTrackLiked ? '取消喜欢' : '标记喜欢'"
               @click="
-                favoriteStore.toggleTrackFavorite(
-                  playerStore.currentTrackId,
-                )
+                favoriteStore.toggleTrackFavorite(playerStore.currentTrackId)
               "
             >
               <Heart
@@ -391,7 +396,8 @@ defineExpose({ openSheet, closeSheet });
             class="now-playing__lyrics-scroll"
             aria-label="歌词"
             :class="{
-              'now-playing__lyrics-scroll--collapsed': playerStore.currentLyricsLines.length < 5,
+              'now-playing__lyrics-scroll--collapsed':
+                playerStore.currentLyricsLines.length < 5,
             }"
             @wheel="handleLyricsWheel"
           >
@@ -402,7 +408,8 @@ defineExpose({ openSheet, closeSheet });
                   :key="`${index}-${line.time ?? 'plain'}`"
                   class="now-playing__lyrics-line"
                   :class="{
-                    'now-playing__lyrics-line--active': index === playerStore.activeLyricsIndex,
+                    'now-playing__lyrics-line--active':
+                      index === playerStore.activeLyricsIndex,
                     'now-playing__lyrics-line--clickable': line.time !== null,
                   }"
                   :tabindex="line.time !== null ? 0 : undefined"

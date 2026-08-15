@@ -18,6 +18,7 @@ import { useFavoriteStore } from "../stores/favoriteStore";
 import { useUIStore } from "../stores/uiStore";
 import PlayQueueSheet from "./PlayQueueSheet.vue";
 import { ensureCoverUrl } from "../utils/coverCache";
+import ChangeableImg from "./ChangeableImg.vue";
 
 const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
@@ -63,11 +64,18 @@ function handleQueueClick() {
       @click="playerStore.currentTrack && uiStore.openNowPlaying()"
     >
       <div class="cover-art player-dock__cover">
-        <img
+        <ChangeableImg
           v-if="playerStore.currentTrack?.coverBlob"
-          :src="ensureCoverUrl(playerStore.currentTrack!.id, playerStore.currentTrack!.coverBlob)"
+          :src="
+            ensureCoverUrl(
+              playerStore.currentTrack!.id,
+              playerStore.currentTrack!.coverBlob,
+            )
+          "
+          :width="44"
+          :height="44"
           alt="底部播放器封面"
-        />
+        ></ChangeableImg>
         <span v-else aria-hidden="true">LM</span>
       </div>
 
@@ -151,21 +159,21 @@ function handleQueueClick() {
     </div>
 
     <div class="player-dock__extra">
-        <input
-          v-if="playerStore.currentTrack"
-          class="player-dock__progress-slider"
-          type="range"
-          min="0"
-          max="100"
-          aria-label="播放进度"
-          :value="playerStore.progressPercent"
-          :style="{ '--slider-value': playerStore.progressPercent + '%' }"
-          @input="
-            playerStore.seekToPercent(
-              Number(($event.target as HTMLInputElement).value),
-            )
-          "
-        />
+      <input
+        v-if="playerStore.currentTrack"
+        class="player-dock__progress-slider"
+        type="range"
+        min="0"
+        max="100"
+        aria-label="播放进度"
+        :value="playerStore.progressPercent"
+        :style="{ '--slider-value': playerStore.progressPercent + '%' }"
+        @input="
+          playerStore.seekToPercent(
+            Number(($event.target as HTMLInputElement).value),
+          )
+        "
+      />
     </div>
     <PlayQueueSheet
       ref="queueRef"
