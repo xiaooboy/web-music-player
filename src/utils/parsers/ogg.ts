@@ -1,6 +1,5 @@
 import {
   decodeLatin1,
-  readUint32LE,
   decodeVorbisCommentBlock,
 } from "./shared";
 import type { Track } from "../../types";

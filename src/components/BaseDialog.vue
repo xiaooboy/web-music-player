@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useTemplateRef, watch } from "vue";
-
+import { isSupported } from "@/utils/dialog-closedby-polyfill"
 const open = defineModel<boolean>();
 
 const dialogRef = useTemplateRef("dialogRef");
+const supportsClosedBy = isSupported()
 
 watch(open, (val) => {
   const el = dialogRef.value;
@@ -17,6 +18,9 @@ watch(open, (val) => {
 
 /** 点击 backdrop（dialog 自身）关闭 */
 function handleClick(event: MouseEvent) {
+  // 检查closedby支持
+  if (!dialogRef.value?.hasAttribute("closedby")) return;
+
   if (event.target === dialogRef.value) {
     open.value = false;
   }
@@ -24,6 +28,7 @@ function handleClick(event: MouseEvent) {
 
 /** dialog.close() 触发后同步状态 */
 function handleClose() {
+  if(supportsClosedBy) return;
   if (open.value) {
     open.value = false;
   }
@@ -33,9 +38,63 @@ function handleClose() {
 <template>
   <dialog
     ref="dialogRef"
+    class="base-dialog"
+    closedby="any"
     @click="handleClick"
     @close="handleClose"
   >
     <slot />
   </dialog>
 </template>
+<style>
+.base-dialog {
+  padding: 24px;
+  width: min(360px, calc(100vw - 32px));
+  background: rgba(32, 32, 32, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(12px);
+  transform: scale(0.92);
+  transform-origin: center center;
+  color: var(--text);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    overlay 200ms ease-out allow-discrete,
+    display 200ms ease-out allow-discrete;
+
+  /* 关闭态：动画起点 */
+  opacity: 0;
+}
+/* 打开态 */
+.base-dialog[open] {
+  transform: scale(1);
+  opacity: 1;
+  @starting-style {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+}
+
+/* backdrop 动画 */
+.base-dialog::backdrop {
+  background: rgba(0, 0, 0, 0);
+  transition:
+    background 120ms ease-in,
+    display 120ms ease-in allow-discrete,
+    overlay 120ms ease-in allow-discrete;
+}
+
+.base-dialog[open]::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  transition:
+    background 250ms ease-out,
+    display 250ms ease-out allow-discrete,
+    overlay 250ms ease-out allow-discrete;
+
+  @starting-style {
+    background: rgba(0, 0, 0, 0);
+  }
+}
+</style>
