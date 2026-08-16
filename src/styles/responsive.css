@@ -68,9 +68,7 @@
   }
 
 
-  .now-playing__lyrics-line {
-    font-size: var(--text-lg);
-  }
+
   .now-playing__body {
     overflow: auto;
     scrollbar-width: none;

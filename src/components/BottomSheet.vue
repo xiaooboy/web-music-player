@@ -452,21 +452,16 @@ defineExpose({ open, close });
   border: none;
   transform: translateY(100%);
   transition:
-    opacity 250ms ease-in,
     transform 250ms ease-in,
     overlay 250ms ease-in allow-discrete,
     display 250ms ease-in allow-discrete;
-  /* 关闭态 */
-  opacity: 0;
 }
 
 /* 打开态 */
 .bottom-sheet[open] {
   transform: translateY(0);
-  opacity: 1;
   @starting-style {
     transform: translateY(100%);
-    opacity: 0;
   }
 }
 

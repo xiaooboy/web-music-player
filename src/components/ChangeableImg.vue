@@ -30,6 +30,8 @@ const getSize = (size: number | string | undefined): string => {
   position: relative;
 }
 .changeable-img__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
