@@ -50,7 +50,6 @@ const isCurrentTrackLiked = computed(() =>
 );
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
-const detailBodyRef = useTemplateRef("detailBodyRef");
 const { menuProps, handleClickTrigger, isSmallScreen } = useTrackContextMenu();
 
 function handleMoreClick(event: MouseEvent) {
@@ -114,16 +113,6 @@ function handleLyricsWheel(event: Event) {
   disableFollowTimeout = setTimeout(() => {
     disableFollowTimeout = null;
   }, 3000);
-}
-
-const lyricsTextCache = new Map<string, string>();
-
-function displayLyricsText(text: string) {
-  const cached = lyricsTextCache.get(text);
-  if (cached !== undefined) return cached;
-  const result = text.replace(/^(\[\[^\]]+\]\s*)+/, "").trim() || text.trim();
-  lyricsTextCache.set(text, result);
-  return result;
 }
 
 function scheduleLyricsFollow(index: number) {
@@ -195,7 +184,6 @@ watch(
 watch(
   () => playerStore.currentTrack?.id,
   () => {
-    lyricsTextCache.clear();
     nextTick(() => {
       lyricsScrollRef.value?.scrollTo({ top: 0, behavior: "auto" });
     });
@@ -238,7 +226,7 @@ defineExpose({ openSheet, closeSheet });
         </button>
       </header>
 
-      <div ref="detailBodyRef" class="now-playing__body">
+      <div class="now-playing__body">
         <div class="now-playing__meta">
           <div class="cover-art now-playing__cover">
             <ChangeableImg
@@ -413,7 +401,7 @@ defineExpose({ openSheet, closeSheet });
                   }"
                   :tabindex="line.time !== null ? 0 : undefined"
                   :role="line.time !== null ? 'button' : 'listitem'"
-                  :aria-label="displayLyricsText(line.text)"
+                  :aria-label="line.source"
                   :aria-current="
                     index === playerStore.activeLyricsIndex ? 'true' : undefined
                   "
@@ -425,7 +413,13 @@ defineExpose({ openSheet, closeSheet });
                     line.time !== null && playerStore.seekToLyricsLine(index)
                   "
                 >
-                  <span>{{ displayLyricsText(line.text) }}</span>
+                  <span>{{ line.source }}</span>
+                  <span
+                    class="now-playing__lyrics-translation"
+                    v-if="line.translation"
+                  >
+                    {{ line.translation }}
+                  </span>
                 </div>
               </template>
               <div

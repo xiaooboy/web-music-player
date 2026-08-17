@@ -23,7 +23,8 @@ export interface Track {
 
 export interface LyricsLine {
   time: number | null;
-  text: string;
+  source: string;
+  translation: string;
 }
 
 export interface MusicSource {

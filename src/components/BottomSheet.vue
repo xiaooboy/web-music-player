@@ -452,9 +452,9 @@ defineExpose({ open, close });
   border: none;
   transform: translateY(100%);
   transition:
-    transform 250ms ease-in,
-    overlay 250ms ease-in allow-discrete,
-    display 250ms ease-in allow-discrete;
+    transform 250ms ease-in-out,
+    overlay 250ms ease-in-out allow-discrete,
+    display 250ms ease-in-out allow-discrete;
 }
 
 /* 打开态 */
@@ -469,18 +469,12 @@ defineExpose({ open, close });
 .bottom-sheet::backdrop {
   background: rgba(0, 0, 0, 0);
   transition:
-    background 180ms ease-in,
-    overlay 180ms ease-in allow-discrete,
-    display 180ms ease-in allow-discrete;
+    background 250ms ease-in-out,
+    overlay 250ms ease-in-out allow-discrete,
+    display 250ms ease-in-out allow-discrete;
 }
 .bottom-sheet[open]::backdrop {
   background: rgba(0, 0, 0, var(--backdrop-alpha, 0.5));
-
-  transition:
-    background 250ms ease-out,
-    overlay 250ms ease-out allow-discrete,
-    display 250ms ease-out allow-discrete;
-
   @starting-style {
     background: rgba(0, 0, 0, 0);
   }

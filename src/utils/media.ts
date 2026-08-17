@@ -267,56 +267,6 @@ export function getLyricsLookupKey(relativePath: string) {
     .toLowerCase();
 }
 
-export function parseLyricsText(lyricsText: string): LyricsLine[] {
-  if (!lyricsText.trim()) {
-    return [];
-  }
-
-  const lines = lyricsText
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const parsed: LyricsLine[] = [];
-  let hasTimestamp = false;
-
-  for (const line of lines) {
-    const matches = [
-      ...line.matchAll(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g),
-    ];
-    const text = line
-      .replace(/\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g, "")
-      .replace(/\[[a-zA-Z]+:[^\]]*\]/g, "")
-      .trim();
-
-    if (!matches.length) {
-      if (text) {
-        parsed.push({ time: null, text });
-      }
-      continue;
-    }
-
-    hasTimestamp = true;
-    for (const match of matches) {
-      const minutes = Number(match[1]);
-      const seconds = Number(match[2]);
-      const fractionRaw = match[3] || "0";
-      const fraction =
-        fractionRaw.length >= 3
-          ? Number(fractionRaw) / 1000
-          : Number(fractionRaw) / 100;
-      parsed.push({
-        time: minutes * 60 + seconds + fraction,
-        text: text || "…",
-      });
-    }
-  }
-
-  return hasTimestamp
-    ? parsed.sort((left, right) => (left.time || 0) - (right.time || 0))
-    : parsed.map((line) => ({ ...line, time: null }));
-}
-
 function inferTrackInfoFromFile(fileName: string) {
   const rawName = stripExtension(fileName);
   const nameParts = rawName

@@ -473,7 +473,6 @@ input[type="range"].now-playing__volume-slider {
     opacity 260ms ease,
     text-shadow 260ms ease;
   opacity: 0.62;
-  scroll-snap-align: start;
 }
 
 .now-playing__lyrics-line--clickable {
@@ -491,7 +490,9 @@ input[type="range"].now-playing__volume-slider {
   transform: scale(1.06);
   opacity: 1;
 }
-
+.now-playing__lyrics-translation {
+  display: block;
+}
 /* 关闭 root 默认的淡入淡出动画，避免页面整体闪烁 */
 ::view-transition-old(root),
 ::view-transition-new(root) {

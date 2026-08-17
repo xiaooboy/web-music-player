@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { useTemplateRef, watch } from "vue";
+import { onMounted, useTemplateRef, watch } from "vue";
 import { isSupported } from "@/utils/dialog-closedby-polyfill"
 const open = defineModel<boolean>();
 
 const dialogRef = useTemplateRef("dialogRef");
 const supportsClosedBy = isSupported()
-
-watch(open, (val) => {
+/** 同步dialog状态 */
+function syncDialogState(){
+  console.log('watch')
   const el = dialogRef.value;
   if (!el) return;
-  if (val && !el.open) {
+  if (open.value && !el.open) {
     el.showModal();
-  } else if (!val && el.open) {
+  } else if (!open.value && el.open) {
     el.close();
   }
-});
+}
 
+watch(open, syncDialogState);
+onMounted(syncDialogState)
 /** 点击 backdrop（dialog 自身）关闭 */
 function handleClick(event: MouseEvent) {
   // 检查closedby支持
@@ -59,10 +62,10 @@ function handleClose() {
   transform-origin: center center;
   color: var(--text);
   transition:
-    opacity 200ms ease-out,
-    transform 200ms ease-out,
-    overlay 200ms ease-out allow-discrete,
-    display 200ms ease-out allow-discrete;
+    opacity 200ms ease-in-out,
+    transform 200ms ease-in-out,
+    overlay 200ms ease-in-out allow-discrete,
+    display 200ms ease-in-out allow-discrete;
 
   /* 关闭态：动画起点 */
   opacity: 0;
