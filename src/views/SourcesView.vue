@@ -43,7 +43,7 @@ async function openFolder(type: "picker" | "webkitDirectory") {
 }
 
 // 删除确认对话框
-const confirmVisible = ref(true);
+const confirmVisible = ref(false);
 const removingSourceId = ref("");
 const removingSourceName = ref("");
 
