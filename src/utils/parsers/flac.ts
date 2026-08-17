@@ -2,9 +2,6 @@ import {
   decodeLatin1,
   readUint24,
   readUint32,
-  readUint32LE,
-  normalizeMimeType,
-  createCoverBlob,
   decodeVorbisCommentBlock,
   decodeFlacPictureBlock,
 } from "./shared";

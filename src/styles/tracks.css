@@ -43,7 +43,7 @@
   flex: 1;
   min-height: 0;
   padding-bottom: var(--dock-height);
-  overflow: auto;
+  overflow: hidden auto;
 }
 
 .track-table__row {

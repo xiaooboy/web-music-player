@@ -1,6 +1,5 @@
 import type { PlaybackMode, PlaybackModeLabel, Track } from "@/types";
 import { showToast } from "@/composables/useToast";
-import { parseLyricsText } from "@/utils/media";
 import {
   clearMediaSession,
   setMediaSectionControls,
@@ -13,6 +12,7 @@ import { useLibraryStore } from "./libraryStore";
 import { useFavoriteStore } from "./favoriteStore";
 import { useAlbumStore } from "./albumStore";
 import { usePlaylistStore } from "./playlistStore";
+import { parseLyrics } from "@/utils/parseLyrics";
 
 type PlaybackConfig = Array<{
   mode: PlaybackMode;
@@ -79,7 +79,7 @@ export const usePlayerStore = defineStore("player", () => {
   const volume = computed(() => volumePercent.value / 100);
   // 歌词
   const currentLyricsLines = computed(() =>
-    parseLyricsText(currentTrack.value?.lyricsText || ""),
+    parseLyrics(currentTrack.value?.lyricsText || ""),
   );
   const hasTimedLyrics = computed(() =>
     currentLyricsLines.value.some((line) => line.time !== null),
