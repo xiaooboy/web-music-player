@@ -171,8 +171,6 @@ export const usePlayerStore = defineStore("player", () => {
       URL.revokeObjectURL(currentAudioUrl.value);
       currentAudioUrl.value = "";
       currentTrack.value = null;
-      currentTrackId.value = "";
-      saveCurrentTrackId("");
       isPlaying.value = false;
       clearMediaSession();
     }
@@ -182,7 +180,9 @@ export const usePlayerStore = defineStore("player", () => {
 
   // 使用 flush:'sync' 确保在 playTrack 等命令式调用前 queue 已同步
   // 必须放在 setQueue 及其依赖的状态声明之后（immediate:true 会立即执行）
-  watch(queueSource, (newTracks) => setQueue(newTracks), {
+  watch(queueSource, (newTracks) => {
+    setQueue(newTracks)
+  }, {
     flush: "sync",
     immediate: true,
   });
@@ -377,11 +377,6 @@ export const usePlayerStore = defineStore("player", () => {
   // 资源清理
   function dispose() {
     audio.pause();
-    audio.removeEventListener("timeupdate", syncProgress);
-    audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.removeEventListener("play", handleAudioPlay);
-    audio.removeEventListener("pause", handleAudioPause);
-    audio.removeEventListener("ended", handleAudioEnded);
     audio.src = "";
     if (currentAudioUrl.value) {
       URL.revokeObjectURL(currentAudioUrl.value);
