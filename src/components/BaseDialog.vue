@@ -51,8 +51,9 @@ function handleClose() {
 </template>
 <style>
 .base-dialog {
-  padding: 24px;
   width: min(360px, calc(100vw - 32px));
+  padding: 24px;
+  color: var(--text);
   background: rgba(32, 32, 32, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -60,7 +61,6 @@ function handleClose() {
   backdrop-filter: blur(12px);
   transform: scale(0.92);
   transform-origin: center center;
-  color: var(--text);
   transition:
     opacity 200ms ease-in-out,
     transform 200ms ease-in-out,

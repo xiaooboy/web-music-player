@@ -248,8 +248,8 @@ defineExpose({ open, close, getWasOpen });
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .queue-popover__title {

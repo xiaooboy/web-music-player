@@ -113,10 +113,6 @@ async function handleKeydown(e: KeyboardEvent) {
   transition: border-color 0.15s ease;
 }
 
-.form-dialog__input:focus {
-  border-color: var(--accent);
-}
-
 .form-dialog__actions {
   display: flex;
   gap: 10px;

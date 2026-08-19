@@ -80,14 +80,6 @@
   border-radius: var(--cover-radius);
 }
 
-.cover-art::before {
-  position: absolute;
-  inset: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-  content: "";
-}
-
 .cover-art img {
   position: absolute;
   inset: 0;

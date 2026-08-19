@@ -127,11 +127,7 @@ function scrollToCurrentTrack() {
             :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
             :style="{  transform: `translateY(${vRow.start}px)` }"
             @click="$emit('play', item.id)"
-            @keydown.enter="
-              ($event.target as HTMLElement).closest('button')
-                ? undefined
-                : $emit('play', item.id)
-            "
+            @keydown.enter="$emit('play', item.id)"
             @contextmenu="handleContextMenu($event, item)"
           >
             <div class="track-table__song">
@@ -205,6 +201,7 @@ function scrollToCurrentTrack() {
                   likedTrackIdSet.has(item.id) ? '取消喜欢' : '标记喜欢'
                 "
                 @click.stop="$emit('toggleFavorite', item.id)"
+                @keydown.enter.stop
               >
                 <Heart
                   :size="20"

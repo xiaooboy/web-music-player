@@ -1,5 +1,4 @@
 @media (max-width: 1260px) {
-
 }
 
 @media (max-width: 1080px) {
@@ -7,7 +6,6 @@
     flex: 1;
     min-width: 0;
   }
-
 }
 
 @media (max-width: 820px) {
@@ -67,8 +65,6 @@
     flex-wrap: wrap;
   }
 
-
-
   .now-playing__body {
     overflow: auto;
     scrollbar-width: none;
@@ -96,7 +92,6 @@
   }
 
   .now-playing__meta {
-    overflow: visible;
     border-right: 0;
   }
 }
@@ -139,5 +134,28 @@
   }
   .now-playing__cover {
     width: 100%;
+  }
+}
+
+@media (max-height: 480px) {
+  .sidebar__nav-panel {
+    gap: 10px;
+  }
+  .now-playing__meta {
+    scroll-snap-type: y mandatory;
+  }
+  .now-playing__meta-inner {
+    height: 200%;
+  }
+  .now-playing__copy {
+    scroll-snap-align: start;
+  }
+  .now-playing__cover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, clamp(250px, 22vw, 300px));
+    height: 50%;
+    scroll-snap-align: start;
   }
 }
