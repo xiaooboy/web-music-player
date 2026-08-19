@@ -6,8 +6,12 @@
   height: 100%;
   padding: calc(var(--shell-gap) + var(--window-safe-top)) var(--shell-gap) var(--dock-height);
   overflow: auto;
+  scrollbar-width: none;
   color: var(--text);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 
@@ -64,7 +68,6 @@
   width: 100%;
   padding: 8px 10px;
   font-weight: 700;
-  background: transparent;
   border-radius: 8px;
 }
 

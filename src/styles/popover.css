@@ -2,6 +2,11 @@
 
 /* 退场动画终态 */
 [popover] {
+  background: rgba(32, 32, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(12px);
   transform: scale(0.95) translateY(20px);
   transition:
     opacity 250ms ease-in,
@@ -9,11 +14,6 @@
     overlay 250ms ease-in allow-discrete,
     display 250ms ease-in allow-discrete;
   opacity: 0;
-  background: rgba(32, 32, 32, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(12px);
 }
 
 /* 进场动画终态 */

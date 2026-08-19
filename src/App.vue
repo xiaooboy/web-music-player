@@ -89,7 +89,6 @@ function handleKeydown(event: KeyboardEvent) {
   if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
     return;
   }
-
   switch (event.key) {
     case " ":
       event.preventDefault();
@@ -98,9 +97,8 @@ function handleKeydown(event: KeyboardEvent) {
       if (target !== document.body) target.blur();
       break;
     case "f":
-    case "F":
-      uiStore.openNowPlaying();
-      if (target !== document.body) target.blur();
+      if (uiStore.nowPlayingOpen) uiStore.closeNowPlaying();
+      else uiStore.openNowPlaying();
       break;
   }
 }
