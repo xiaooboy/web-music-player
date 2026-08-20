@@ -117,7 +117,7 @@
   }
   .sidebar {
     scroll-snap-align: end;
-    background-color: var(--sidebar);
+    background-color: var(--panel);
   }
   .sidebar__brand-placeholder .sidebar__collapse-btn {
     display: none;

@@ -1,9 +1,9 @@
 :root {
   --gradient-bg: #0b0f0c;
   --bg: #0b0b0b;
+  /*--bg: #181818;*/
   --bg-elevated: #121212;
   --panel: #181818;
-  --panel-2: #202020;
   --sidebar: #000000;
   --sidebar-soft: #121212;
   /* 强调色 — 实色层级 */
@@ -104,7 +104,7 @@ body,
 body {
   font-family: var(--font-body);
   color: var(--text);
-  background: var(--gradient-bg);
+  background: var(--bg);
 }
 
 img {
