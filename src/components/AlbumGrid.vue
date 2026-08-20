@@ -130,6 +130,7 @@ onBeforeUnmount(() => {
             <img
               v-if="album.coverBlob"
               class="img-fadein"
+              draggable="false"
               :src="ensureCoverUrl(album.name, album.coverBlob)"
               :alt="`${album.name} 封面`"
               :width="colWidth"

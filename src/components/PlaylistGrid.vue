@@ -106,6 +106,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
         <div class="playlist-card__cover" @contextmenu="openMenu($event, playlist)">
           <img
             v-if="coverUrlMap[playlist.id]"
+            draggable="false"
             class="img-fadein"
             :src="coverUrlMap[playlist.id]"
             :alt="`${playlist.name} 封面`"

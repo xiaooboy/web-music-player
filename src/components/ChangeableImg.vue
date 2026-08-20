@@ -6,9 +6,11 @@ const props = withDefaults(defineProps<{
   height?: number | string;
   src: string;
   alt?: string;
+  draggable?: boolean
 }>(), {
   width: undefined,
   height: undefined,
+  draggable: false
 });
 const width = computed(() => getSize(props.width));
 const height = computed(() => getSize(props.height));
@@ -21,7 +23,7 @@ const getSize = (size: number | string | undefined): string => {
 <template>
   <div class="changeable-img" :style="{ width, height }">
     <Transition name="opacity-fade" appear>
-      <img class="changeable-img__img" :key="src" :src="src" :alt="alt" />
+      <img class="changeable-img__img" :draggable="draggable" :key="src" :src="src" :alt="alt" />
     </Transition>
   </div>
 </template>

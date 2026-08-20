@@ -232,7 +232,8 @@ defineExpose({ openSheet, closeSheet });
             <div class="cover-art now-playing__cover">
               <ChangeableImg
                 v-if="playerStore.currentTrack?.coverBlob"
-                width="100%"
+                width="100cqmin"
+                height="100cqmin"
                 :src="
                   ensureCoverUrl(
                     playerStore.currentTrack!.id,
@@ -377,7 +378,6 @@ defineExpose({ openSheet, closeSheet });
             </div>
           </div>
         </div>
-
         <div class="now-playing__lyrics">
           <div
             ref="lyricsScrollRef"
