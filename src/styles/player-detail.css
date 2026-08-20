@@ -252,7 +252,7 @@ input[type="range"].now-playing__volume-slider {
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  background: var(--gradient-bg);
+  background: var(--bg);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -490,12 +490,12 @@ input[type="range"].now-playing__volume-slider {
 }
 
 .now-playing__lyrics-line--clickable:hover {
-  color: #ffffff;
+  color: var(--text);
   opacity: 0.86;
 }
 
 .now-playing__lyrics-line--active {
-  color: #ffffff;
+  color: var(--text);
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
   transform: scale(1.06);
   opacity: 1;
@@ -514,5 +514,6 @@ input[type="range"].now-playing__volume-slider {
     align-items: center;
     height: var(--window-safe-top);
     padding-top: 0;
+    padding-left: var(--shell-gap);
   }
 }

@@ -43,7 +43,7 @@
   align-items: center;
   min-width: min(360px, 72vw);
   padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 2px solid var(--line);
   border-radius: 999px;
   transition: border-color 0.15s ease;
 }

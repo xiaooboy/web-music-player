@@ -449,9 +449,7 @@ defineExpose({ openSheet, closeSheet });
         popover="auto"
         :id="VOLUME_POPOVER_ID"
       >
-        <span>
-          {{playerStore.volumePercent}}%
-        </span>
+        <span> {{ playerStore.volumePercent }}% </span>
         <input
           class="now-playing__volume-slider"
           type="range"

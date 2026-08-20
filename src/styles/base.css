@@ -1,8 +1,9 @@
 :root {
+  --gradient-bg: #0b0f0c;
   --bg: #0b0b0b;
+  /*--bg: #181818;*/
   --bg-elevated: #121212;
   --panel: #181818;
-  --panel-2: #202020;
   --sidebar: #000000;
   --sidebar-soft: #121212;
   /* 强调色 — 实色层级 */
@@ -58,7 +59,6 @@
    * 不受 z-index 影响，无需 token。
    * 以上 --z-overlay / --z-dropdown 仅为不支持 top layer 的降级场景保留。
    */
-  --gradient-bg: #0b0f0c;
   --scrollbar-size: 10px;
   --scrollbar-compensation-i: 0; /* JS 运行时测量后会覆盖 */
   --scrollbar-compensation-o: var(--scrollbar-size); /* JS 运行时测量后会覆盖 */
@@ -104,7 +104,7 @@ body,
 body {
   font-family: var(--font-body);
   color: var(--text);
-  background: var(--gradient-bg);
+  background: var(--bg);
 }
 
 img {

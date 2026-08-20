@@ -101,9 +101,10 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
         :aria-label="`${playlist.name}，${playlist.trackIds.length} 首`"
         @click="emit('selectPlaylist', playlist.id)"
         @keydown.enter="emit('selectPlaylist', playlist.id)"
+        @contextmenu="openMenu($event, playlist)"
       >
 
-        <div class="playlist-card__cover" @contextmenu="openMenu($event, playlist)">
+        <div class="playlist-card__cover">
           <img
             v-if="coverUrlMap[playlist.id]"
             draggable="false"
@@ -133,7 +134,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
           >
         </div>
         <button
-          class="playlist-card__more"
+          class="icon-btn playlist-card__more"
           type="button"
           aria-label="更多操作"
           aria-haspopup="menu"
