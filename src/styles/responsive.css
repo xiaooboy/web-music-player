@@ -66,14 +66,13 @@
   }
 
   .now-playing__body {
-    overflow: auto;
+    overflow: auto hidden;
     scrollbar-width: none;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
-    border-right: none;
   }
-  .now-playing__meta {
-    border-right: none;
+  .now-playing__lyrics {
+    border-left: none;
   }
   .now-playing__body::-webkit-scrollbar {
     width: 0;
@@ -141,8 +140,12 @@
   .sidebar__nav-panel {
     gap: 10px;
   }
+  .now-playing__body {
+    padding-block: var(--shell-gap);
+  }
   .now-playing__meta {
     scroll-snap-type: y mandatory;
+    height: 100%;
   }
   .now-playing__meta-inner {
     height: 200%;

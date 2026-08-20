@@ -154,7 +154,11 @@ function handleDragStart(clientX: number, clientY: number) {
   dragOrientation = "pending";
 }
 
-function handleObserveStart(clientX: number, clientY: number, scrollEl: HTMLElement) {
+function handleObserveStart(
+  clientX: number,
+  clientY: number,
+  scrollEl: HTMLElement,
+) {
   dragStartX = clientX;
   dragStartY = clientY;
   isObserving = true;
@@ -193,7 +197,9 @@ function handleDragMove(clientX: number, clientY: number): boolean {
   }
 
   // 锚点模式：translateY 拖拽（原生风格）
-  const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
+  const currentSnapTranslateY = snapToTranslateY(
+    sortedSnaps()[currentSnapIndex],
+  );
 
   if (deltaY > 0) {
     // 下拉 → 关闭方向，阻尼
@@ -268,7 +274,8 @@ function handleDragEnd() {
       return;
     }
     // 弹回
-    bodyRef.value.style.transition = "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)";
+    bodyRef.value.style.transition =
+      "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)";
     bodyRef.value.style.transform = "";
     bodyRef.value.addEventListener(
       "transitionend",
@@ -282,7 +289,9 @@ function handleDragEnd() {
 
   // 锚点模式：translateY 拖拽
   const currentTranslateY = getCurrentTranslateY();
-  const currentSnapTranslateY = snapToTranslateY(sortedSnaps()[currentSnapIndex]);
+  const currentSnapTranslateY = snapToTranslateY(
+    sortedSnaps()[currentSnapIndex],
+  );
 
   if (currentTranslateY > currentSnapTranslateY) {
     // 被下拉 → 检查是否关闭
@@ -351,7 +360,6 @@ function handleMouseDown(e: MouseEvent) {
   if (mode === "ignore") return;
   // 只响应左键
   if (e.button !== 0) return;
-  e.preventDefault(); // 防止拖拽时选中文字
   handleDragStart(e.clientX, e.clientY);
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
@@ -369,7 +377,9 @@ function handleMouseUp() {
 
 // 非被动触摸事件（阻止默认滚动）
 onMounted(() => {
-  bodyRef.value?.addEventListener("touchmove", handleTouchMove, { passive: false });
+  bodyRef.value?.addEventListener("touchmove", handleTouchMove, {
+    passive: false,
+  });
 });
 onBeforeUnmount(() => {
   bodyRef.value?.removeEventListener("touchmove", handleTouchMove);
@@ -409,7 +419,7 @@ function close() {
  * 统一在此 emit，避免重复触发
  */
 function handleDialogClose() {
-  emit('close');
+  emit("close");
 }
 
 function handleBackdropClick(e: MouseEvent) {
@@ -420,18 +430,29 @@ defineExpose({ open, close });
 </script>
 
 <template>
-  <dialog ref="dialogRef" class="bottom-sheet" @click="handleBackdropClick" @close="handleDialogClose">
+  <dialog
+    ref="dialogRef"
+    class="bottom-sheet"
+    @click="handleBackdropClick"
+    @close="handleDialogClose"
+  >
     <div
       ref="bodyRef"
       class="bottom-sheet__body"
       :class="bodyClass"
-      @click.stop
       @touchstart.stop="handleTouchStart"
       @touchend.stop="handleTouchEnd"
       @mousedown.stop="handleMouseDown"
     >
-      <div v-if="!hideHandle" class="bottom-sheet__handle" :class="handleClass" aria-hidden="true" />
-      <div v-if="title" class="bottom-sheet__title" :class="titleClass">{{ title }}</div>
+      <div
+        v-if="!hideHandle"
+        class="bottom-sheet__handle"
+        :class="handleClass"
+        aria-hidden="true"
+      />
+      <div v-if="title" class="bottom-sheet__title" :class="titleClass">
+        {{ title }}
+      </div>
       <div class="bottom-sheet__content" :class="contentClass">
         <slot />
       </div>

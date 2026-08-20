@@ -134,6 +134,7 @@ function scrollToCurrentTrack() {
               <div class="track-table__thumb">
                 <img
                   v-if="item.coverBlob"
+                  draggable="false"
                   class="img-fadein"
                   width="44"
                   height="44"

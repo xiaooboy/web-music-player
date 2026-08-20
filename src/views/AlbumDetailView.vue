@@ -72,6 +72,7 @@ useHistoryBack(navigateBack);
       <div class="album-detail__cover">
         <img
           v-if="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
+          draggable="false"
           :src="ensureCoverUrl(albumStore.selectedAlbum.name, albumStore.selectedAlbum.coverBlob)"
           class="img-fadein img-fadein--loaded"
           :alt="`${albumStore.selectedAlbum.name} 封面`"

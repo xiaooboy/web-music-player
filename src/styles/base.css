@@ -26,33 +26,33 @@
   --font-display: system-ui;
   --font-body: system-ui;
   /* 字体尺寸 token — 参考 Tailwind font-size 比例 */
-  --text-xs: 0.75rem;     /* 12px 辅助标签 */
+  --text-xs: 0.75rem; /* 12px 辅助标签 */
   --text-xs--lh: 1rem;
-  --text-sm: 0.875rem;    /* 14px 次要信息 */
+  --text-sm: 0.875rem; /* 14px 次要信息 */
   --text-sm--lh: 1.25rem;
-  --text-base: 1rem;      /* 16px 正文基准 */
+  --text-base: 1rem; /* 16px 正文基准 */
   --text-base--lh: 1.5rem;
-  --text-lg: 1.125rem;    /* 18px 小标题 */
+  --text-lg: 1.125rem; /* 18px 小标题 */
   --text-lg--lh: 1.75rem;
-  --text-xl: 1.25rem;     /* 20px 标题 */
+  --text-xl: 1.25rem; /* 20px 标题 */
   --text-xl--lh: 1.75rem;
-  --text-2xl: 1.5rem;     /* 24px 大标题 */
+  --text-2xl: 1.5rem; /* 24px 大标题 */
   --text-2xl--lh: 2rem;
-  --text-3xl: 1.875rem;   /* 30px 页面标题 */
+  --text-3xl: 1.875rem; /* 30px 页面标题 */
   --text-3xl--lh: 2.25rem;
-  --text-4xl: 2.25rem;    /* 36px 英雄标题 */
+  --text-4xl: 2.25rem; /* 36px 英雄标题 */
   --text-4xl--lh: 2.5rem;
   --window-safe-top: 0px;
   --dock-height: 70px;
   --shell-gap: 16px;
   /* z-index 层级 — 间隔 10，留出插入空间 */
-  --z-base: 1;            /* 组件内部相对层级（now-playing-head/body） */
-  --z-sticky: 10;         /* 吸顶/置顶元素（搜索栏） */
-  --z-float: 20;          /* 浮动装饰（折叠品牌图标） */
-  --z-overlay: 30;        /* 全屏遮罩层（详情页降级） */
-  --z-dropdown: 40;       /* 下拉菜单（右键菜单降级） */
-  --z-toast: 50;          /* Toast 通知 */
-  --z-drag-region: 9999;  /* 窗口拖拽区 */
+  --z-base: 1; /* 组件内部相对层级（now-playing-head/body） */
+  --z-sticky: 10; /* 吸顶/置顶元素（搜索栏） */
+  --z-float: 20; /* 浮动装饰（折叠品牌图标） */
+  --z-overlay: 30; /* 全屏遮罩层（详情页降级） */
+  --z-dropdown: 40; /* 下拉菜单（右键菜单降级） */
+  --z-toast: 50; /* Toast 通知 */
+  --z-drag-region: 9999; /* 窗口拖拽区 */
   /*
    * 注意：dialog / popover 元素在浏览器 top layer 中渲染，
    * 不受 z-index 影响，无需 token。
@@ -98,14 +98,20 @@ dialog,
 html,
 body,
 #app {
-  height: 100%;
-  min-height: 400px;
+  min-height: 100%;
   overscroll-behavior-y: none;
 }
 body {
   font-family: var(--font-body);
   color: var(--text);
   background: var(--gradient-bg);
+}
+
+img {
+  -webkit-user-drag: none; /* Chrome, Safari */
+  -moz-user-drag: none; /* Firefox */
+  -ms-user-drag: none; /* Internet Explorer */
+  /*user-drag: none; */
 }
 
 ::-webkit-scrollbar {
@@ -209,8 +215,6 @@ svg {
     cursor: default !important;
   }
 }
-
-
 
 /* 无障碍：减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
