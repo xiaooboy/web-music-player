@@ -21,6 +21,7 @@ import {
   watch,
   computed,
   useTemplateRef,
+  onMounted,
 } from "vue";
 import type { ComponentExposed } from "vue-component-type-helpers";
 import { formatTime } from "../utils/media";
@@ -58,37 +59,11 @@ function handleMoreClick(event: MouseEvent) {
   handleClickTrigger(track);
 }
 
-// BottomSheet 打开/关闭
-function openSheet() {
-  sheetRef.value?.open();
-}
-
-function closeSheet() {
-  sheetRef.value?.close();
-}
-
-/** BottomSheet close 事件触发后同步 store 状态 */
-function handleSheetClose() {
-  if (uiStore.nowPlayingOpen) {
-    uiStore.closeNowPlaying();
-  }
-}
 function handleQueueClick() {
   if (!queueRef.value?.getWasOpen()) {
     queueRef.value?.open();
   }
 }
-// 监听 store 状态，从外部触发打开
-watch(
-  () => uiStore.nowPlayingOpen,
-  (open) => {
-    if (open) {
-      openSheet();
-    } else {
-      closeSheet();
-    }
-  },
-);
 
 // 背景交叉淡入淡出：预加载完成后更新 key，触发 Transition
 const displayCoverUrl = ref<string | undefined>(undefined);
@@ -190,16 +165,15 @@ watch(
   },
 );
 
-defineExpose({ openSheet, closeSheet });
 </script>
 
 <template>
   <BottomSheet
+    v-model="uiStore.nowPlayingOpen"
     ref="sheetRef"
     :snap-points="[1]"
     hide-handle
     body-class="now-playing__sheet-body"
-    @close="handleSheetClose"
   >
     <section class="now-playing">
       <Transition name="opacity-fade">

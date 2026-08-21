@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from "vue";
 import { useTemplateRef, onMounted, onBeforeUnmount } from "vue";
 
 const props = withDefaults(
@@ -25,6 +26,7 @@ const props = withDefaults(
   }>(),
   { snapPoints: () => [0.5, 1], hideHandle: false },
 );
+const visible = defineModel<boolean>();
 
 const emit = defineEmits<{
   close: [];
@@ -384,8 +386,13 @@ onMounted(() => {
 onBeforeUnmount(() => {
   bodyRef.value?.removeEventListener("touchmove", handleTouchMove);
 });
-
-function open() {
+function open(){
+  visible.value = true;
+}
+function close(){
+  visible.value = false;
+}
+function realOpen() {
   if (bodyRef.value) {
     bodyRef.value.style.transition = "";
     bodyRef.value.style.height = "";
@@ -407,7 +414,7 @@ function open() {
   // 适应内容模式：不设 height，内容自适应
 }
 
-function close() {
+function realClose() {
   dialogRef.value?.close();
 }
 
@@ -425,7 +432,12 @@ function handleDialogClose() {
 function handleBackdropClick(e: MouseEvent) {
   if (e.target === dialogRef.value) close();
 }
-
+function syncDilaogState() {
+  if (visible.value) realOpen();
+  else realClose();
+}
+watch(visible, syncDilaogState);
+onMounted(syncDilaogState)
 defineExpose({ open, close });
 </script>
 
