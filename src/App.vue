@@ -116,7 +116,7 @@ function handleContextMenuBlock(event: MouseEvent) {
   <div
     class="app-shell"
     role="application"
-    aria-label="LocalMusic 本地音乐播放器"
+    aria-label="Local Music 本地音乐播放器"
   >
     <SidebarNav />
 

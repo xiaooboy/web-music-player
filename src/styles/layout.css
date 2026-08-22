@@ -76,7 +76,7 @@
 .cover-art {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #2c2c2c 0%, #171717 100%);
+  background: #2c2c2c;
   border-radius: var(--cover-radius);
 }
 

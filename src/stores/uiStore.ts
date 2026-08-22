@@ -13,9 +13,7 @@ export type ViewName =
 export const useUIStore = defineStore("ui", () => {
   const activeView = shallowRef<ViewName>("tracks");
   const nowPlayingOpen = shallowRef(false);
-  const sidebarCollapsed = shallowRef(
-    window.screen.width < 480 ? false : loadSidebarCollapsed(),
-  );
+  const sidebarCollapsed = shallowRef(loadSidebarCollapsed());
 
   const viewStack: ViewName[] = [];
 
