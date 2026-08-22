@@ -127,7 +127,7 @@
     .icon-btn {
       display: none;
     }
-    .play-toggle {
+    .play-toggle,.player-dock__queue-button {
       display: inline-flex;
     }
   }
