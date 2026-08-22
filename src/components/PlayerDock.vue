@@ -85,7 +85,7 @@ function handleQueueClick() {
         <span class="truncate--block">{{
           playerStore.currentTrack
             ? `${playerStore.currentTrack.artist} - ${playerStore.currentTrack.album}`
-            : "- -"
+            : "start now"
         }}</span>
       </div>
     </button>
