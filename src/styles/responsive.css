@@ -145,7 +145,6 @@
   }
   .now-playing__meta {
     scroll-snap-type: y mandatory;
-    height: 100%;
   }
   .now-playing__meta-inner {
     height: 200%;
@@ -158,7 +157,8 @@
     align-items: center;
     justify-content: center;
     width: min(100%, clamp(250px, 22vw, 300px));
-    height: 50%;
+    height: calc(50% - 12px);
     scroll-snap-align: start;
+    margin-bottom: 12px;
   }
 }

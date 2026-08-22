@@ -24,7 +24,10 @@ function open(){
 function close(){
   visible.value = false
 }
-
+/** 状态切换后进行一次数据同步 */
+function handleToggle(event: ToggleEvent) {
+  visible.value = event.newState === "open";
+}
 watch(visible, syncDialogState);
 onMounted(syncDialogState);
 
@@ -38,6 +41,7 @@ defineExpose({ open, close });
     class="base-dialog"
     closedby="any"
     @close="handleClose"
+    @toggle="handleToggle"
   >
     <slot />
   </dialog>

@@ -359,6 +359,8 @@ input[type="range"].now-playing__volume-slider {
   container-type: size;
   .changeable-img__img {
     border-radius: var(--cover-radius);
+    object-fit: cover;
+    object-position: center;
   }
 }
 
