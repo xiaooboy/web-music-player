@@ -34,7 +34,7 @@ export default defineConfig({
       ],
       manifest: {
         id: base,
-        name: `LocalMusic${process.env.NODE_ENV === "development" ? "Dev" : ""}`,
+        name: `Local Music${process.env.NODE_ENV === "development" ? " Dev" : ""}`,
         short_name: "LocalMusic",
         description:
           "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",

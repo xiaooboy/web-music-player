@@ -2,7 +2,7 @@
 import { Disc3, Heart, House, Menu, ListMusic, Folder } from "@lucide/vue";
 import { useUIStore } from "../stores/uiStore";
 import type { ViewName } from "../stores/uiStore";
-import { onMounted } from "vue";
+import { onBeforeUnmount, onMounted, shallowRef } from "vue";
 
 const uiStore = useUIStore();
 
@@ -14,22 +14,32 @@ const navItems: { name: ViewName; title: string; icon: typeof House }[] = [
   { name: "sources", title: "音乐源", icon: Folder },
 ];
 let mainStage: HTMLDivElement | null = null;
-const screenWidth = window.screen.width;
-
+const isSmall = shallowRef(judegIsSmall())
 onMounted(() => {
   mainStage = document.querySelector(".main-stage");
+  window.addEventListener("resize", updateIsSmall);
 });
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateIsSmall);
+});
+
 function switchView(name: ViewName) {
   uiStore.setActiveView(name);
   // 小屏下点击导航后滚动到主内容区
-  if (screenWidth <= 480) {
+  if (isSmall) {
     mainStage?.scrollIntoView({ behavior: "smooth" });
   }
+}
+function judegIsSmall(){
+  return window.screen.width <= 480;
+}
+function updateIsSmall() {
+  isSmall.value = judegIsSmall();
 }
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'sidebar--collapsed': uiStore.sidebarCollapsed }" role="navigation" aria-label="主导航">
+  <aside class="sidebar" :class="{ 'sidebar--collapsed': uiStore.sidebarCollapsed && !isSmall }" role="navigation" aria-label="主导航">
     <div class="sidebar__brand sidebar__brand-placeholder" aria-hidden="true">
       <button
         class="sidebar__collapse-btn"

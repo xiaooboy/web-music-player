@@ -80,12 +80,12 @@ function handleQueueClick() {
 
       <div class="player-dock__copy">
         <strong class="truncate--block">{{
-          playerStore.currentTrack?.title || "请选择一首歌曲"
+          playerStore.currentTrack?.title || "Local Music"
         }}</strong>
         <span class="truncate--block">{{
           playerStore.currentTrack
             ? `${playerStore.currentTrack.artist} - ${playerStore.currentTrack.album}`
-            : "点击歌曲后播放"
+            : "- -"
         }}</span>
       </div>
     </button>

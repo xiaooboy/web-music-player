@@ -39,8 +39,6 @@ const playerStore = usePlayerStore();
 const favoriteStore = useFavoriteStore();
 const uiStore = useUIStore();
 
-const sheetRef =
-  useTemplateRef<ComponentExposed<typeof BottomSheet>>("sheetRef");
 const queueRef =
   useTemplateRef<ComponentExposed<typeof PlayQueueSheet>>("queueRef");
 
@@ -164,7 +162,6 @@ watch(
     });
   },
 );
-
 </script>
 
 <template>
