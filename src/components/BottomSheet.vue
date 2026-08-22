@@ -386,10 +386,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   bodyRef.value?.removeEventListener("touchmove", handleTouchMove);
 });
-function open(){
+function open() {
   visible.value = true;
 }
-function close(){
+function close() {
   visible.value = false;
 }
 function realOpen() {
@@ -436,8 +436,12 @@ function syncDilaogState() {
   if (visible.value) realOpen();
   else realClose();
 }
+/** 状态切换后进行一次数据同步 */
+function handleToggle(event: ToggleEvent) {
+  visible.value = event.newState === "open";
+}
 watch(visible, syncDilaogState);
-onMounted(syncDilaogState)
+onMounted(syncDilaogState);
 defineExpose({ open, close });
 </script>
 
@@ -447,6 +451,7 @@ defineExpose({ open, close });
     class="bottom-sheet"
     @click="handleBackdropClick"
     @close="handleDialogClose"
+    @toggle="handleToggle"
   >
     <div
       ref="bodyRef"
