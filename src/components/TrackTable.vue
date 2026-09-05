@@ -34,6 +34,20 @@ const hasPlayingTrack = computed(() =>
   props.tracks.some((t) => t.id === props.currentTrackId),
 );
 
+// PC 端：双击播放
+// 移动端：触摸直接播放（通过 pointerType 实时判断，支持二合一设备）
+function handleRowClick(event: PointerEvent, item: Track) {
+  // 触摸设备：直接播放
+  if (event.pointerType === "touch") {
+    emit("play", item.id);
+  }
+  // 鼠标/触控板：单击不做任何事，双击由 dblclick 事件处理
+}
+
+function handleRowDblClick(item: Track) {
+  emit("play", item.id);
+}
+
 function handleContextMenu(event: MouseEvent, track: Track) {
   event.preventDefault();
   event.stopPropagation();
@@ -126,7 +140,8 @@ function scrollToCurrentTrack() {
             role="row"
             :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
             :style="{  transform: `translateY(${vRow.start}px)` }"
-            @click="$emit('play', item.id)"
+            @click="handleRowClick($event, item)"
+            @dblclick="handleRowDblClick(item)"
             @keydown.enter="$emit('play', item.id)"
             @contextmenu="handleContextMenu($event, item)"
           >
@@ -152,14 +167,14 @@ function scrollToCurrentTrack() {
               </div>
             </div>
             <div class="track-table__album">
-              <strong
+              <span
                 class="track-table__album-link"
                 role="link"
                 tabindex="0"
                 :aria-label="`查看专辑：${item.album}`"
                 @click.stop="emit('navigateToAlbum', item.album)"
                 @keydown.enter.stop="emit('navigateToAlbum', item.album)"
-                >{{ item.album }}</strong
+                >{{ item.album }}</span
               >
             </div>
             <span class="track-table__duration">{{

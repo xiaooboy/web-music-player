@@ -39,6 +39,19 @@ function handlePlayTrack(trackId: string) {
   playerStore.playTrackById(trackId, true);
 }
 
+// PC 端：双击播放
+// 移动端：触摸直接播放（通过 pointerType 实时判断，支持二合一设备）
+function handleRowClick(event: PointerEvent, track: Track) {
+  if (event.pointerType === "touch") {
+    handlePlayTrack(track.id);
+  }
+  // 鼠标/触控板：单击不做任何事，双击由 dblclick 事件处理
+}
+
+function handleRowDblClick(track: Track) {
+  handlePlayTrack(track.id);
+}
+
 function handlePlayAlbum() {
   if (isCurrentAlbumPlaying.value) {
     playerStore.togglePlay();
@@ -107,7 +120,8 @@ useHistoryBack(navigateBack);
         class="album-detail__song-row"
         :class="{ 'album-detail__song-row--active': track.id === playingTrackId }"
         type="button"
-        @click="handlePlayTrack(track.id)"
+        @click="handleRowClick($event, track)"
+        @dblclick="handleRowDblClick(track)"
         @contextmenu="handleContextMenu($event, track)"
       >
         <div class="album-detail__song-main">
