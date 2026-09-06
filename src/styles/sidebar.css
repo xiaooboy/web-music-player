@@ -1,8 +1,9 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 26px;
-  width: 172px;
+  gap: var(--shell-gap);
+  width: max(172px, 18vw);
+  min-width: 0;
   height: 100%;
   padding: calc(var(--shell-gap) + var(--window-safe-top)) var(--shell-gap) var(--dock-height);
   overflow: auto;
@@ -17,6 +18,7 @@
 
 .sidebar--collapsed {
   width: 78px;
+  min-width: 0;
 }
 
 .sidebar__brand {
@@ -28,7 +30,6 @@
 .sidebar__brand-placeholder {
   display: flex;
   align-items: center;
-  height: 32px;
   padding-left: 2px;
 }
 
@@ -57,7 +58,7 @@
 .sidebar__nav-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--shell-gap);
   align-items: flex-start;
 }
 
@@ -117,4 +118,10 @@
 
 .sidebar__collapse-btn svg {
   transition: transform 0.25s ease;
+}
+
+.sidebar__footer {
+  display: flex;
+  margin-top: auto;
+  margin-bottom: var(--shell-gap);
 }

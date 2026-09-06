@@ -51,11 +51,6 @@ function handleQueueClick() {
   <footer
     class="player-dock"
     aria-label="播放控制栏"
-    :style="
-      playerStore.currentTrack && enableCoverTransition
-        ? { 'view-transition-name': 'dock-detail' }
-        : undefined
-    "
   >
     <button
       class="player-dock__track player-dock__now-playing-trigger"

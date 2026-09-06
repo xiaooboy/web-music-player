@@ -12,9 +12,7 @@ Accessible text：11-12
 .light-theme {
   color-scheme: light;
 }
-.dark-theme {
-  color-scheme: dark;
-}
+
 .dark-theme {
   --accent-1: #09100a;
   --accent-2: #111b13;
@@ -112,7 +110,7 @@ Accessible text：11-12
   --gray-a11: #fffcfeb1;
   --gray-a12: #fefefeee;
 
-  --gray-contrast: #FFFFFF;
+  --gray-contrast: #ffffff;
   --gray-surface: rgba(0, 0, 0, 0.05);
   --gray-indicator: #6f6f6f;
   --gray-track: #6f6f6f;
@@ -147,7 +145,7 @@ Accessible text：11-12
       --gray-a11: color(display-p3 1 0.9922 1 / 0.692);
       --gray-a12: color(display-p3 1 1 1 / 0.931);
 
-      --gray-contrast: #FFFFFF;
+      --gray-contrast: #ffffff;
       --gray-surface: color(display-p3 0 0 0 / 5%);
       --gray-indicator: oklch(54% 0 none);
       --gray-track: oklch(54% 0 none);
@@ -158,8 +156,7 @@ Accessible text：11-12
   --color-background: #0b0f0c;
 }
 
-
- .light, .light-theme {
+.light-theme {
   --accent-1: #f9fffa;
   --accent-2: #f3fcf4;
   --accent-3: #e1fae4;
@@ -194,7 +191,7 @@ Accessible text：11-12
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-     .light, .light-theme {
+    .light-theme {
       --accent-1: oklch(99.4% 0.0087 148.7);
       --accent-2: oklch(98.2% 0.015 148.7);
       --accent-3: oklch(96.1% 0.038 148.7);
@@ -228,7 +225,7 @@ Accessible text：11-12
     }
   }
 }
- .light, .light-theme {
+.light-theme {
   --gray-1: #e7e7e7;
   --gray-2: #e1e1e1;
   --gray-3: #d7d7d7;
@@ -255,7 +252,7 @@ Accessible text：11-12
   --gray-a11: #000000af;
   --gray-a12: #000000dd;
 
-  --gray-contrast: #FFFFFF;
+  --gray-contrast: #ffffff;
   --gray-surface: #ffffffcc;
   --gray-indicator: #6f6f6f;
   --gray-track: #6f6f6f;
@@ -263,7 +260,7 @@ Accessible text：11-12
 
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
-     .light, .light-theme {
+    .light-theme {
       --gray-1: oklch(92.7% 0 none);
       --gray-2: oklch(91.1% 0 none);
       --gray-3: oklch(88% 0 none);
@@ -290,13 +287,13 @@ Accessible text：11-12
       --gray-a11: color(display-p3 0 0 0 / 0.6851);
       --gray-a12: color(display-p3 0 0 0 / 0.8681);
 
-      --gray-contrast: #FFFFFF;
+      --gray-contrast: #ffffff;
       --gray-surface: color(display-p3 1 1 1 / 80%);
       --gray-indicator: oklch(54% 0 none);
       --gray-track: oklch(54% 0 none);
     }
   }
 }
-.light, .light-theme, .radix-themes {
+.light-theme {
   --color-background: #ebebeb;
 }

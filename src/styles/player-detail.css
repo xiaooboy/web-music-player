@@ -502,11 +502,6 @@ input[type="range"].now-playing__volume-slider {
 .now-playing__lyrics-translation {
   display: block;
 }
-/* 关闭 root 默认的淡入淡出动画，避免页面整体闪烁 */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-}
 
 @media (display-mode: window-controls-overlay) {
   .now-playing__head {

@@ -2,6 +2,7 @@
 import { Disc3, Heart, House, Menu, ListMusic, Folder } from "@lucide/vue";
 import { useUIStore } from "../stores/uiStore";
 import type { ViewName } from "../stores/uiStore";
+import ThemeToggle from "./ThemeToggle.vue";
 import { onBeforeUnmount, onMounted, shallowRef } from "vue";
 
 const uiStore = useUIStore();
@@ -14,7 +15,7 @@ const navItems: { name: ViewName; title: string; icon: typeof House }[] = [
   { name: "sources", title: "音乐源", icon: Folder },
 ];
 let mainStage: HTMLDivElement | null = null;
-const isSmall = shallowRef(judegIsSmall())
+const isSmall = shallowRef(judegIsSmall());
 onMounted(() => {
   mainStage = document.querySelector(".main-stage");
   window.addEventListener("resize", updateIsSmall);
@@ -30,7 +31,7 @@ function switchView(name: ViewName) {
     mainStage?.scrollIntoView({ behavior: "smooth" });
   }
 }
-function judegIsSmall(){
+function judegIsSmall() {
   return window.screen.width <= 480;
 }
 function updateIsSmall() {
@@ -39,7 +40,12 @@ function updateIsSmall() {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'sidebar--collapsed': uiStore.sidebarCollapsed && !isSmall }" role="navigation" aria-label="主导航">
+  <aside
+    class="sidebar"
+    :class="{ 'sidebar--collapsed': uiStore.sidebarCollapsed && !isSmall }"
+    role="navigation"
+    aria-label="主导航"
+  >
     <div class="sidebar__brand sidebar__brand-placeholder" aria-hidden="true">
       <button
         class="sidebar__collapse-btn"
@@ -59,13 +65,24 @@ function updateIsSmall() {
         class="sidebar__nav-item"
         :aria-label="item.title"
         :title="item.title"
-        :class="{ 'sidebar__nav-item--active': uiStore.activeView === item.name || (item.name === 'playlists' && uiStore.activeView === 'playlist-detail') || (item.name === 'albums' && uiStore.activeView === 'album-detail') }"
+        :class="{
+          'sidebar__nav-item--active':
+            uiStore.activeView === item.name ||
+            (item.name === 'playlists' &&
+              uiStore.activeView === 'playlist-detail') ||
+            (item.name === 'albums' && uiStore.activeView === 'album-detail'),
+        }"
         type="button"
         @click="switchView(item.name)"
       >
-        <span class="sidebar__nav-icon"><component :is="item.icon" :size="26" /></span>
+        <span class="sidebar__nav-icon"
+          ><component :is="item.icon" :size="26"
+        /></span>
         <span class="sidebar__nav-label">{{ item.title }}</span>
       </button>
+    </div>
+    <div class="sidebar__footer">
+      <ThemeToggle :collapsed="uiStore.sidebarCollapsed && !isSmall" />
     </div>
   </aside>
 </template>
