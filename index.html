@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark-theme">
 
 <head>
   <title>Local Music</title>
@@ -14,6 +14,21 @@
   <link rel="icon" href="/web-music-player/favicon.png" type="image/png" sizes="32x32" />
   <link rel="icon" href="/web-music-player/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/web-music-player/icons/apple-touch-icon.png" />
+  <script>
+    // 主题初始化：在 DOM 渲染前应用，避免闪烁
+    (function() {
+      var mode = localStorage.getItem('theme-mode') || 'dark';
+      var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var html = document.documentElement;
+      if (!isDark) {
+        html.classList.remove('dark-theme');
+        html.classList.add('light-theme');
+        html.style.backgroundColor = '#ebebeb';
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = '#ebebeb';
+      }
+    })();
+  </script>
   <style>
     html {
       color-scheme: dark;
@@ -33,9 +48,9 @@
     }
   </style>
 
-  <script type="module" crossorigin src="/web-music-player/assets/index-DfDreMMy.js"></script>
+  <script type="module" crossorigin src="/web-music-player/assets/index-C0vP6DMv.js"></script>
   <link rel="modulepreload" crossorigin href="/web-music-player/assets/vue-B60MvdIt.js">
-  <link rel="stylesheet" crossorigin href="/web-music-player/assets/index-BV0V_RvX.css">
+  <link rel="stylesheet" crossorigin href="/web-music-player/assets/index-0lE0y7Jt.css">
 <link rel="manifest" href="/web-music-player/manifest.webmanifest"></head>
 
 <body>
