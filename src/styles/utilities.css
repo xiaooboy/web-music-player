@@ -38,7 +38,8 @@
 }
 
 /* 纯图标按钮 */
-.icon-btn,.icon-btn--sized {
+.icon-btn,
+.icon-btn--sized {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -74,6 +75,7 @@
   box-shadow: none;
   outline: none;
   &::before {
+    outline-offset: -2px;
     outline: 2px solid var(--accent-border-color);
   }
 }
@@ -89,12 +91,16 @@
 
 /* 图片淡入 */
 .img-fadein {
-  animation: imgFadeIn .5s ease;
+  animation: imgFadeIn 0.5s ease;
 }
 
 @keyframes imgFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* 仅屏幕阅读器可见 */

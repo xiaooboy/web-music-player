@@ -262,12 +262,10 @@ input[type="range"].now-playing__volume-slider {
 }
 
 .now-playing__backdrop {
-  --linear-bg: var(--gray-2) 0%, var(--gray-a2) 60%;
   position: absolute;
-  inset: 0;
+  inset: -64px;
   background-image:
-    linear-gradient(to right, var(--linear-bg)),
-    linear-gradient(to left, var(--linear-bg)),
+    linear-gradient(to right, var(--gray-1) -100%, var(--gray-a1) 200%),
     var(--cover-url);
   background-position: center;
   background-size: cover;

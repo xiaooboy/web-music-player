@@ -73,7 +73,9 @@ const rowVirtualizer = useVirtualizer(
   computed(() => ({
     count: props.tracks.length,
     getScrollElement: () => listRef.value,
-    estimateSize: () => 64, // padding(10+10) + thumb(44) = 64px
+    estimateSize: () => 54, // padding(5+5) + thumb(44) = 64px
+    gap: 10,
+    paddingStart: 5,
     overscan: 5,
   })),
 );
@@ -139,7 +141,7 @@ function scrollToCurrentTrack() {
             tabindex="0"
             role="row"
             :aria-label="`${item.title}，${item.artist}，${item.album}，${formatTime(item.duration)}`"
-            :style="{  transform: `translateY(${vRow.start}px)` }"
+            :style="{ transform: `translateY(${vRow.start}px)` }"
             @click="handleRowClick($event, item)"
             @dblclick="handleRowDblClick(item)"
             @keydown.enter="$emit('play', item.id)"
@@ -162,7 +164,9 @@ function scrollToCurrentTrack() {
                 <strong class="truncate--block">{{ item.title }}</strong>
                 <div class="truncate--block">
                   <span>{{ item.artist }}</span>
-                  <span class="track-table__copy-album"> - {{ item.album }}</span>
+                  <span class="track-table__copy-album">
+                    - {{ item.album }}</span
+                  >
                 </div>
               </div>
             </div>
