@@ -27,7 +27,7 @@ const {
   display: block;
   margin-bottom: 10px;
   font-size: var(--text-lg);
-  color: var(--text);
+  color: var(--color-text);
 }
 .empty-state--fill {
   display: grid;

@@ -1,29 +1,32 @@
-:root {
-  --bg:#0b0f0c;
-  --bg-elevated: #121212;
-  --panel: #181818;
-  --sidebar: #000000;
-  --sidebar-soft: #121212;
+@import url("./tokens.css");
+html {
+  --color-background: var(--color-background);
+
+  --color-panel: var(--gray-a2);
+  --color-panel-translucent: var(--gray-a2);
+  --color-panel-solid: var(--gray-2);
+  --backdrop-filter-panel: blur(64px);
+
+  --border-color: var(--gray-a6);
+  --card-background-color: var(--color-panel-translucent);
+  --card-border: 1px solid var(--border-color);
+
+
   /* 强调色 — 实色层级 */
-  --accent-light: #9bf0bd; /* L1 最浅，辅助文字 */
-  --accent-bright: #35e576; /* L2 高亮 / hover */
-  --accent: #1ed760; /* L3 主色 */
-  --accent-deep: #1db954; /* L4 深色，active 状态 */
-  /* 强调色 — 半透明层级（不透明度由高到低） */
-  --accent-muted: rgba(30, 215, 96, 0.72); /* H1 次要图标、滚动条 */
-  --accent-border: rgba(30, 215, 96, 0.24); /* H2 选中边框 */
-  --accent-soft: rgba(30, 215, 96, 0.16); /* H3 选中背景 */
-  --accent-dim: rgba(30, 215, 96, 0.12); /* H4 装饰背景渐变 */
-  --accent-glow: rgba(30, 215, 96, 0.08); /* H5 发光阴影 */
-  --text: #ffffff;
-  --muted: #b3b3b3;
-  --line: rgba(255, 255, 255, 0.08);
-  --shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
-  --radius-xl: 24px;
+  --accent-border-color: var(--accent-a6);
+  --accent-deep: var(--accent-a10);
+  --accent: var(--accent-11);
+  --accent-light: var(--accent-12);
+
+  --color-text: var(--gray-12);
+  --color-muted-text: var(--gray-a11);
+  --color-split-line: var(--border-color);
+
+  --color-danger: rgba(220, 60, 60, 0.85);
+  --color-danger-hover: rgb(220, 60, 60);
+
   --cover-radius: 10%;
   --cover-radius-circled: 50%;
-  --font-display: system-ui;
-  --font-body: system-ui;
   /* 字体尺寸 token — 参考 Tailwind font-size 比例 */
   --text-xs: 0.75rem; /* 12px 辅助标签 */
   --text-xs--lh: 1rem;
@@ -60,6 +63,8 @@
   --scrollbar-size: 10px;
   --scrollbar-compensation-i: 0; /* JS 运行时测量后会覆盖 */
   --scrollbar-compensation-o: var(--scrollbar-size); /* JS 运行时测量后会覆盖 */
+
+  font-family: system-ui;
 }
 
 @supports (top: env(titlebar-area-height)) {
@@ -87,7 +92,7 @@ dialog,
   margin: 0;
   padding: 0;
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-muted) transparent;
+  scrollbar-color: var(--accent-track) transparent;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
@@ -100,9 +105,8 @@ body,
   overscroll-behavior-y: none;
 }
 body {
-  font-family: var(--font-body);
-  color: var(--text);
-  background: var(--bg);
+  color: var(--color-text);
+  background: var(--color-background);
 }
 
 img {
@@ -123,27 +127,11 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--accent-muted) 25%,
-    var(--accent-deep) 75%,
-    transparent 100%
-  );
-  border: 2px solid rgba(15, 15, 15, 0.92);
+  background: var(--accent-deep)--accent-border-color;
+  border: 2px solid var(--gray-a1);
   border-top-color: transparent;
   border-bottom-color: transparent;
   border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--accent-bright) 25%,
-    var(--accent-muted) 75%,
-    transparent 100%
-  );
 }
 
 ::-webkit-scrollbar-button {
@@ -171,11 +159,12 @@ textarea {
 button {
   border: 0;
   cursor: pointer;
+  color: inherit;
 }
 
 /* 无障碍：焦点可见样式 */
 :focus-visible {
-  outline: 2px solid var(--accent-muted);
+  outline: 2px solid var(--accent-border-color);
   outline-offset: -2px;
 }
 :focus:not(:focus-visible) {
@@ -191,7 +180,7 @@ button {
   /* 触屏设备仍保留输入框的焦点指示，方便用户知道当前输入位置 */
   input:focus-visible,
   textarea:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--accent-muted);
+    box-shadow: inset 0 0 0 2px var(--accent-border-color);
   }
 }
 
@@ -229,10 +218,8 @@ svg {
 /* 无障碍：高对比度偏好 */
 @media (prefers-contrast: more) {
   :root {
-    --line: rgba(255, 255, 255, 0.3);
-    --muted: #d0d0d0;
-    --accent-soft: rgba(30, 215, 96, 0.3);
-    --accent-dim: rgba(30, 215, 96, 0.2);
+    --color-split-line: var(--gray-a9);
+    --color-muted-text: var(--gray-11);
   }
 
   .context-menu__item--disabled {

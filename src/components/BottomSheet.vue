@@ -485,7 +485,7 @@ defineExpose({ open, close });
   max-width: 100%;
   max-height: calc(100dvh - env(safe-area-inset-top));
   overflow: hidden;
-  color: var(--text);
+  color: var(--color-text);
   background: transparent;
   border: none;
   transform: translateY(100%);
@@ -524,7 +524,7 @@ defineExpose({ open, close });
   flex-direction: column;
   max-height: inherit;
   padding: 8px 0 env(safe-area-inset-bottom, 0);
-  background: var(--panel);
+  background: var(--color-panel-solid);
   border-radius: 16px 16px 0 0;
   will-change: transform;
 }
@@ -534,7 +534,7 @@ defineExpose({ open, close });
   width: 36px;
   height: 4px;
   margin: 8px auto 4px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--gray-a9);
   border-radius: 2px;
 }
 
@@ -542,8 +542,8 @@ defineExpose({ open, close });
   flex-shrink: 0;
   padding: 0px 20px 16px;
   font-weight: 600;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
+  color: var(--color-muted-text);
+  border-bottom: 1px solid var(--color-split-line);
 }
 
 .bottom-sheet__content {

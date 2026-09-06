@@ -12,8 +12,8 @@
 .context-menu__header {
   padding: 8px 14px 14px;
   font-weight: 600;
-  color: var(--muted);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--gray-a3);
 }
 
 .context-menu__item {
@@ -23,7 +23,7 @@
   width: 100%;
   padding: 8px 14px;
   font-size: var(--text-sm);
-  color: var(--text);
+  color: var(--color-text);
   text-align: left;
   white-space: nowrap;
   background: transparent;
@@ -38,11 +38,11 @@
 
 .context-menu__item:hover:not(.context-menu__item--disabled) {
   color: var(--accent);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--gray-a3);
 }
 
 .context-menu__item--disabled {
-  color: var(--muted);
+  color: var(--color-muted-text);
   cursor: default;
   opacity: 0.5;
 }

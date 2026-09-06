@@ -27,8 +27,8 @@
   height: 60px;
   min-height: 60px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--card-background-color);
+  border: var(--card-border);
   border-radius: 16px;
 }
 
@@ -43,7 +43,7 @@
 
 .sources__copy span {
   font-size: var(--text-xs);
-  color: rgba(245, 247, 251, 0.64);
+  color: var(--color-muted-text);
 }
 
 .sources__panel {
@@ -55,7 +55,7 @@
 .sources__hint {
   margin-top: 6px;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--color-muted-text);
 }
 
 .sources__actions-inline {

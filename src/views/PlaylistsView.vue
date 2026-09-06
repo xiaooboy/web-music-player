@@ -204,7 +204,7 @@ function handleHeaderPopoverAction(action: () => void) {
   padding: 10px 14px;
   font-family: inherit;
   font-size: var(--text-sm);
-  color: var(--text);
+  color: var(--color-text);
   text-align: left;
   background: transparent;
   border-radius: 8px;
@@ -213,7 +213,7 @@ function handleHeaderPopoverAction(action: () => void) {
 }
 
 .header-popover__item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--gray-a4);
 }
 
 .header-popover__icon {

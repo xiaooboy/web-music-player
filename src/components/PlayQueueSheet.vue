@@ -248,8 +248,8 @@ defineExpose({ open, close, getWasOpen });
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  color: var(--muted);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-text);
+  border-bottom: var(--card-border);
 }
 
 .queue-popover__title {
@@ -263,7 +263,7 @@ defineExpose({ open, close, getWasOpen });
   list-style: none;
   span {
     font-size: var(--text-sm);
-    color: var(--muted);
+    color: var(--color-muted-text);
   }
   strong {
     font-weight: 700;
@@ -287,7 +287,7 @@ defineExpose({ open, close, getWasOpen });
 .queue__empty {
   padding: 32px 16px;
   font-size: var(--text-sm);
-  color: var(--muted, #888);
+  color: var(--color-muted-text);
   text-align: center;
 }
 
@@ -310,7 +310,7 @@ defineExpose({ open, close, getWasOpen });
 }
 
 .queue__item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--gray-a3);
 }
 
 .queue__track-copy {
@@ -327,9 +327,9 @@ defineExpose({ open, close, getWasOpen });
 }
 
 .queue__btn.icon-btn {
-  color: var(--muted);
+  color: var(--color-muted-text);
   &:hover {
-    color: var(--text);
+    color: var(--color-text);
   }
 }
 </style>

@@ -32,9 +32,9 @@ const toastList = toasts;
 .toast-container__item {
   padding: 10px 20px;
   font-size: var(--text-sm);
-  color: #fff;
+  color: var(--color-text);
   white-space: nowrap;
-  background: rgba(32, 32, 32, 0.9);
+  background: var(--gray-a10);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(12px);

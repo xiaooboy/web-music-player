@@ -44,10 +44,7 @@ async function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <BaseDialog
-    v-model="visible"
-    class="form-dialog"
-  >
+  <BaseDialog v-model="visible" class="form-dialog">
     <form method="dialog" @submit.prevent="handleConfirm">
       <h3>
         {{
@@ -72,18 +69,16 @@ async function handleKeydown(e: KeyboardEvent) {
         @keydown="handleKeydown"
       />
       <div class="form-dialog__actions">
-        <button
-          type="button"
-          class="form-dialog__btn"
-          @click="visible = false"
-        >
+        <button type="button" class="form-dialog__btn" @click="visible = false">
           取消
         </button>
         <button
           type="submit"
           class="form-dialog__btn"
           :class="
-            mode === 'delete' ? 'form-dialog__btn--danger' : 'form-dialog__btn--primary'
+            mode === 'delete'
+              ? 'form-dialog__btn--danger'
+              : 'form-dialog__btn--primary'
           "
         >
           {{ mode === "create" ? "创建" : mode === "edit" ? "保存" : "删除" }}
@@ -105,9 +100,9 @@ async function handleKeydown(e: KeyboardEvent) {
   width: 100%;
   padding: 10px 14px;
   font-size: var(--text-sm);
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--color-text);
+  background: var(--gray-a3);
+  border: 1px solid var(--gray-a5);
   border-radius: 10px;
   outline: none;
   transition: border-color 0.15s ease;
@@ -123,9 +118,9 @@ async function handleKeydown(e: KeyboardEvent) {
 .form-dialog__btn {
   padding: 8px 18px;
   font-size: var(--text-sm);
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text);
+  background: var(--gray-a3);
+  border: 1px solid var(--gray-a4);
   border-radius: 10px;
   transition:
     background 0.15s ease,
@@ -134,35 +129,35 @@ async function handleKeydown(e: KeyboardEvent) {
 }
 
 .form-dialog__btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--gray-a5);
 }
 
 .form-dialog__btn--primary {
   font-weight: 600;
-  color: #000;
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
+  color: var(--gray-1);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .form-dialog__btn--primary:hover {
-  background: var(--accent-bright);
+  background: var(--accent-deep);
 }
 
 /* 删除确认文本 */
 .form-dialog__text {
   font-size: var(--text-sm);
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--color-muted-text);
 }
 
 .form-dialog__btn--danger {
   font-weight: 600;
-  color: #fff;
-  background: rgba(220, 60, 60, 0.85);
-  border-color: rgba(220, 60, 60, 0.85);
+  color: var(--color-text);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 .form-dialog__btn--danger:hover {
-  background: rgba(220, 60, 60, 1);
+  background: var(--color-danger-hover);
 }
 </style>

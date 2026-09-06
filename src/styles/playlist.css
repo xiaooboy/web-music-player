@@ -15,7 +15,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  color: var(--text);
+  color: var(--color-text);
   background: transparent;
   border-radius: 8px;
   transition:
@@ -61,7 +61,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--card-background-color);
   border-radius: var(--cover-radius);
   aspect-ratio: 1;
 }
@@ -82,10 +82,10 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.5);
+  color: var(--color-text);
+  background:var(--gray-3);
   border-radius: 50%;
-  backdrop-filter: blur(6px);
+  backdrop-filter: var(--backdrop-filter-panel);
   transform: translateY(4px);
   transition:
     opacity 0.2s ease,
@@ -115,7 +115,7 @@
 
 .playlist-card__count {
   margin-top: 4px;
-  color: var(--muted);
+  color: var(--color-muted-text);
 }
 
 .playlist-card__more {
@@ -125,8 +125,8 @@
   display: flex;
   width: 26px;
   height: 26px;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(0, 0, 0, 0.4);
+  color: var(--color-muted-text);
+  background: var(--gray-3);
   border-radius: 8px;
   backdrop-filter: blur(8px);
   transition:
@@ -150,7 +150,7 @@
 }
 
 .context-menu__item--has-submenu:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--gray-a4);
 }
 
 .context-menu__submenu-arrow {
@@ -208,7 +208,7 @@
     inset: auto;
     height: 20px;
     width: 20px;
-    color: var(--muted);
+    color: var(--color-muted-text);
     background: transparent;
     backdrop-filter: none;
     opacity: 1;
@@ -217,7 +217,7 @@
   .playlist-card:hover .playlist-card__more,
   .playlist-card:focus .playlist-card__more,
   .playlist-card:focus-within .playlist-card__more {
-    color: var(--text);
+    color: var(--color-text);
     opacity: 1;
   }
 

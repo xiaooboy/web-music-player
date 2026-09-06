@@ -33,7 +33,7 @@ const slots = useSlots();
   /*justify-content: space-between;*/
   align-items: center;
   height: 42px;
-  background-color: var(--bg);
+  background-color: var(--color-background);
 }
 .section-header__left {
   margin-right: 12px;

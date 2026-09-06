@@ -50,11 +50,11 @@ defineExpose({ open, close });
 .base-dialog {
   width: min(360px, calc(100vw - 32px));
   padding: 24px;
-  color: var(--text);
-  background: rgba(32, 32, 32, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text);
+  background: var(--color-panel-solid);
+  border: var(--card-border);
   border-radius: 16px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+  /*box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);*/
   backdrop-filter: blur(12px);
   transform: scale(0.95) translateY(20px);
   transform-origin: center center;

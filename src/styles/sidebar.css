@@ -7,7 +7,7 @@
   padding: calc(var(--shell-gap) + var(--window-safe-top)) var(--shell-gap) var(--dock-height);
   overflow: auto;
   scrollbar-width: none;
-  color: var(--text);
+  color: var(--color-muted-text);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   &::-webkit-scrollbar {
     display: none;
@@ -51,7 +51,7 @@
 }
 
 .sidebar__nav-item small {
-  color: rgba(245, 247, 251, 0.66);
+  color: var(--color-muted-text);
 }
 
 .sidebar__nav-panel {
@@ -72,7 +72,7 @@
 }
 
 .sidebar__nav-item:hover .sidebar__nav-label {
-  color: var(--text);
+  color: var(--color-text);
 }
 
 .sidebar__nav-item--active .sidebar__nav-label {
@@ -87,13 +87,13 @@
 
 .sidebar__nav-icon {
   flex-shrink: 0;
-  color: white;
+  color:  var(--color-muted-text);
 }
 
 .sidebar__nav-label {
   overflow: hidden;
   font-size: var(--text-sm);
-  color: var(--muted);
+  color: var(--color-muted-text);
   white-space: nowrap;
   transition:
     opacity 0.2s ease,

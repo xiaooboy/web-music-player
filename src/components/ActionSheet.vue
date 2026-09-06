@@ -119,7 +119,7 @@ defineExpose({ open, close });
   padding: 12px 16px;
   font-family: inherit;
   font-size: var(--text-sm);
-  color: var(--text);
+  color: var(--color-text);
   text-align: left;
   background: transparent;
   border-radius: 10px;
@@ -128,11 +128,11 @@ defineExpose({ open, close });
 }
 
 .action-sheet__item:hover:not(.action-sheet__item--disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--gray-a4);
 }
 
 .action-sheet__item--disabled {
-  color: var(--muted);
+  color: var(--color-muted-text);
   cursor: default;
   opacity: 0.5;
 }
@@ -169,7 +169,7 @@ defineExpose({ open, close });
 .action-sheet__subitem {
   min-height: 44px;
   font-size: var(--text-sm);
-  color: var(--muted);
+  color: var(--color-muted-text);
   padding-left: 48px;
 }
 </style>

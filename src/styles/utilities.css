@@ -44,7 +44,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: var(--text);
+  color: var(--color-text);
   background: transparent;
   transition:
     transform 160ms ease,
@@ -58,6 +58,7 @@
     position: absolute;
     inset: -12px;
     content: "";
+    border-radius: 8px;
   }
 
   svg {
@@ -69,7 +70,13 @@
     margin-left: 20px;
   }
 }
-
+.icon-btn:focus-visible {
+  box-shadow: none;
+  outline: none;
+  &::before {
+    outline: 2px solid var(--accent-border-color);
+  }
+}
 /* 实心尺寸变体：按钮本身占据 44×44 布局空间，::before 填满而非溢出 */
 .icon-btn--sized {
   width: 44px;

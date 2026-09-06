@@ -43,14 +43,14 @@
   align-items: center;
   min-width: min(360px, 72vw);
   padding: 8px 10px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--border-color);
   border-radius: 999px;
   transition: border-color 0.15s ease;
 }
 
 .search-field input {
   width: 100%;
-  color: var(--text);
+  color: var(--color-text);
   background: transparent;
   border: 0;
   outline: none;
@@ -58,12 +58,12 @@
 }
 
 .search-field:focus-within {
-  border-color: var(--accent-muted);
+  border-color: var(--accent-border-color);
 }
 
 .search-field span,
 .search-field svg {
-  color: var(--muted);
+  color: var(--color-muted-text);
 }
 
 .main-panel {
@@ -76,7 +76,7 @@
 .cover-art {
   position: relative;
   overflow: hidden;
-  background: #2c2c2c;
+  background: var(--gray-4);
   border-radius: var(--cover-radius);
 }
 
@@ -89,10 +89,9 @@
 }
 
 .cover-art span {
-  font-family: var(--font-display);
   font-size: var(--text-lg);
   letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.38);
+  color: var(--gray-a8);
 }
 
 .library-status {
