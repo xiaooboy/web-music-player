@@ -2,6 +2,8 @@ node_modules/
 dist/
 dev-dist/
 .vite/
+.vscode/
+.zed/
 
 # pnpm
 .pnpm-store/
