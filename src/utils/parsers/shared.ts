@@ -94,9 +94,19 @@ function readUint32LE(bytes: Uint8Array, offset: number) {
   );
 }
 
+function readUint16LE(bytes: Uint8Array, offset: number) {
+  return (bytes[offset] | (bytes[offset + 1] << 8)) >>> 0;
+}
+
 function readUint64(bytes: Uint8Array, offset: number) {
   const high = readUint32(bytes, offset);
   const low = readUint32(bytes, offset + 4) >>> 0;
+  return high * 0x1_0000_0000 + low;
+}
+
+function readUint64LE(bytes: Uint8Array, offset: number) {
+  const low = readUint32LE(bytes, offset);
+  const high = readUint32LE(bytes, offset + 4);
   return high * 0x1_0000_0000 + low;
 }
 
@@ -289,7 +299,9 @@ export {
   readUint24,
   readUint32,
   readUint32LE,
+  readUint16LE,
   readUint64,
+  readUint64LE,
   formatToMimeType,
   normalizeMimeType,
   detectImageMimeType,

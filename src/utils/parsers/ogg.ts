@@ -1,6 +1,9 @@
 import {
   decodeLatin1,
   decodeVorbisCommentBlock,
+  readUint16LE,
+  readUint32LE,
+  readUint64LE,
 } from "./shared";
 import type { Track } from "../../types";
 
@@ -144,16 +147,73 @@ async function parseOggVorbisComment(
   return {};
 }
 
-// 解析入口
+// 时长解析
+
+const OGG_TAIL_READ = 128 * 1024;
+
+/** 读取最后一个 OGG page 的 granule position（LE uint64） */
+async function readLastGranulePosition(file: File): Promise<number> {
+  const tailStart = Math.max(0, file.size - OGG_TAIL_READ);
+  const tail = new Uint8Array(await file.slice(tailStart).arrayBuffer());
+
+  // 从尾部向前扫描 "OggS" 魔数，取最后一个 page
+  for (let i = tail.length - 4; i >= 0; i--) {
+    if (
+      tail[i] !== 0x4f ||
+      tail[i + 1] !== 0x67 ||
+      tail[i + 2] !== 0x67 ||
+      tail[i + 3] !== 0x53
+    ) {
+      continue;
+    }
+    // version 固定为 0，用于降低数据区误命中 "OggS" 的概率
+    if (tail[i + 4] !== 0 || i + 14 > tail.length) continue;
+    return readUint64LE(tail, i + 6);
+  }
+  return 0;
+}
+
+/** 从 Vorbis 标识头读取采样率 */
+async function readVorbisSampleRate(file: File): Promise<number> {
+  const bosPage = await readOggPage(file, 0);
+  if (!bosPage || !(bosPage.headerType & OGG_BOS) || bosPage.data.length < 16) {
+    return 0;
+  }
+  // 标识头布局：0x01 + "vorbis"(6) + version(4) + channels(1) + sampleRate(4 LE)
+  return readUint32LE(bosPage.data, 12);
+}
+
+/** 从 OpusHead 标识头读取 pre-skip */
+async function readOpusPreSkip(file: File): Promise<number> {
+  const bosPage = await readOggPage(file, 0);
+  if (!bosPage || !(bosPage.headerType & OGG_BOS) || bosPage.data.length < 12) {
+    return 0;
+  }
+  // OpusHead：magic(8) + version(1) + channelCount(1) + preSkip(2 LE)
+  return readUint16LE(bosPage.data, 10);
+}
 
 /** 解析 OGG Vorbis 元信息 */
 export async function parseOggMetadata(file: File) {
-  // Vorbis Comment 前缀: 0x03 + "vorbis" = 7 字节
-  return parseOggVorbisComment(file, 7);
+  const [comment, sampleRate, granule] = await Promise.all([
+    parseOggVorbisComment(file, 7),
+    readVorbisSampleRate(file),
+    readLastGranulePosition(file),
+  ]);
+  if (sampleRate > 0 && granule > 0) comment.duration = granule / sampleRate;
+  return comment;
 }
 
 /** 解析 OGG Opus 元信息 */
 export async function parseOpusMetadata(file: File) {
-  // Opus Comment 前缀: "OpusTags" = 8 字节
-  return parseOggVorbisComment(file, 8);
+  const [comment, granule, preSkip] = await Promise.all([
+    parseOggVorbisComment(file, 8),
+    readLastGranulePosition(file),
+    readOpusPreSkip(file),
+  ]);
+  // Opus 的 granule position 固定以 48kHz 计数，并需减去 OpusHead 的 pre-skip
+  if (granule > 0) {
+    comment.duration = Math.max(0, granule - preSkip) / 48000;
+  }
+  return comment;
 }

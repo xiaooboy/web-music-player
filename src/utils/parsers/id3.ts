@@ -206,8 +206,20 @@ async function decodePicFrameFromSlice(
 
 // 时长探测
 
-function parseMp3FrameDuration(bytes: Uint8Array, searchStart: number): number {
-  if (searchStart >= bytes.length - 4) return 0;
+interface MpegFrameInfo {
+  sampleRate: number;
+  bitrate: number;
+  samplesPerFrame: number;
+  offset: number;
+  isMono: boolean;
+  isMpeg1: boolean;
+}
+
+function findFirstMpegFrame(
+  bytes: Uint8Array,
+  searchStart: number,
+): MpegFrameInfo | null {
+  if (searchStart >= bytes.length - 4) return null;
   const limit = Math.min(searchStart + 10240, bytes.length - 4);
 
   for (let i = searchStart; i < limit; i++) {
@@ -236,40 +248,70 @@ function parseMp3FrameDuration(bytes: Uint8Array, searchStart: number): number {
     const sampleRate = sampleRates[sampleRateIndex];
     if (!sampleRate) continue;
 
+    const bitrateTable = isMpeg1
+      ? [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0]
+      : [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 0];
+    const bitrate = bitrateTable[bitrateIndex];
+    if (!bitrate) continue;
+
     const samplesPerFrame = isMpeg1 ? 1152 : 576;
     const isMono = ((bytes[i + 3] >> 6) & 0x03) === 0x03;
 
-    // Xing/Info 头偏移取决于 side info 大小
-    const xingOffset = i + (isMpeg1 ? (isMono ? 21 : 36) : isMono ? 13 : 21);
+    return {
+      sampleRate,
+      bitrate,
+      samplesPerFrame,
+      offset: i,
+      isMono,
+      isMpeg1,
+    };
+  }
 
-    // 检查 Xing/Info 头
-    if (xingOffset + 12 <= bytes.length) {
-      const headerId = decodeLatin1(bytes.slice(xingOffset, xingOffset + 4));
-      if (headerId === "Xing" || headerId === "Info") {
-        const flags = readUint32(bytes, xingOffset + 4);
-        if (flags & 0x01) {
-          const frameCount = readUint32(bytes, xingOffset + 8);
-          if (frameCount > 0) {
-            return (frameCount * samplesPerFrame) / sampleRate;
-          }
-        }
-      }
-    }
+  return null;
+}
 
-    // 检查 VBRI 头（Fraunhofer 编码器，固定在帧起始偏移 36 字节处）
-    const vbriOffset = i + 36;
-    if (vbriOffset + 18 <= bytes.length) {
-      const headerId = decodeLatin1(bytes.slice(vbriOffset, vbriOffset + 4));
-      if (headerId === "VBRI") {
-        const frameCount = readUint32(bytes, vbriOffset + 14);
+async function parseMp3Duration(file: File, audioStart: number): Promise<number> {
+  const probeBytes = new Uint8Array(
+    await file.slice(audioStart, audioStart + MP3_PROBE_SIZE).arrayBuffer(),
+  );
+  const frame = findFirstMpegFrame(probeBytes, 0);
+  if (!frame) return 0;
+
+  // Xing/Info 头偏移取决于 side info 大小
+  const xingOffset =
+    frame.offset +
+    (frame.isMpeg1 ? (frame.isMono ? 21 : 36) : frame.isMono ? 13 : 21);
+
+  // 检查 Xing/Info 头
+  if (xingOffset + 12 <= probeBytes.length) {
+    const headerId = decodeLatin1(probeBytes.slice(xingOffset, xingOffset + 4));
+    if (headerId === "Xing" || headerId === "Info") {
+      const flags = readUint32(probeBytes, xingOffset + 4);
+      if (flags & 0x01) {
+        const frameCount = readUint32(probeBytes, xingOffset + 8);
         if (frameCount > 0) {
-          return (frameCount * samplesPerFrame) / sampleRate;
+          return (frameCount * frame.samplesPerFrame) / frame.sampleRate;
         }
       }
     }
+  }
 
-    // 找到有效 MPEG 帧但无 Xing/VBRI 头，不再继续搜索
-    break;
+  // 检查 VBRI 头（Fraunhofer 编码器，固定在帧起始偏移 36 字节处）
+  const vbriOffset = frame.offset + 36;
+  if (vbriOffset + 18 <= probeBytes.length) {
+    const headerId = decodeLatin1(probeBytes.slice(vbriOffset, vbriOffset + 4));
+    if (headerId === "VBRI") {
+      const frameCount = readUint32(probeBytes, vbriOffset + 14);
+      if (frameCount > 0) {
+        return (frameCount * frame.samplesPerFrame) / frame.sampleRate;
+      }
+    }
+  }
+
+  // 无 Xing/VBRI 头：按 CBR 估算（音频字节数 / 码率）
+  const audioBytes = file.size - audioStart;
+  if (frame.bitrate > 0 && audioBytes > 0) {
+    return (audioBytes * 8) / (frame.bitrate * 1000);
   }
 
   return 0;
@@ -296,10 +338,7 @@ export async function parseId3Tags(file: File) {
   ) {
     // 无 ID3 标签，直接探测时长
     const metadata: Partial<Track> = {};
-    const probeBytes = new Uint8Array(
-      await file.slice(0, MP3_PROBE_SIZE).arrayBuffer(),
-    );
-    const duration = parseMp3FrameDuration(probeBytes, 0);
+    const duration = await parseMp3Duration(file, 0);
     if (duration > 0) metadata.duration = duration;
     return metadata;
   }
@@ -437,10 +476,7 @@ export async function parseId3Tags(file: File) {
   }
 
   // 3. 探测时长
-  const probeBytes = new Uint8Array(
-    await file.slice(id3End, id3End + MP3_PROBE_SIZE).arrayBuffer(),
-  );
-  const duration = parseMp3FrameDuration(probeBytes, 0);
+  const duration = await parseMp3Duration(file, id3End);
   if (duration > 0) metadata.duration = duration;
   return metadata;
 }
@@ -534,7 +570,7 @@ async function parseId3TagsBulk(
     }
   }
 
-  const duration = parseMp3FrameDuration(bytes, id3End);
+  const duration = await parseMp3Duration(file, id3End);
   if (duration > 0) metadata.duration = duration;
   return metadata;
 }

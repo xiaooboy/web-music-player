@@ -98,11 +98,24 @@ function walkMp4Atoms(
             version === 0
               ? readUint32(bytes, payloadStart + 12)
               : readUint32(bytes, payloadStart + 20);
+          const durationOffset =
+            version === 0 ? payloadStart + 16 : payloadStart + 24;
+          const durationLength = version === 0 ? 4 : 8;
           const durationValue =
             version === 0
-              ? readUint32(bytes, payloadStart + 16)
-              : readUint64(bytes, payloadStart + 24);
-          if (timescale > 0) {
+              ? readUint32(bytes, durationOffset)
+              : readUint64(bytes, durationOffset);
+
+          // 全 0xFF 表示未知时长（0xffffffff / 0xffffffffffffffff）
+          let isUnknownDuration = true;
+          for (let i = 0; i < durationLength; i++) {
+            if (bytes[durationOffset + i] !== 0xff) {
+              isUnknownDuration = false;
+              break;
+            }
+          }
+
+          if (timescale > 0 && !isUnknownDuration) {
             metadata.duration = durationValue / timescale;
           }
         }

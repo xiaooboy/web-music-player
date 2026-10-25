@@ -1,5 +1,5 @@
 import { revokeCoverUrls } from "./coverCache";
-import { parseId3Tags, parseFlacMetadata, parseMp4Metadata, parseOggMetadata, parseOpusMetadata } from "./parsers";
+import { parseAacMetadata, parseFlacMetadata, parseId3Tags, parseMp4Metadata, parseOggMetadata, parseOpusMetadata, parseWavMetadata, parseWebmMetadata } from "./parsers";
 
 import type { FileEntry, LyricsLine, Track } from "../types";
 
@@ -181,10 +181,13 @@ export async function buildTrack(
       metadata = await parseMp4Metadata(file);
     else if (extension === "ogg") metadata = await parseOggMetadata(file);
     else if (extension === "opus") metadata = await parseOpusMetadata(file);
+    else if (extension === "wav") metadata = await parseWavMetadata(file);
+    else if (extension === "aac") metadata = await parseAacMetadata(file);
+    else if (extension === "webm") metadata = await parseWebmMetadata(file);
   } catch {
     // 解析失败时使用空元信息
   }
-  const duration = metadata.duration || (await probeDuration(file));
+  const duration = metadata.duration || 0;
 
   return {
     id: generateTrackId(relativePath, file),
@@ -287,30 +290,4 @@ function inferTrackInfoFromFile(fileName: string) {
     title: rawName,
     album: "未知专辑",
   };
-}
-
-export async function probeDuration(file: File) {
-  return new Promise<number>((resolve) => {
-    const probe = document.createElement("audio");
-    const url = URL.createObjectURL(file);
-    let settled = false;
-
-    const finish = (duration = 0) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      URL.revokeObjectURL(url);
-      probe.removeAttribute("src");
-      resolve(Number.isFinite(duration) ? duration : 0);
-    };
-
-    const timeout = setTimeout(() => finish(0), 10_000);
-
-    probe.preload = "metadata";
-    probe.addEventListener("loadedmetadata", () => finish(probe.duration), {
-      once: true,
-    });
-    probe.addEventListener("error", () => finish(0), { once: true });
-    probe.src = url;
-  });
 }
