@@ -175,15 +175,33 @@ export async function buildTrack(
 
   let metadata: Partial<Track> = {};
   try {
-    if (extension === "mp3") metadata = await parseId3Tags(file);
-    else if (extension === "flac") metadata = await parseFlacMetadata(file);
-    else if (extension === "m4a" || extension === "mp4")
-      metadata = await parseMp4Metadata(file);
-    else if (extension === "ogg") metadata = await parseOggMetadata(file);
-    else if (extension === "opus") metadata = await parseOpusMetadata(file);
-    else if (extension === "wav") metadata = await parseWavMetadata(file);
-    else if (extension === "aac") metadata = await parseAacMetadata(file);
-    else if (extension === "webm") metadata = await parseWebmMetadata(file);
+    switch (extension) {
+      case "mp3":
+        metadata = await parseId3Tags(file);
+        break;
+      case "flac":
+        metadata = await parseFlacMetadata(file);
+        break;
+      case "m4a":
+      case "mp4":
+        metadata = await parseMp4Metadata(file);
+        break;
+      case "ogg":
+        metadata = await parseOggMetadata(file);
+        break;
+      case "opus":
+        metadata = await parseOpusMetadata(file);
+        break;
+      case "wav":
+        metadata = await parseWavMetadata(file);
+        break;
+      case "aac":
+        metadata = await parseAacMetadata(file);
+        break;
+      case "webm":
+        metadata = await parseWebmMetadata(file);
+        break;
+    }
   } catch {
     // 解析失败时使用空元信息
   }
