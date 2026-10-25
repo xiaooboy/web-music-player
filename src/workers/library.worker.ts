@@ -48,14 +48,18 @@ async function runBuild(
 
     if (tracks === undefined) return; // 已过期（stale）
 
-    // 封面落盘：hash 去重写 OPFS，曲目保留 coverKey（coverBlob 仍随结果返回供本次渲染）
-    await Promise.all(
-      tracks.map(async (track) => {
-        if (!track.coverBlob || track.coverKey) return;
-        const key = await saveCover(track.coverBlob);
-        if (key) track.coverKey = key;
-      }),
-    );
+    // 封面落盘：hash 去重写 OPFS（分批限流，避免大库全量并发导致内存尖峰）
+    const COVER_SAVE_BATCH = 8;
+    for (let start = 0; start < tracks.length; start += COVER_SAVE_BATCH) {
+      if (isStale()) return;
+      await Promise.all(
+        tracks.slice(start, start + COVER_SAVE_BATCH).map(async (track) => {
+          if (!track.coverBlob || track.coverKey) return;
+          const key = await saveCover(track.coverBlob);
+          if (key) track.coverKey = key;
+        }),
+      );
+    }
 
     if (isStale()) return;
     scope.postMessage({ type: "result", token, tracks });
