@@ -1,5 +1,4 @@
-import type { RuntimeMusicSource, Track } from "@/types";
-import type { CachedTrackRecord } from "@/utils/persistence";
+import type { RuntimeMusicSource, Track, TrackRecord } from "@/types";
 import type { LibraryWorkerRequest, LibraryWorkerResponse } from "./protocol";
 
 export interface BuildHandlers {
@@ -16,7 +15,7 @@ class LibraryWorkerClient {
 
   startBuild(
     sources: RuntimeMusicSource[],
-    cachedTracks: CachedTrackRecord[],
+    cachedTracks: TrackRecord[],
     handlers: BuildHandlers,
   ): number {
     // 新 build 启动即作废旧 build 的回调；worker 端靠 token 变化自动中断旧任务

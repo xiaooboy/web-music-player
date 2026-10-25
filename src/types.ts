@@ -15,11 +15,16 @@ export interface Track {
   artist: string;
   album: string;
   coverBlob?: Blob;
+  /** 封面在 OPFS 中的文件名（hash.ext），持久化用 */
+  coverKey?: string;
   duration: number;
   format: string;
   lyricsText: string;
   isPlayable: boolean;
 }
+
+/** 不含 File 的曲目记录：构建缓存/跨线程传递用，仍含封面 Blob 与 coverKey */
+export type TrackRecord = Omit<Track, "file">;
 
 export interface LyricsLine {
   time: number | null;

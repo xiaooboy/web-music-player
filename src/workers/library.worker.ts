@@ -1,6 +1,6 @@
 import { entriesToTracks, parseSource } from "@/utils/libraryBuilder";
-import type { RuntimeMusicSource } from "@/types";
-import type { CachedTrackRecord } from "@/utils/persistence";
+import { saveCover } from "@/utils/coverStore";
+import type { RuntimeMusicSource, TrackRecord } from "@/types";
 import type { LibraryWorkerRequest, LibraryWorkerResponse } from "./protocol";
 
 /** 当前正在执行的 build token，-1 表示无活动任务 */
@@ -24,7 +24,7 @@ scope.onmessage = (event) => {
 async function runBuild(
   token: number,
   sources: RuntimeMusicSource[],
-  cachedTracks: CachedTrackRecord[],
+  cachedTracks: TrackRecord[],
 ): Promise<void> {
   const isStale = () => token !== currentToken;
 
@@ -47,6 +47,17 @@ async function runBuild(
     });
 
     if (tracks === undefined) return; // 已过期（stale）
+
+    // 封面落盘：hash 去重写 OPFS，曲目保留 coverKey（coverBlob 仍随结果返回供本次渲染）
+    await Promise.all(
+      tracks.map(async (track) => {
+        if (!track.coverBlob || track.coverKey) return;
+        const key = await saveCover(track.coverBlob);
+        if (key) track.coverKey = key;
+      }),
+    );
+
+    if (isStale()) return;
     scope.postMessage({ type: "result", token, tracks });
   } catch (error) {
     if (isStale()) return;

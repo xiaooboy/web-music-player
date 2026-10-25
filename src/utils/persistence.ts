@@ -1,7 +1,7 @@
 import { MusicSource, Playlist, Track } from "@/types";
 
 const DB_NAME = "local-music";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = "settings";
 const SOURCES_KEY = "music-sources";
 const TRACK_CACHE_KEY = "track-cache";
@@ -14,7 +14,8 @@ export type PersistedMusicSource = MusicSource & {
   handle: FileSystemDirectoryHandle;
 };
 
-export type CachedTrackRecord = Omit<Track, "file">;
+/** 持久化的曲目缓存记录：不含 File 与封面 Blob（封面存 OPFS，仅保留 coverKey） */
+export type CachedTrackRecord = Omit<Track, "file" | "coverBlob">;
 
 export interface PersistedTrackCache {
   sourceKey: string;

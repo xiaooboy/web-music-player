@@ -3,6 +3,7 @@ import type {
   Track,
   MusicSource,
   RuntimeMusicSource,
+  TrackRecord,
 } from "../types";
 import {
   clearTrackCache,
@@ -121,7 +122,7 @@ export async function entriesToTracks(
   entries: FileEntry[],
   isStale: () => boolean,
   options?: {
-    cache?: Map<string, CachedTrackRecord>;
+    cache?: Map<string, TrackRecord>;
     onProgress?: (info: { done: number; total: number }) => void;
     revokeOnStale?: boolean;
   },

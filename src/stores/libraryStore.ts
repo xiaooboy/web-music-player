@@ -21,11 +21,14 @@ import {
   includesSource,
 } from "@/utils/libraryBuilder";
 import { libraryWorker } from "@/workers/libraryWorkerClient";
+import { hydrateCovers } from "@/utils/coverStore";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
 import { usePlayerStore } from "./playerStore";
 
 export const useLibraryStore = defineStore("library", () => {
+  /** 提交序号：新的提交/清空时使进行中的封面补全失效 */
+  let commitToken = 0;
   /** id 与 Track 对应关系 */
   const trackMap: TrackMap = new Map();
   const playerStore = usePlayerStore();
@@ -52,7 +55,7 @@ export const useLibraryStore = defineStore("library", () => {
     }
     const cacheKey = buildCacheKeyFromSources(persistedSources);
     console.time("restoreTracks");
-    setTracks(await initTracksFromCache(cacheKey));
+    commitTracks(await initTracksFromCache(cacheKey));
     console.timeEnd("restoreTracks");
     musicSources.value = await checkSourcePermissions(persistedSources);
     persistHandleSources();
@@ -63,6 +66,16 @@ export const useLibraryStore = defineStore("library", () => {
     for (const track of tracks) {
       trackMap.set(track.id, track);
     }
+  }
+  /** 提交 tracks：先展示，缺失封面再后台补齐（不阻塞首屏） */
+  function commitTracks(data: Track[], persist?: boolean) {
+    const token = ++commitToken;
+    setTracks(data, persist);
+    if (!data.some((track) => track.coverKey && !track.coverBlob)) return;
+    void hydrateCovers(data).then((hydrated) => {
+      if (token !== commitToken) return; // 已有更新的提交，丢弃本次补封面
+      setTracks(hydrated);
+    });
   }
   /**
    * 构建开始：sources -> worker（扫描 + 解析）-> tracks
@@ -82,7 +95,7 @@ export const useLibraryStore = defineStore("library", () => {
         if (!result.length) {
           loadingDone.value = loadingTotal.value = 0;
         }
-        setTracks(result, true);
+        commitTracks(result, true);
       },
       onError: (message) => {
         loading.value = false;
@@ -93,6 +106,7 @@ export const useLibraryStore = defineStore("library", () => {
   }
 
   function disposeLibrary() {
+    commitToken++; // 使进行中的封面补全失效
     libraryWorker.cancelActive();
     setTracks([]);
   }
@@ -134,7 +148,7 @@ export const useLibraryStore = defineStore("library", () => {
     }
     await saveTrackCache({
       sourceKey: cacheKey,
-      tracks: tracks.value.map(({ file: _, ...rest }) => rest),
+      tracks: tracks.value.map(({ file: _, coverBlob: __, ...rest }) => rest),
     });
   }
 
@@ -163,7 +177,7 @@ export const useLibraryStore = defineStore("library", () => {
     libraryWorker.startBuild([launchSource], [], {
       onProgress: () => {},
       onResult: (result) => {
-        setTracks(result);
+        commitTracks(result);
         if (result.length) playerStore.playTrack(0, true);
       },
       onError: (message) => {

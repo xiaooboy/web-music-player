@@ -1,5 +1,4 @@
-import type { RuntimeMusicSource, Track } from "@/types";
-import type { CachedTrackRecord } from "@/utils/persistence";
+import type { RuntimeMusicSource, Track, TrackRecord } from "@/types";
 
 /** 主线程 → worker */
 export type LibraryWorkerRequest =
@@ -7,7 +6,7 @@ export type LibraryWorkerRequest =
       type: "build";
       token: number;
       sources: RuntimeMusicSource[];
-      cachedTracks: CachedTrackRecord[];
+      cachedTracks: TrackRecord[];
     }
   | {
       type: "cancel";
