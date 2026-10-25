@@ -4,7 +4,6 @@ import {
   readUint32,
   readUint64,
   detectImageMimeType,
-  createCoverBlob,
 } from "./shared";
 import type { Track } from "../../types";
 
@@ -23,15 +22,6 @@ function isMp4ContainerAtom(atomType: string) {
   );
 }
 
-function decodeMp4Cover(payload: Uint8Array) {
-  if (!payload.length) {
-    return {};
-  }
-
-  const mimeType = detectImageMimeType(payload);
-  return createCoverBlob(payload, mimeType);
-}
-
 function decodeMp4Text(payload: Uint8Array) {
   if (!payload.length) {
     return "";
@@ -47,6 +37,8 @@ function decodeMp4Text(payload: Uint8Array) {
 // MP4 atom 遍历
 
 function walkMp4Atoms(
+  file: File,
+  baseOffset: number,
   bytes: Uint8Array,
   start: number,
   end: number,
@@ -85,7 +77,15 @@ function walkMp4Atoms(
       const childStart =
         atomType === "meta" ? offset + headerSize + 4 : offset + headerSize;
       if (childStart <= atomEnd) {
-        walkMp4Atoms(bytes, childStart, atomEnd, nextPath, metadata);
+        walkMp4Atoms(
+          file,
+          baseOffset,
+          bytes,
+          childStart,
+          atomEnd,
+          nextPath,
+          metadata,
+        );
       }
     } else if (atomType === "mdhd" && !metadata.duration) {
       // Media Header Box: 提取时长
@@ -123,6 +123,8 @@ function walkMp4Atoms(
     } else if (path[path.length - 1] === "ilst") {
       parseMp4MetadataAtom(
         atomType,
+        file,
+        baseOffset,
         bytes,
         offset + headerSize,
         atomEnd,
@@ -136,6 +138,8 @@ function walkMp4Atoms(
 
 function parseMp4MetadataAtom(
   atomType: string,
+  file: File,
+  baseOffset: number,
   bytes: Uint8Array,
   start: number,
   end: number,
@@ -169,32 +173,47 @@ function parseMp4MetadataAtom(
     }
 
     if (childType === "data" && atomEnd >= offset + headerSize + 8) {
-      const payload = bytes.slice(offset + headerSize + 8, atomEnd);
-      if (atomType === "covr" && !metadata.coverBlob) {
-        const cover = decodeMp4Cover(payload);
-            if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
-      }
+      const payloadStart = offset + headerSize + 8;
 
-      if ((atomType === "\u00a9nam" || atomType === "nam") && !metadata.title) {
-        metadata.title = decodeMp4Text(payload);
-      }
+      if (atomType === "covr") {
+        // 封面零拷贝：按 moov 内偏移直接 file.slice 懒引用，不 new Blob 拷贝
+        if (!metadata.coverBlob) {
+          const payloadLength = atomEnd - payloadStart;
+          if (payloadLength > 0) {
+            const mimeType = detectImageMimeType(
+              bytes.subarray(payloadStart, payloadStart + payloadLength),
+            );
+            const coverFileOffset = baseOffset + payloadStart;
+            metadata.coverBlob = file.slice(
+              coverFileOffset,
+              coverFileOffset + payloadLength,
+              mimeType,
+            );
+          }
+        }
+      } else {
+        const payload = bytes.slice(payloadStart, atomEnd);
+        if ((atomType === "\u00a9nam" || atomType === "nam") && !metadata.title) {
+          metadata.title = decodeMp4Text(payload);
+        }
 
-      if (
-        (atomType === "\u00a9ART" || atomType === "aART") &&
-        !metadata.artist
-      ) {
-        metadata.artist = decodeMp4Text(payload);
-      }
+        if (
+          (atomType === "\u00a9ART" || atomType === "aART") &&
+          !metadata.artist
+        ) {
+          metadata.artist = decodeMp4Text(payload);
+        }
 
-      if ((atomType === "\u00a9alb" || atomType === "alb") && !metadata.album) {
-        metadata.album = decodeMp4Text(payload);
-      }
+        if ((atomType === "\u00a9alb" || atomType === "alb") && !metadata.album) {
+          metadata.album = decodeMp4Text(payload);
+        }
 
-      if (
-        (atomType === "\u00a9lyr" || atomType === "lyr") &&
-        !metadata.lyricsText
-      ) {
-        metadata.lyricsText = decodeMp4Text(payload);
+        if (
+          (atomType === "\u00a9lyr" || atomType === "lyr") &&
+          !metadata.lyricsText
+        ) {
+          metadata.lyricsText = decodeMp4Text(payload);
+        }
       }
     }
 
@@ -255,6 +274,6 @@ export async function parseMp4Metadata(file: File) {
   );
   const metadata: Partial<Track> = {};
 
-  walkMp4Atoms(moovBytes, 0, moovBytes.length, [], metadata);
+  walkMp4Atoms(file, moov.offset, moovBytes, 0, moovBytes.length, [], metadata);
   return metadata;
 }

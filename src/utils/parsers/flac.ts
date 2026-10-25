@@ -3,7 +3,7 @@ import {
   readUint24,
   readUint32,
   decodeVorbisCommentBlock,
-  decodeFlacPictureBlock,
+  normalizeMimeType,
 } from "./shared";
 import type { Track } from "../../types";
 
@@ -27,10 +27,60 @@ function parseFlacBlock(
   if (blockType === 4) {
     Object.assign(metadata, decodeVorbisCommentBlock(blockBytes));
   }
-  if (blockType === 6 && !metadata.coverBlob) {
-    const cover = decodeFlacPictureBlock(blockBytes);
-    if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
-  }
+}
+
+// FLAC PICTURE 块：只读头部，图片数据用 file.slice 零拷贝引用
+
+async function readFlacPictureFromFile(
+  file: File,
+  blockDataOffset: number,
+  blockLength: number,
+): Promise<{ coverBlob?: Blob }> {
+  const blockEnd = blockDataOffset + blockLength;
+  if (blockLength < 32) return {};
+
+  // 读 8 字节：picture type(4) + mime length(4)
+  const headBytes = new Uint8Array(
+    await file.slice(blockDataOffset, blockDataOffset + 8).arrayBuffer(),
+  );
+  if (headBytes.length < 8) return {};
+  const mimeLength = readUint32(headBytes, 4);
+
+  let cursor = blockDataOffset + 8;
+
+  // 读 mime 字符串（必须在块内）
+  if (cursor + mimeLength > blockEnd) return {};
+  const mimeBytes = new Uint8Array(
+    await file.slice(cursor, cursor + mimeLength).arrayBuffer(),
+  );
+  if (mimeBytes.length < mimeLength) return {};
+  const mimeType = normalizeMimeType(decodeLatin1(mimeBytes));
+  cursor += mimeLength;
+
+  // 读 description length(4)，随后跳过 description 与 16 字节图片尺寸
+  if (cursor + 4 > blockEnd) return {};
+  const descLenBytes = new Uint8Array(
+    await file.slice(cursor, cursor + 4).arrayBuffer(),
+  );
+  if (descLenBytes.length < 4) return {};
+  const descriptionLength = readUint32(descLenBytes, 0);
+  cursor += 4 + descriptionLength + 16;
+
+  if (cursor + 4 > blockEnd) return {};
+
+  // 读 image length(4)
+  const imageLenBytes = new Uint8Array(
+    await file.slice(cursor, cursor + 4).arrayBuffer(),
+  );
+  if (imageLenBytes.length < 4) return {};
+  const imageLength = readUint32(imageLenBytes, 0);
+  cursor += 4;
+
+  if (imageLength <= 0 || cursor + imageLength > blockEnd) return {};
+
+  return {
+    coverBlob: file.slice(cursor, cursor + imageLength, mimeType),
+  };
 }
 
 // FLAC 解析入口
@@ -67,10 +117,20 @@ export async function parseFlacMetadata(file: File) {
       (blockType !== 6 || !metadata.coverBlob);
 
     if (needRead) {
-      const blockBytes = new Uint8Array(
-        await file.slice(blockDataOffset, blockDataOffset + blockLength).arrayBuffer(),
-      );
-      parseFlacBlock(metadata, blockType, blockBytes);
+      if (blockType === 6) {
+        // PICTURE: 零拷贝，不把整块读入内存
+        const cover = await readFlacPictureFromFile(
+          file,
+          blockDataOffset,
+          blockLength,
+        );
+        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+      } else {
+        const blockBytes = new Uint8Array(
+          await file.slice(blockDataOffset, blockDataOffset + blockLength).arrayBuffer(),
+        );
+        parseFlacBlock(metadata, blockType, blockBytes);
+      }
     }
 
     // 前进到下一个块
