@@ -11,24 +11,21 @@ import {
 import {
   isAudioFile,
   revokeTrackResources,
-  supportsDirectoryPicker,
   ensureDirectoryPermission,
 } from "@/utils/media";
 import {
   buildCacheKeyFromSources,
   checkSourcePermissions,
-  entriesToTracks,
-  parseSource,
   initTracksFromCache,
   diffTracks,
   includesSource,
 } from "@/utils/libraryBuilder";
+import { libraryWorker } from "@/workers/libraryWorkerClient";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
 import { usePlayerStore } from "./playerStore";
 
 export const useLibraryStore = defineStore("library", () => {
-  let libraryBuildToken = 0;
   /** id 与 Track 对应关系 */
   const trackMap: TrackMap = new Map();
   const playerStore = usePlayerStore();
@@ -44,10 +41,6 @@ export const useLibraryStore = defineStore("library", () => {
 
   const tracks = shallowRef<Track[]>([]);
 
-  /** 更新构建标识 */
-  function updateBuildToken() {
-    return ++libraryBuildToken;
-  }
   /**
    * 恢复缓存的库，流程：恢复 sources->计算cacheKey->恢复tracks->启动构建
    */
@@ -64,7 +57,7 @@ export const useLibraryStore = defineStore("library", () => {
     musicSources.value = await checkSourcePermissions(persistedSources);
     persistHandleSources();
     if (musicSources.value.some((source) => source.available))
-      await startBuild();
+      startBuild();
   }
   function updateTrackMap(tracks: Track[]) {
     for (const track of tracks) {
@@ -72,39 +65,35 @@ export const useLibraryStore = defineStore("library", () => {
     }
   }
   /**
-   * 构建开始，流程：sources->entries->tracks
+   * 构建开始：sources -> worker（扫描 + 解析）-> tracks
    */
-  async function startBuild() {
+  function startBuild() {
     loading.value = true;
-    const buildToken = updateBuildToken();
-    const buildVersion = `build_verison${buildToken}`;
-    console.time(buildVersion);
-    const isStale = () => buildToken !== libraryBuildToken;
-    const entries = await parseSource(musicSources.value);
-    console.timeLog(buildVersion, "parseSource");
-    if (isStale()) return console.timeEnd(buildVersion);
-    if (!musicSources.value.length || !entries.length) {
-      loadingDone.value = loadingTotal.value = 0;
-      loading.value = false;
-      setTracks([], true);
-      return console.timeEnd(buildVersion);
-    }
-    const finalTracks = await entriesToTracks(entries, isStale, {
+    const cachedTracks = [...trackMap.values()].map(({ file: _, ...rest }) => rest);
+
+    libraryWorker.startBuild(musicSources.value, cachedTracks, {
       onProgress: ({ done, total }) => {
         loading.value = done !== total;
         loadingDone.value = done;
         loadingTotal.value = total;
       },
-      trackMap,
+      onResult: (result) => {
+        loading.value = false;
+        if (!result.length) {
+          loadingDone.value = loadingTotal.value = 0;
+        }
+        setTracks(result, true);
+      },
+      onError: (message) => {
+        loading.value = false;
+        // eslint-disable-next-line no-console
+        console.warn("音乐库构建失败:", message);
+      },
     });
-    if (!finalTracks) return console.timeEnd(buildVersion); // 当前 build 过期
-    setTracks(finalTracks, true);
-    console.timeLog(buildVersion, "entriesToTracks");
-    console.timeEnd(buildVersion);
   }
 
   function disposeLibrary() {
-    updateBuildToken();
+    libraryWorker.cancelActive();
     setTracks([]);
   }
 
@@ -170,10 +159,18 @@ export const useLibraryStore = defineStore("library", () => {
       entries: audioEntries,
     };
     musicSources.value = [launchSource];
-    const finalTracks = await entriesToTracks(audioEntries, () => false);
-    if (!finalTracks) return;
-    setTracks(finalTracks);
-    playerStore.playTrack(0, true);
+
+    libraryWorker.startBuild([launchSource], [], {
+      onProgress: () => {},
+      onResult: (result) => {
+        setTracks(result);
+        if (result.length) playerStore.playTrack(0, true);
+      },
+      onError: (message) => {
+        // eslint-disable-next-line no-console
+        console.warn("解析文件失败:", message);
+      },
+    });
   }
 
   async function reauthorizeAll() {
@@ -213,7 +210,7 @@ export const useLibraryStore = defineStore("library", () => {
       console.warn("reauthorizeAll failed", e);
     } finally {
       isReauthorizing.value = false;
-      if (needRebuild) await startBuild();
+      if (needRebuild) startBuild();
     }
   }
 

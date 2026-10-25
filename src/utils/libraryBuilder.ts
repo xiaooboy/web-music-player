@@ -3,7 +3,6 @@ import type {
   Track,
   MusicSource,
   RuntimeMusicSource,
-  TrackMap,
 } from "../types";
 import {
   clearTrackCache,
@@ -122,8 +121,9 @@ export async function entriesToTracks(
   entries: FileEntry[],
   isStale: () => boolean,
   options?: {
-    trackMap?: TrackMap;
+    cache?: Map<string, CachedTrackRecord>;
     onProgress?: (info: { done: number; total: number }) => void;
+    revokeOnStale?: boolean;
   },
 ): Promise<Track[] | undefined> {
   if (isStale()) return;
@@ -134,25 +134,28 @@ export async function entriesToTracks(
   /** tracks 可播放 */
   options?.onProgress?.({ done: 0, total: audioEntries.length });
   const lyricsLookup = await buildLyricsLookup(entries);
+  const revokeOnStale = options?.revokeOnStale ?? true;
 
   const BATCH_SIZE = 8;
   const newTracks: Track[] = [];
   const builtTracks: Track[] = [];
+
+  const abandon = (): undefined => {
+    if (revokeOnStale) revokeTrackResources(newTracks);
+    return undefined;
+  };
 
   for (
     let batchStart = 0;
     batchStart < audioEntries.length;
     batchStart += BATCH_SIZE
   ) {
-    if (isStale()) {
-      revokeTrackResources(newTracks);
-      return;
-    }
+    if (isStale()) return abandon();
 
     const batch = audioEntries.slice(batchStart, batchStart + BATCH_SIZE);
     const results = await Promise.allSettled(
       batch.map(async (entry) => {
-        const cachedTrack = options?.trackMap?.get(
+        const cachedTrack = options?.cache?.get(
           generateTrackId(entry.relativePath, entry.file),
         );
         if (
@@ -174,10 +177,7 @@ export async function entriesToTracks(
       }),
     );
 
-    if (isStale()) {
-      revokeTrackResources(newTracks);
-      return;
-    }
+    if (isStale()) return abandon();
 
     for (const result of results) {
       if (result.status === "fulfilled") {
@@ -192,10 +192,7 @@ export async function entriesToTracks(
     });
   }
 
-  if (isStale()) {
-    revokeTrackResources(newTracks);
-    return;
-  }
+  if (isStale()) return abandon();
   return defaultSort(builtTracks, "title");
 }
 /**
