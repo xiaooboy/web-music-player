@@ -54,6 +54,7 @@ function handleNavigateToAlbum(albumName: string) {
 
     <TrackTable
       v-if="favoriteStore.favoriteTracks.length"
+      scroll-key="favorites"
       :tracks="visibleTracks"
       :current-track-id="playerStore.currentTrackId"
       :is-playing="playerStore.isPlaying"

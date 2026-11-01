@@ -11,10 +11,13 @@ import { useVirtualizer } from "@tanstack/vue-virtual";
 import { Disc3, Play } from "@lucide/vue";
 import type { Album } from "../types";
 import { ensureCoverUrl } from "../utils/coverCache";
+import { useScrollRestore, readScrollOffset } from "../composables/useScrollRestore";
 
 interface Props {
   albums: Album[];
   selectedAlbumName: string;
+  /** 滚动位置记忆的 key，每个承载此网格的视图应唯一 */
+  scrollKey: string;
 }
 const ROW_GAP = 30;
 
@@ -59,6 +62,7 @@ const rowVirtualizer = useVirtualizer(
   computed(() => ({
     count: albumRows.value.length,
     getScrollElement: () => scrollRef.value,
+    initialOffset: readScrollOffset(props.scrollKey),
     estimateSize: () => colWidth.value + 50 + ROW_GAP,
     overscan: 1,
   })),
@@ -77,6 +81,8 @@ const virtualRows = computed(() =>
 );
 
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize());
+
+useScrollRestore(() => props.scrollKey, scrollRef);
 
 onMounted(() => {
   if (scrollRef.value) {

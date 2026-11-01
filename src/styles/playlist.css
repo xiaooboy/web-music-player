@@ -31,7 +31,9 @@
 /* PlaylistGrid — 网格布局 */
 .playlist-grid {
   height: 100%;
+  min-height: 0;
   padding-bottom: var(--dock-height);
+  overflow: hidden auto;
 }
 
 .playlist-browser__grid {

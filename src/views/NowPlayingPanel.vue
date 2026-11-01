@@ -22,6 +22,7 @@ import {
   computed,
   useTemplateRef,
   onMounted,
+  watchEffect,
 } from "vue";
 import type { ComponentExposed } from "vue-component-type-helpers";
 import { formatTime } from "../utils/media";
@@ -117,26 +118,25 @@ function scheduleLyricsFollow(index: number) {
     followThrottleTimeout = null;
   }, 150);
 }
-watch(
-  () => playerStore.currentTrack?.id,
-  (trackId) => {
-    const track = playerStore.currentTrack;
-    if (!trackId || !track?.coverBlob) {
-      displayCoverUrl.value = "";
-      return;
-    }
-    const url = ensureCoverUrl(trackId, track.coverBlob);
-    const img = new Image();
-    pendingCoverImg = img;
-    img.onload = img.onerror = () => {
-      if (playerStore.currentTrack?.id !== trackId) return;
-      displayCoverUrl.value = url;
-      pendingCoverImg = null;
-    };
-    img.src = url;
-  },
-  { immediate: true },
-);
+watchEffect(()=>{
+  const track = playerStore.currentTrack;
+  if(!track) return;
+  const trackId = track.id;
+  if (!track?.coverBlob) {
+    displayCoverUrl.value = "";
+    return;
+  }
+  const url = ensureCoverUrl(trackId, track.coverBlob);
+  const img = new Image();
+  pendingCoverImg = img;
+  img.onload = img.onerror = () => {
+    if (playerStore.currentTrack?.id !== trackId) return;
+    displayCoverUrl.value = url;
+    pendingCoverImg = null;
+  };
+  img.src = url;
+})
+
 watch(
   [
     () => playerStore.activeLyricsIndex,

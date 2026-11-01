@@ -4,6 +4,7 @@ import type { ComponentExposed } from "vue-component-type-helpers";
 import { Download, MoreVertical, Pencil, Play, Trash2 } from "@lucide/vue";
 import type { Playlist, Track } from "@/types";
 import { useLibraryStore } from "@/stores/libraryStore";
+import { useScrollRestore } from "../composables/useScrollRestore";
 import ContextMenu from "./ContextMenu.vue";
 import ActionSheet from "./ActionSheet.vue";
 import type { MenuItem, EventPosition } from "./ContextMenu.vue";
@@ -13,6 +14,8 @@ import { ensureCoverUrl } from "../utils/coverCache";
 const props = defineProps<{
   playlists: Playlist[];
   selectedPlaylistId?: string;
+  /** 滚动位置记忆的 key，每个承载此网格的视图应唯一 */
+  scrollKey: string;
 }>();
 
 const emit = defineEmits<{
@@ -24,6 +27,9 @@ const emit = defineEmits<{
 }>();
 
 const libraryStore = useLibraryStore();
+
+const gridRef = useTemplateRef<HTMLElement>("gridRef");
+useScrollRestore(() => props.scrollKey, gridRef);
 
 /** 歌单封面映射：取第一首歌的封面 */
 const coverUrlMap = computed(() => {
@@ -88,7 +94,7 @@ function handleMoreKeydown(event: KeyboardEvent, playlist: Playlist) {
 </script>
 
 <template>
-  <div class="playlist-grid">
+  <div ref="gridRef" class="playlist-grid scroll-borrow">
     <div class="playlist-browser__grid">
       <section
         v-for="playlist in playlists"

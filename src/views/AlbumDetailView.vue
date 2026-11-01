@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, useTemplateRef } from "vue";
 import { ArrowLeft, Disc3, MoreVertical, Pause, Play } from "@lucide/vue";
 import { formatTime } from "../utils/media";
 import type { Track } from "@/types";
@@ -7,12 +7,18 @@ import ContextMenu from "../components/ContextMenu.vue";
 import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { useHistoryBack } from "../composables/useHistoryBack";
+import { useScrollRestore } from "../composables/useScrollRestore";
 import { usePlayerStore, useAlbumStore, useUIStore } from "@/stores";
 import { ensureCoverUrl } from "../utils/coverCache";
 import SectionHeader from "@/components/SectionHeader.vue";
 const albumStore = useAlbumStore();
 const playerStore = usePlayerStore();
 const uiStore = useUIStore();
+
+const detailRef = useTemplateRef<HTMLElement>("detailRef");
+// setup 时固定 key：返回时 clearSelection() 会先清空专辑名
+const scrollKey = `album:${albumStore.selectedAlbumName}`;
+useScrollRestore(scrollKey, detailRef);
 
 const playingTrackId = computed(() => playerStore.isPlaying ? playerStore.currentTrackId : "");
 
@@ -73,7 +79,11 @@ useHistoryBack(navigateBack);
 </script>
 
 <template>
-  <section v-if="albumStore.selectedAlbum" class="album-detail scroll-borrow">
+  <section
+    v-if="albumStore.selectedAlbum"
+    ref="detailRef"
+    class="album-detail scroll-borrow"
+  >
     <SectionHeader>
       <template #left>
         <button class="icon-btn" @click="navigateBack">

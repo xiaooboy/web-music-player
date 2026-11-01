@@ -68,6 +68,7 @@ function handleNavigateToSource() {
     <SectionHeader title="歌曲" />
     <TrackTable
       v-if="libraryStore.tracks.length"
+      scroll-key="tracks"
       :tracks="visibleTracks"
       :current-track-id="playerStore.currentTrackId"
       :is-playing="playerStore.isPlaying"

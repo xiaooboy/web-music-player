@@ -7,6 +7,7 @@ import ActionSheet from "./ActionSheet.vue";
 import type { Track } from "../types";
 import { formatTime } from "../utils/media";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
+import { useScrollRestore, readScrollOffset } from "../composables/useScrollRestore";
 import { ensureCoverUrl } from "../utils/coverCache";
 
 const props = defineProps<{
@@ -14,6 +15,8 @@ const props = defineProps<{
   currentTrackId: string;
   isPlaying: boolean;
   likedTrackIdSet: Set<string>;
+  /** 滚动位置记忆的 key，每个承载此列表的视图应唯一 */
+  scrollKey: string;
 }>();
 
 const emit = defineEmits<{
@@ -73,12 +76,16 @@ const rowVirtualizer = useVirtualizer(
   computed(() => ({
     count: props.tracks.length,
     getScrollElement: () => listRef.value,
+    // 首帧就按保存的位置渲染，避免先闪一下顶部再跳回去
+    initialOffset: readScrollOffset(props.scrollKey),
     estimateSize: () => 54, // padding(5+5) + thumb(44) = 64px
     gap: 10,
     paddingStart: 5,
     overscan: 5,
   })),
 );
+
+useScrollRestore(() => props.scrollKey, listRef);
 
 // 把虚拟行与 props.tracks 合并，让模板只需一次解构
 const virtualItems = computed(() =>

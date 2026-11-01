@@ -15,6 +15,9 @@ const uiStore = useUIStore();
 const isPlaying = computed(() => playerStore.isPlaying);
 const playingTrackId = computed(() => playerStore.isPlaying ? playerStore.currentTrackId : "");
 
+// setup 时固定 key：返回时 clearSelection() 会先清空 id，不能在卸载时才读取
+const scrollKey = `playlist:${playlistStore.selectedPlaylistId}`;
+
 function handlePlay(id: string) {
   playlistStore.updatePlayingPlaylist(playlistStore.selectedPlaylistId);
   playerStore.setPlaySourceType("playlists");
@@ -56,6 +59,7 @@ useHistoryBack(navigateBack);
 
     <TrackTable
       :tracks="playlistStore.selectedPlaylistTracks"
+      :scroll-key="scrollKey"
       :current-track-id="playingTrackId"
       :is-playing="isPlaying"
       :liked-track-id-set="favoriteStore.likedTrackIdSet"

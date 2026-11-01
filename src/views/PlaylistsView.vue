@@ -151,6 +151,7 @@ function handleHeaderPopoverAction(action: () => void) {
     </div>
     <PlaylistGrid
       v-if="playlistStore.playlists.length"
+      scroll-key="playlists"
       :playlists="playlistStore.playlists"
       :selectedPlaylistId="playlistStore.selectedPlaylistId"
       @selectPlaylist="enterPlaylist"

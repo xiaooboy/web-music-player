@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { FolderPlus, FolderSymlink, Trash2, RefreshCw } from "@lucide/vue";
 import { supportsDirectoryPicker } from "../utils/media";
 import { openPicker, openWebkitDirectory } from "../utils/folder";
 import { useLibraryStore } from "../stores/libraryStore";
+import { useScrollRestore } from "../composables/useScrollRestore";
 import { showToast } from "../composables/useToast";
 import EmptyState from "../components/EmptyState.vue";
 import SectionHeader from "../components/SectionHeader.vue";
@@ -11,6 +12,9 @@ import BaseDialog from "../components/BaseDialog.vue";
 
 const isSupported = supportsDirectoryPicker();
 const libraryStore = useLibraryStore();
+
+const listRef = useTemplateRef<HTMLElement>("listRef");
+useScrollRestore("sources", listRef);
 
 // 根据环境和浏览器支持情况决定是否显示添加按钮
 const showAddButton = import.meta.env.DEV ? true : isSupported;
@@ -106,6 +110,7 @@ function confirmRemove() {
     </p>
     <div
       v-if="libraryStore.musicSources.length"
+      ref="listRef"
       class="sources__list sources__list-panel scroll-borrow"
     >
       <div

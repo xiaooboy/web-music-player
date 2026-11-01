@@ -36,6 +36,7 @@ function enterAlbum(albumName: string) {
 
     <AlbumGrid
       v-if="albumStore.albums.length"
+      scroll-key="albums"
       :albums="albumStore.albums"
       :selectedAlbumName="albumStore.selectedAlbumName"
       @selectAlbum="enterAlbum"
