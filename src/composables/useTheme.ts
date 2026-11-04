@@ -6,8 +6,8 @@ export type ThemeMode = "light" | "dark" | "system";
 const THEME_KEY = "theme-mode";
 const DARK_CLASS = "dark-theme";
 const LIGHT_CLASS = "light-theme";
-const DARK_BG = "#0b0f0c";
-const LIGHT_BG = "#ebebeb";
+const DARK_BG = "#121212";
+const LIGHT_BG = "#f7f8fa";
 
 const themeMode = shallowRef<ThemeMode>(loadThemeMode());
 

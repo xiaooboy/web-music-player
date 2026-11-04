@@ -18,3 +18,5 @@ dev-dist/
 .codex
 
 dev-docs
+
+.playwright-cli/

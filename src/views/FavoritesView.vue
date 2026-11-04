@@ -38,19 +38,20 @@ function handleNavigateToAlbum(albumName: string) {
 
 <template>
   <div class="main-panel tracks__view favorites-view">
-    <header class="tracks__searchbar">
-      <label class="search-field">
-        <Search :size="18" aria-hidden="true" />
-        <input
-          v-model="searchQuery"
-          type="search"
-          placeholder="搜索喜欢的歌曲、歌手、专辑"
-          autocomplete="off"
-        />
-      </label>
-    </header>
-
-    <SectionHeader title="收藏" />
+    <SectionHeader title="收藏">
+      <template #right>
+        <label class="search-field">
+          <Search :size="16" aria-hidden="true" />
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="搜索喜欢的歌曲、歌手、专辑"
+            autocomplete="off"
+            @keydown.enter="($event.target as HTMLInputElement).blur()"
+          />
+        </label>
+      </template>
+    </SectionHeader>
 
     <TrackTable
       v-if="favoriteStore.favoriteTracks.length"
@@ -68,8 +69,7 @@ function handleNavigateToAlbum(albumName: string) {
     />
     <EmptyState
       v-else
-      title="收藏为空"
       content="点亮心形按钮，收藏音乐。"
-    ></EmptyState>
+    />
   </div>
 </template>

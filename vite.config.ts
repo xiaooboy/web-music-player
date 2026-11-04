@@ -38,8 +38,8 @@ export default defineConfig({
         short_name: "LocalMusic",
         description:
           "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",
-        theme_color: "#0b0f0c",
-        background_color: "#0b0f0c",
+        theme_color: "#121212",
+        background_color: "#121212",
         display_override: ["window-controls-overlay", "standalone"],
         display: "standalone",
         orientation: "portrait-primary",

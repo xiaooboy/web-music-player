@@ -54,7 +54,7 @@ defineExpose({ open, close });
   background: var(--color-panel-solid);
   border: var(--card-border);
   border-radius: 16px;
-  /*box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);*/
+  box-shadow: var(--shadow-popover);
   backdrop-filter: blur(12px);
   transform: scale(0.95) translateY(20px);
   transform-origin: center center;

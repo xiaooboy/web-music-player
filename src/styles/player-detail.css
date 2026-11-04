@@ -17,12 +17,11 @@
   align-items: center;
   height: var(--dock-height);
   padding-inline: var(--shell-gap);
-  background: linear-gradient(
-    180deg,
-    var(--color-panel-translucent) 0%,
-    var(--color-background) 120%
-  );
-  backdrop-filter: blur(6px);
+  background: var(--dock-background);
+  border-top: var(--dock-border-top);
+  box-shadow: var(--shadow-dock);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
 }
 
 .player-dock__track {

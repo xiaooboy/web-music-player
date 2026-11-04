@@ -5,7 +5,7 @@
   <title>Local Music</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0b0f0c" />
+  <meta name="theme-color" content="#121212" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -23,16 +23,16 @@
       if (!isDark) {
         html.classList.remove('dark-theme');
         html.classList.add('light-theme');
-        html.style.backgroundColor = '#ebebeb';
+        html.style.backgroundColor = '#f7f8fa';
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.content = '#ebebeb';
+        if (meta) meta.content = '#f7f8fa';
       }
     })();
   </script>
   <style>
     html {
       color-scheme: dark;
-      background-color: #0b0f0c;
+      background-color: #121212;
     }
 
     .sr-only {

@@ -44,7 +44,6 @@ function enterAlbum(albumName: string) {
     />
     <EmptyState
       v-else
-      title="没有专辑"
       content="导入音乐后，自动整理专辑。"
     />
   </section>

@@ -1,299 +1,238 @@
 /*
-
-Backgrounds：1-2
-Interactive components：3-5
-Borders and separators：6-8
-Solid colors：9-10
-Accessible text：11-12
+  Radix Color System for Local Music
+  -------------------------------------------------------------
+  Step 1-2:   Backgrounds (App background, subtle/panel backgrounds)
+  Step 3-5:   Interactive components (Default, Hover, Active/Pressed)
+  Step 6-8:   Borders and separators (Subtle, Component, Hovered)
+  Step 9-10:  Solid colors (Brand primary, Solid hover)
+  Step 11-12: Accessible text (Low-contrast accessible text, High-contrast text)
 */
+
 .dark-theme {
   color-scheme: dark;
-}
-.light-theme {
-  color-scheme: light;
-}
 
-.dark-theme {
-  --accent-1: #09100a;
-  --accent-2: #111b13;
-  --accent-3: #132d18;
-  --accent-4: #113c1c;
-  --accent-5: #174a24;
-  --accent-6: #1f592d;
-  --accent-7: #266a37;
-  --accent-8: #2c7e40;
+  /* Accent (Spotify Green / Vibrant Grass) */
+  --accent-1: #09130c;
+  --accent-2: #101c13;
+  --accent-3: #132d1a;
+  --accent-4: #123d20;
+  --accent-5: #174e2a;
+  --accent-6: #1e6035;
+  --accent-7: #267541;
+  --accent-8: #2f8e4f;
   --accent-9: #1ed760;
-  --accent-10: #0c5;
-  --accent-11: #26da63;
-  --accent-12: #aef4b9;
+  --accent-10: #1bc456;
+  --accent-11: #2bee76;
+  --accent-12: #bdf8cb;
 
-  --accent-a1: #008f0002;
-  --accent-a2: #81fb960d;
-  --accent-a3: #4bff6c20;
-  --accent-a4: #2bff6130;
-  --accent-a5: #3cfe6e3f;
-  --accent-a6: #4bfe774f;
-  --accent-a7: #52ff7e61;
-  --accent-a8: #53ff7d76;
-  --accent-a9: #22ff71d5;
-  --accent-a10: #00ff68c9;
-  --accent-a11: #2bff73d8;
+  /* Accent Alpha */
+  --accent-a1: #00e04005;
+  --accent-a2: #60ff8010;
+  --accent-a3: #4bff6c22;
+  --accent-a4: #2bff6133;
+  --accent-a5: #3cfe6e44;
+  --accent-a6: #4bfe7755;
+  --accent-a7: #52ff7e6a;
+  --accent-a8: #53ff7d80;
+  --accent-a9: #22ff71d6;
+  --accent-a10: #00ff68c8;
+  --accent-a11: #2bff73dc;
   --accent-a12: #b6fec0f4;
 
-  --accent-contrast: #132717;
-  --accent-surface: #17271a80;
+  --accent-contrast: #000000;
+  --accent-surface: rgba(30, 215, 96, 0.12);
   --accent-indicator: #1ed760;
   --accent-track: #1ed760;
-}
 
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    .dark,
-    .dark-theme {
-      --accent-1: oklch(16.3% 0.0163 148.7);
-      --accent-2: oklch(20.8% 0.0205 148.7);
-      --accent-3: oklch(26.9% 0.0497 148.7);
-      --accent-4: oklch(31.7% 0.0734 148.7);
-      --accent-5: oklch(36.4% 0.0846 148.7);
-      --accent-6: oklch(41.3% 0.0939 148.7);
-      --accent-7: oklch(46.7% 0.1062 148.7);
-      --accent-8: oklch(52.7% 0.1233 148.7);
-      --accent-9: oklch(77% 0.2124 148.7);
-      --accent-10: oklch(73.5% 0.2124 148.7);
-      --accent-11: oklch(78% 0.2124 148.7);
-      --accent-12: oklch(90.5% 0.1061 148.7);
+  /* Gray (Pure Neutral Charcoal / Dark Gray - 纯正深黑，无偏色) */
+  --color-background: #121212;
+  --gray-1: #121212;
+  --gray-2: #181818;
+  --gray-3: #202020;
+  --gray-4: #282828;
+  --gray-5: #323232;
+  --gray-6: #3c3c3c;
+  --gray-7: #4a4a4a;
+  --gray-8: #646464;
+  --gray-9: #767676;
+  --gray-10: #888888;
+  --gray-11: #b0b0b0;
+  --gray-12: #eeeeee;
 
-      --accent-a1: color(display-p3 0 0.8431 0 / 0.005);
-      --accent-a2: color(display-p3 0.6 1 0.6784 / 0.05);
-      --accent-a3: color(display-p3 0.4667 1 0.502 / 0.121);
-      --accent-a4: color(display-p3 0.4314 1 0.4549 / 0.184);
-      --accent-a5: color(display-p3 0.4706 1 0.502 / 0.242);
-      --accent-a6: color(display-p3 0.5137 1 0.5373 / 0.305);
-      --accent-a7: color(display-p3 0.5137 1 0.5451 / 0.375);
-      --accent-a8: color(display-p3 0.5294 1 0.5529 / 0.455);
-      --accent-a9: color(display-p3 0.4745 1 0.5176 / 0.821);
-      --accent-a10: color(display-p3 0.451 1 0.4902 / 0.775);
-      --accent-a11: color(display-p3 0.4863 1 0.5216 / 0.834);
-      --accent-a12: color(display-p3 0.7804 1 0.7843 / 0.946);
-
-      --accent-contrast: #132717;
-      --accent-surface: color(display-p3 0.102 0.1412 0.102 / 0.5);
-      --accent-indicator: oklch(77% 0.2124 148.7);
-      --accent-track: oklch(77% 0.2124 148.7);
-    }
-  }
-}
-.dark-theme {
-  --gray-1: #0e0e0e;
-  --gray-2: #191919;
-  --gray-3: #222;
-  --gray-4: #2a2a2a;
-  --gray-5: #313131;
-  --gray-6: #3a3a3a;
-  --gray-7: #484848;
-  --gray-8: #616161;
-  --gray-9: #6f6f6f;
-  --gray-10: #7c7c7c;
-  --gray-11: #b4b4b4;
-  --gray-12: #eee;
-
-  --gray-a1: #cb008c04;
-  --gray-a2: #f9b9ea0f;
-  --gray-a3: #f6d1ed19;
-  --gray-a4: #fbe0f421;
-  --gray-a5: #fee8f828;
-  --gray-a6: #fbebf732;
-  --gray-a7: #fff3fc40;
-  --gray-a8: #fff7fd5a;
-  --gray-a9: #fef8fd69;
-  --gray-a10: #fdf9fc77;
-  --gray-a11: #fffcfeb1;
-  --gray-a12: #fefefeee;
+  /* Gray Alpha (中性纯白半透，不掺杂任何绿色像素) */
+  --gray-a1: rgba(255, 255, 255, 0.02);
+  --gray-a2: rgba(255, 255, 255, 0.04);
+  --gray-a3: rgba(255, 255, 255, 0.07);
+  --gray-a4: rgba(255, 255, 255, 0.11);
+  --gray-a5: rgba(255, 255, 255, 0.16);
+  --gray-a6: rgba(255, 255, 255, 0.22);
+  --gray-a7: rgba(255, 255, 255, 0.32);
+  --gray-a8: rgba(255, 255, 255, 0.44);
+  --gray-a9: rgba(255, 255, 255, 0.58);
+  --gray-a10: rgba(255, 255, 255, 0.68);
+  --gray-a11: rgba(255, 255, 255, 0.82);
+  --gray-a12: rgba(255, 255, 255, 0.95);
 
   --gray-contrast: #ffffff;
-  --gray-surface: rgba(0, 0, 0, 0.05);
-  --gray-indicator: #6f6f6f;
-  --gray-track: #6f6f6f;
-}
+  --gray-surface: rgba(255, 255, 255, 0.05);
+  --gray-indicator: #646464;
+  --gray-track: #323232;
 
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    .dark-theme {
-      --gray-1: oklch(16.3% 0 none);
-      --gray-2: oklch(21.2% 0 none);
-      --gray-3: oklch(25.4% 0 none);
-      --gray-4: oklch(28.4% 0 none);
-      --gray-5: oklch(31.3% 0 none);
-      --gray-6: oklch(35% 0 none);
-      --gray-7: oklch(40.1% 0 none);
-      --gray-8: oklch(49.2% 0 none);
-      --gray-9: oklch(54% 0 none);
-      --gray-10: oklch(58.6% 0 none);
-      --gray-11: oklch(77% 0 none);
-      --gray-12: oklch(94.9% 0 none);
+  /* Semantic Layer - Dark */
+  --color-surface-subtle: rgba(255, 255, 255, 0.02);
+  --color-surface-card: rgba(255, 255, 255, 0.04);
+  --color-surface-card-hover: rgba(255, 255, 255, 0.07);
+  --color-surface-card-active: rgba(255, 255, 255, 0.1);
+  --color-surface-elevated: #1a1a1a;
+  --color-surface-interactive: rgba(255, 255, 255, 0.05);
+  --color-surface-interactive-hover: rgba(255, 255, 255, 0.09);
+  --color-surface-interactive-active: rgba(255, 255, 255, 0.14);
 
-      --gray-a1: color(display-p3 0.9216 0 0.9216 / 0.009);
-      --gray-a2: color(display-p3 0.9922 0.7882 0.9922 / 0.054);
-      --gray-a3: color(display-p3 0.9961 0.8784 0.9961 / 0.091);
-      --gray-a4: color(display-p3 0.9961 0.9137 0.9961 / 0.124);
-      --gray-a5: color(display-p3 0.9961 0.9333 0.9961 / 0.153);
-      --gray-a6: color(display-p3 1 0.949 1 / 0.19);
-      --gray-a7: color(display-p3 1 0.9647 1 / 0.247);
-      --gray-a8: color(display-p3 1 0.9765 1 / 0.35);
-      --gray-a9: color(display-p3 1 0.9843 1 / 0.408);
-      --gray-a10: color(display-p3 1 0.9882 1 / 0.461);
-      --gray-a11: color(display-p3 1 0.9922 1 / 0.692);
-      --gray-a12: color(display-p3 1 1 1 / 0.931);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.11);
+  --border-hover: rgba(255, 255, 255, 0.2);
+  --border-focus: var(--accent-9);
 
-      --gray-contrast: #ffffff;
-      --gray-surface: color(display-p3 0 0 0 / 5%);
-      --gray-indicator: oklch(54% 0 none);
-      --gray-track: oklch(54% 0 none);
-    }
-  }
-}
-.dark-theme {
-  --color-background: #0b0f0c;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-popover: 0 12px 36px rgba(0, 0, 0, 0.65);
+  --shadow-dock: 0 -4px 24px rgba(0, 0, 0, 0.55);
+
+  --dock-background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(18, 18, 18, 0.45) 40%,
+    rgba(18, 18, 18, 0.78) 100%
+  );
+  --dock-border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  /* Sidebar - Dark: 炭黑分栏质感，微光浮层 */
+  --sidebar-background: #0d0e0f;
+  --sidebar-border-right: 1px solid rgba(255, 255, 255, 0.06);
+  --sidebar-item-active-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-item-hover-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-item-active-color: var(--accent);
+  --sidebar-item-active-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .light-theme {
-  --accent-1: #f9fffa;
+  color-scheme: light;
+
+  /* Accent (High-contrast Fresh Emerald / Grass) */
+  --accent-1: #fbfefb;
   --accent-2: #f3fcf4;
-  --accent-3: #e1fae4;
-  --accent-4: #cef5d3;
-  --accent-5: #b7efbf;
-  --accent-6: #99e6a6;
-  --accent-7: #6dd884;
-  --accent-8: #00c54f;
-  --accent-9: #1ed760;
-  --accent-10: #0c5;
-  --accent-11: #008521;
-  --accent-12: #074019;
+  --accent-3: #e4f9e7;
+  --accent-4: #d1f4d6;
+  --accent-5: #bbedc3;
+  --accent-6: #9de3a7;
+  --accent-7: #75d487;
+  --accent-8: #3eb95c;
+  --accent-9: #16a34a;
+  --accent-10: #15803d;
+  --accent-11: #15803d; /* WCAG AA accessible contrast on white */
+  --accent-12: #14532d;
 
-  --accent-a1: #00ff2b06;
-  --accent-a2: #00c0160c;
-  --accent-a3: #00d51a1e;
-  --accent-a4: #00cb1b31;
-  --accent-a5: #00c71d48;
-  --accent-a6: #00c12166;
-  --accent-a7: #00bb2992;
-  --accent-a8: #00c54f;
-  --accent-a9: #00d24be1;
-  --accent-a10: #00cc55;
-  --accent-a11: #008521;
-  --accent-a12: #003b13f8;
+  /* Accent Alpha */
+  --accent-a1: #00c02005;
+  --accent-a2: #00b8180c;
+  --accent-a3: #00ca1b1c;
+  --accent-a4: #00be1b2f;
+  --accent-a5: #00b61d44;
+  --accent-a6: #00b12160;
+  --accent-a7: #00a8278a;
+  --accent-a8: #00a72ed0;
+  --accent-a9: #16a34a;
+  --accent-a10: #15803d;
+  --accent-a11: #15803d;
+  --accent-a12: #14532df4;
 
-  --accent-contrast: #132717;
-  --accent-surface: #f0fbf1cc;
-  --accent-indicator: #1ed760;
-  --accent-track: #1ed760;
-}
+  --accent-contrast: #ffffff;
+  --accent-surface: rgba(22, 163, 74, 0.1);
+  --accent-indicator: #16a34a;
+  --accent-track: #16a34a;
 
-@supports (color: color(display-p3 1 1 1)) {
-  @media (color-gamut: p3) {
-    .light-theme {
-      --accent-1: oklch(99.4% 0.0087 148.7);
-      --accent-2: oklch(98.2% 0.015 148.7);
-      --accent-3: oklch(96.1% 0.038 148.7);
-      --accent-4: oklch(93.4% 0.0606 148.7);
-      --accent-5: oklch(90.1% 0.0867 148.7);
-      --accent-6: oklch(85.8% 0.1168 148.7);
-      --accent-7: oklch(79.8% 0.1553 148.7);
-      --accent-8: oklch(71.7% 0.2124 148.7);
-      --accent-9: oklch(77% 0.2124 148.7);
-      --accent-10: oklch(73.5% 0.2124 148.7);
-      --accent-11: oklch(52.7% 0.2115 148.7);
-      --accent-12: oklch(32.7% 0.0873 148.7);
+  /* Gray (Clean Slate / Neutral Crisp Gray) */
+  --color-background: #f7f8fa;
+  --gray-1: #ffffff;
+  --gray-2: #f3f4f6;
+  --gray-3: #e5e7eb;
+  --gray-4: #d1d5db;
+  --gray-5: #9ca3af;
+  --gray-6: #6b7280;
+  --gray-7: #4b5563;
+  --gray-8: #374151;
+  --gray-9: #1f2937;
+  --gray-10: #111827;
+  --gray-11: #4b5563; /* Secondary text - crisp, non-faded */
+  --gray-12: #0f172a; /* High contrast heading */
 
-      --accent-a1: color(display-p3 0.0196 1 0.0196 / 0.02);
-      --accent-a2: color(display-p3 0.0235 0.7098 0.0235 / 0.04);
-      --accent-a3: color(display-p3 0.0118 0.7647 0.0118 / 0.099);
-      --accent-a4: color(display-p3 0.0039 0.7333 0.0039 / 0.161);
-      --accent-a5: color(display-p3 0.0039 0.702 0.0039 / 0.236);
-      --accent-a6: color(display-p3 0.0039 0.6863 0.0275 / 0.334);
-      --accent-a7: color(display-p3 0.0039 0.6588 0.0353 / 0.467);
-      --accent-a8: color(display-p3 0 0.6353 0.0314 / 0.651);
-      --accent-a9: color(display-p3 0 0.7216 0.0588 / 0.604);
-      --accent-a10: color(display-p3 0 0.6706 0.051 / 0.64);
-      --accent-a11: color(display-p3 0.0431 0.4 0 / 0.808);
-      --accent-a12: color(display-p3 0 0.1569 0.0078 / 0.895);
-
-      --accent-contrast: #132717;
-      --accent-surface: color(display-p3 0.9451 0.9843 0.9451 / 0.8);
-      --accent-indicator: oklch(77% 0.2124 148.7);
-      --accent-track: oklch(77% 0.2124 148.7);
-    }
-  }
-}
-.light-theme {
-  --gray-1: #e7e7e7;
-  --gray-2: #e1e1e1;
-  --gray-3: #d7d7d7;
-  --gray-4: #cecece;
-  --gray-5: #c5c5c5;
-  --gray-6: #bcbcbc;
-  --gray-7: #b0b0b0;
-  --gray-8: #9d9d9d;
-  --gray-9: #6f6f6f;
-  --gray-10: #656565;
-  --gray-11: #4a4a4a;
-  --gray-12: #1f1f1f;
-
-  --gray-a1: #00000004;
-  --gray-a2: #0000000b;
-  --gray-a3: #00000016;
-  --gray-a4: #0000001f;
-  --gray-a5: #00000029;
-  --gray-a6: #00000033;
-  --gray-a7: #00000040;
-  --gray-a8: #00000055;
-  --gray-a9: #00000087;
-  --gray-a10: #00000091;
-  --gray-a11: #000000af;
-  --gray-a12: #000000dd;
+  /* Gray Alpha */
+  --gray-a1: rgba(0, 0, 0, 0.02);
+  --gray-a2: rgba(0, 0, 0, 0.04);
+  --gray-a3: rgba(0, 0, 0, 0.07);
+  --gray-a4: rgba(0, 0, 0, 0.11);
+  --gray-a5: rgba(0, 0, 0, 0.18);
+  --gray-a6: rgba(0, 0, 0, 0.28);
+  --gray-a7: rgba(0, 0, 0, 0.45);
+  --gray-a8: rgba(0, 0, 0, 0.62);
+  --gray-a9: rgba(0, 0, 0, 0.78);
+  --gray-a10: rgba(0, 0, 0, 0.88);
+  --gray-a11: rgba(15, 23, 42, 0.72);
+  --gray-a12: rgba(15, 23, 42, 0.95);
 
   --gray-contrast: #ffffff;
-  --gray-surface: #ffffffcc;
-  --gray-indicator: #6f6f6f;
-  --gray-track: #6f6f6f;
+  --gray-surface: rgba(0, 0, 0, 0.04);
+  --gray-indicator: #6b7280;
+  --gray-track: #d1d5db;
+
+  /* Semantic Layer - Light */
+  --color-surface-subtle: #f3f4f6;
+  --color-surface-card: #ffffff;
+  --color-surface-card-hover: #f9fafb;
+  --color-surface-card-active: #f3f4f6;
+  --color-surface-elevated: #ffffff;
+  --color-surface-interactive: #eef0f3;
+  --color-surface-interactive-hover: #e2e5e9;
+  --color-surface-interactive-active: #d6d9df;
+
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.09);
+  --border-hover: rgba(0, 0, 0, 0.16);
+  --border-focus: var(--accent-9);
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-popover: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-dock: 0 -4px 20px rgba(0, 0, 0, 0.06);
+
+  --dock-background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.7) 40%,
+    rgba(247, 248, 250, 0.8) 100%
+  );
+  --dock-border-top: 1px solid rgba(0, 0, 0, 0.06);
+
+  /* Sidebar - Light: 清新浅灰底分栏，纯白悬浮卡片胶囊，hover 与 active 背景一致 */
+  --sidebar-background: #edf0f4;
+  --sidebar-border-right: 1px solid rgba(0, 0, 0, 0.06);
+  --sidebar-item-active-bg: #ffffff;
+  --sidebar-item-hover-bg: #ffffff;
+  --sidebar-item-active-color: var(--accent);
+  --sidebar-item-active-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+/* Wide Gamut Display P3 enhancements */
 @supports (color: color(display-p3 1 1 1)) {
   @media (color-gamut: p3) {
+    .dark-theme {
+      --accent-9: oklch(77% 0.2124 148.7);
+      --accent-10: oklch(73.5% 0.2124 148.7);
+      --accent-11: oklch(80% 0.2124 148.7);
+    }
+
     .light-theme {
-      --gray-1: oklch(92.7% 0 none);
-      --gray-2: oklch(91.1% 0 none);
-      --gray-3: oklch(88% 0 none);
-      --gray-4: oklch(85.2% 0 none);
-      --gray-5: oklch(82.5% 0 none);
-      --gray-6: oklch(79.6% 0 none);
-      --gray-7: oklch(75.8% 0 none);
-      --gray-8: oklch(69.6% 0 none);
-      --gray-9: oklch(54% 0 none);
-      --gray-10: oklch(50.6% 0 none);
-      --gray-11: oklch(40.7% 0 none);
-      --gray-12: oklch(24% 0 none);
-
-      --gray-a1: color(display-p3 0 0 0 / 0.017);
-      --gray-a2: color(display-p3 0 0 0 / 0.0426);
-      --gray-a3: color(display-p3 0 0 0 / 0.0851);
-      --gray-a4: color(display-p3 0 0 0 / 0.1234);
-      --gray-a5: color(display-p3 0 0 0 / 0.1617);
-      --gray-a6: color(display-p3 0 0 0 / 0.2);
-      --gray-a7: color(display-p3 0 0 0 / 0.2511);
-      --gray-a8: color(display-p3 0 0 0 / 0.3319);
-      --gray-a9: color(display-p3 0 0 0 / 0.5277);
-      --gray-a10: color(display-p3 0 0 0 / 0.5702);
-      --gray-a11: color(display-p3 0 0 0 / 0.6851);
-      --gray-a12: color(display-p3 0 0 0 / 0.8681);
-
-      --gray-contrast: #ffffff;
-      --gray-surface: color(display-p3 1 1 1 / 80%);
-      --gray-indicator: oklch(54% 0 none);
-      --gray-track: oklch(54% 0 none);
+      --accent-9: oklch(62% 0.18 148.7);
+      --accent-10: oklch(56% 0.18 148.7);
+      --accent-11: oklch(52% 0.18 148.7);
     }
   }
-}
-.light-theme {
-  --color-background: #ebebeb;
 }

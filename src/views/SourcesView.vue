@@ -142,7 +142,6 @@ function confirmRemove() {
     </div>
     <EmptyState
       v-else
-      title="没有音乐源"
       content="添加文件夹后，生成播放列表。"
     />
 

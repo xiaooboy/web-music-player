@@ -17,7 +17,7 @@ const slots = useSlots();
         <h2>{{ title }}</h2>
       </slot>
     </div>
-    <div class="section-header__right">
+    <div class="section-header__right" v-if="slots.right">
       <slot name="right" />
     </div>
   </div>
@@ -30,13 +30,14 @@ const slots = useSlots();
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
-  /*justify-content: space-between;*/
-  align-items: center;
-  height: 42px;
+  justify-content: space-between;
+  gap: 16px;
+  height: 44px;
+  margin-bottom: 8px;
   background-color: var(--color-background);
 }
 .section-header__left {
-  margin-right: 12px;
+  margin-right: 0;
 }
 .section-header h2 {
   font-size: var(--text-lg);
@@ -46,5 +47,11 @@ const slots = useSlots();
 }
 .section-header__title {
   flex: 1;
+  min-width: 0;
+}
+.section-header__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 </style>

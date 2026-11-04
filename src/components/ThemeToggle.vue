@@ -23,8 +23,6 @@ const onModeClick = (modeValue: ThemeMode) => {
   }
   setThemeMode(finalModeValue);
 };
-
-
 </script>
 
 <template>
@@ -46,7 +44,7 @@ const onModeClick = (modeValue: ThemeMode) => {
       type="button"
       @click="onModeClick(mode.value)"
     >
-      <component :is="mode.icon" :size="20" />
+      <component :is="mode.icon" :size="18" />
     </button>
   </div>
 </template>
@@ -54,37 +52,56 @@ const onModeClick = (modeValue: ThemeMode) => {
 <style scoped>
 .theme-toggle {
   display: flex;
-  gap: 6px;
   align-items: center;
-  padding: 8px 10px;
-  /*background: var(--gray-a3);*/
-  border-radius: 8px;
+  justify-content: center;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  gap: 6px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-wrap: nowrap;
 }
 
 .theme-toggle--collapsed {
   gap: 0;
-  background: transparent;
-  justify-content: center;
+  padding: 0;
   width: 100%;
 }
 
 .theme-toggle__btn {
   flex-shrink: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
   color: var(--color-muted-text);
-  border-radius: 6px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
   transition:
+    width 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+    min-width 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
     background 0.15s ease,
     color 0.15s ease;
 }
 
-/* 折叠时隐藏非激活按钮 */
+/* 折叠时非激活按钮平滑收缩，高度和容器绝不突变 */
 .theme-toggle--collapsed .theme-toggle__btn:not(.theme-toggle__btn--active) {
-  display: none;
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .theme-toggle--collapsed .theme-toggle__btn--active {
@@ -93,15 +110,15 @@ const onModeClick = (modeValue: ThemeMode) => {
 
 .theme-toggle__btn:hover {
   color: var(--color-text);
-  background: var(--gray-a4);
+  background: var(--color-surface-interactive-hover);
 }
 
 .theme-toggle__btn--active {
-  color: var(--accent-deep);
-  /*background: var(--gray-a4);*/
+  color: var(--accent);
+  background: var(--accent-surface);
 }
 
 .theme-toggle__btn--active:hover {
-  color: var(--accent-deep);
+  color: var(--accent);
 }
 </style>
