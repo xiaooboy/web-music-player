@@ -159,9 +159,12 @@ export async function entriesToTracks(
         const cachedTrack = options?.cache?.get(
           generateTrackId(entry.relativePath, entry.file),
         );
+        // 如果缓存存在且文件未修改，且已有封面 key/blob，直接复用缓存；若缺失封面则重新解析以自愈补全
+        const hasCover = Boolean(cachedTrack?.coverKey || cachedTrack?.coverBlob);
         if (
           cachedTrack &&
-          entry.file.lastModified === cachedTrack.lastModified
+          entry.file.lastModified === cachedTrack.lastModified &&
+          hasCover
         ) {
           return {
             ...cachedTrack,

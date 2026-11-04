@@ -71,10 +71,10 @@ export const useLibraryStore = defineStore("library", () => {
   function commitTracks(data: Track[], persist?: boolean) {
     const token = ++commitToken;
     setTracks(data, persist);
-    if (!data.some((track) => track.coverKey && !track.coverBlob)) return;
-    void hydrateCovers(data).then((hydrated) => {
+    if (!tracks.value.some((track) => track.coverKey && !track.coverBlob)) return;
+    void hydrateCovers(tracks.value).then((hydrated) => {
       if (token !== commitToken) return; // 已有更新的提交，丢弃本次补封面
-      setTracks(hydrated);
+      setTracks(hydrated, persist);
     });
   }
   /**
@@ -233,10 +233,21 @@ export const useLibraryStore = defineStore("library", () => {
    * @param persist 是否持久化缓存
    */
   function setTracks(data: Track[], persist?: boolean) {
-    const { removed } = diffTracks(tracks.value, data);
-    tracks.value = data;
+    // 合并已有曲目的有效资源（如封面 Blob），避免 Worker 重推结果时覆盖已就绪的封面
+    const mergedData = data.map((track) => {
+      const existing = trackMap.get(track.id);
+      if (!existing) return track;
+      return {
+        ...track,
+        coverBlob: track.coverBlob || existing.coverBlob,
+        coverKey: track.coverKey || existing.coverKey,
+      };
+    });
+
+    const { removed } = diffTracks(tracks.value, mergedData);
+    tracks.value = mergedData;
     trackMap.clear();
-    updateTrackMap(data);
+    updateTrackMap(mergedData);
     revokeTrackResources(removed);
     if (persist) persistTracks(buildCacheKeyFromSources(musicSources.value));
   }

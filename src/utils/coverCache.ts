@@ -21,7 +21,6 @@ export function ensureCoverUrl(key: string, coverBlob?: Blob): string {
   if (cached) return cached;
 
   if (!coverBlob) {
-    urlMap.set(key, "");
     return "";
   }
 
