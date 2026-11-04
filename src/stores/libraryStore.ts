@@ -244,10 +244,38 @@ export const useLibraryStore = defineStore("library", () => {
       };
     });
 
-    const { removed } = diffTracks(tracks.value, mergedData);
-    tracks.value = mergedData;
+    // 同专辑封面互助补齐：如果同专辑中有任意一首有 coverBlob 或 coverKey，为同专辑其他缺失曲目补齐
+    const albumCoverMap = new Map<string, { blob?: Blob; key?: string }>();
+    for (const track of mergedData) {
+      if ((track.coverBlob || track.coverKey) && track.album && track.album !== "未知专辑") {
+        const albumKey = track.album.trim().toLowerCase();
+        const existing = albumCoverMap.get(albumKey);
+        albumCoverMap.set(albumKey, {
+          blob: track.coverBlob || existing?.blob,
+          key: track.coverKey || existing?.key,
+        });
+      }
+    }
+
+    const fullyPatchedData = mergedData.map((track) => {
+      if ((!track.coverBlob || !track.coverKey) && track.album && track.album !== "未知专辑") {
+        const albumKey = track.album.trim().toLowerCase();
+        const shared = albumCoverMap.get(albumKey);
+        if (shared) {
+          return {
+            ...track,
+            coverBlob: track.coverBlob || shared.blob,
+            coverKey: track.coverKey || shared.key,
+          };
+        }
+      }
+      return track;
+    });
+
+    const { removed } = diffTracks(tracks.value, fullyPatchedData);
+    tracks.value = fullyPatchedData;
     trackMap.clear();
-    updateTrackMap(mergedData);
+    updateTrackMap(fullyPatchedData);
     revokeTrackResources(removed);
     if (persist) persistTracks(buildCacheKeyFromSources(musicSources.value));
   }
