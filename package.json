@@ -2,6 +2,7 @@
   "name": "local-music",
   "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@12.18.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
