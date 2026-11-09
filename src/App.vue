@@ -15,6 +15,9 @@ import SourcesView from "./views/SourcesView.vue";
 import TracksView from "./views/TracksView.vue";
 import ToastContainer from "./components/ToastContainer.vue";
 import { storeToRefs } from "pinia";
+import TitleBar from "./components/TitleBar.vue";
+
+const isTauri = __IS_TAURI__;
 
 const playerStore = usePlayerStore();
 const libraryStore = useLibraryStore();
@@ -112,7 +115,8 @@ function handleContextMenuBlock(event: MouseEvent) {
 </script>
 
 <template>
-  <div class="region-bar"></div>
+  <TitleBar v-if="isTauri" />
+  <div v-else class="region-bar"></div>
   <div
     class="app-shell"
     role="application"

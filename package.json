@@ -2,11 +2,12 @@
   "name": "local-music",
   "private": true,
   "version": "1.0.0",
-  "packageManager": "pnpm@11.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:tauri": "vite --mode tauri",
     "build": "vue-tsc --noEmit && vite build",
+    "build:tauri": "vue-tsc --noEmit && vite build --mode tauri",
     "preview": "vite build && wrangler dev",
     "deploy": "vite build && wrangler deploy",
     "lint:css": "stylelint \"src/**/*.{css,vue}\"",

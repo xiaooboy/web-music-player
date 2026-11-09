@@ -34,6 +34,8 @@ import ActionSheet from "../components/ActionSheet.vue";
 import { useTrackContextMenu } from "../composables/useTrackContextMenu";
 import { ensureCoverUrl } from "../utils/coverCache";
 import ChangeableImg from "@/components/ChangeableImg.vue";
+import WindowControls from "../components/WindowControls.vue";
+const isTauri = __IS_TAURI__;
 const VOLUME_POPOVER_ID = crypto.randomUUID();
 
 const playerStore = usePlayerStore();
@@ -51,6 +53,13 @@ const isCurrentTrackLiked = computed(() =>
 
 const lyricsScrollRef = useTemplateRef("lyricsScrollRef");
 const { menuProps, handleClickTrigger, isSmallScreen } = useTrackContextMenu();
+
+function handleHeadDblClick(e: MouseEvent) {
+  if (!isTauri) return;
+  if ((e.target as HTMLElement).closest(".icon-btn, .window-controls__btn")) return;
+  const tauri = (window as any).__TAURI__;
+  tauri?.window?.getCurrentWindow?.()?.toggleMaximize?.();
+}
 
 function handleMoreClick(event: MouseEvent) {
   const track = playerStore.currentTrack;
@@ -185,7 +194,7 @@ watch(
         ></div>
       </Transition>
 
-      <header class="now-playing__head">
+      <header class="now-playing__head" :class="{ 'now-playing__head--tauri': isTauri }" data-tauri-drag-region @dblclick="handleHeadDblClick">
         <button
           class="icon-btn"
           type="button"
@@ -195,6 +204,7 @@ watch(
         >
           <ChevronDown :size="20" />
         </button>
+        <WindowControls v-if="isTauri" class="now-playing__window-controls" />
       </header>
 
       <div class="now-playing__body">

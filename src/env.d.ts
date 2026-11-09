@@ -13,6 +13,9 @@ declare global {
   interface Window {
     launchQueue?: LaunchQueue;
   }
+
+  /** Injected by Vite: true when started with `--mode tauri` (pnpm dev:tauri / build:tauri). */
+  const __IS_TAURI__: boolean;
 }
 
 export {};

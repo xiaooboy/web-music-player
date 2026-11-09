@@ -11,119 +11,131 @@ import path from "node:path";
 const repo = process.env.GITHUB_REPOSITORY?.split("/")[1];
 const isProjectPage = process.env.DEPLOY_TO_GH_PAGES === "true" && !!repo;
 const base = isProjectPage ? `/${repo}/` : "/";
-
-export default defineConfig({
-  base,
-  plugins: [
-    vue(),
-    ...(!isProjectPage ? [cloudflare()] : []),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: [
-        "favicon.ico",
-        "favicon.png",
-        "favicon.svg",
-        "icons/apple-touch-icon.png",
-        "icons/icon-32.png",
-        "icons/icon-48.png",
-        "icons/icon-64.png",
-        "icons/icon-192.png",
-        "icons/icon-512.png",
-        "icons/maskable-192.png",
-        "icons/maskable-512.png",
-      ],
-      manifest: {
-        id: base,
-        name: `Local Music${process.env.NODE_ENV === "development" ? " Dev" : ""}`,
-        short_name: "LocalMusic",
-        description:
-          "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",
-        theme_color: "#121212",
-        background_color: "#121212",
-        display_override: ["window-controls-overlay", "standalone"],
-        display: "standalone",
-        orientation: "portrait-primary",
-        start_url: base,
-        scope: base,
-        lang: "zh-CN",
-        icons: [
-          {
-            src: "icons/icon-192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any",
-          },
-          {
-            src: "icons/icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any",
-          },
-          {
-            src: "icons/maskable-192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "maskable",
-          },
-          {
-            src: "icons/maskable-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
-        ],
-        file_handlers: [
-          {
-            action: base,
-            accept: {
-              "audio/*": [
-                ".mp3",
-                ".wav",
-                ".flac",
-                ".m4a",
-                ".aac",
-                ".ogg",
-                ".opus",
-                ".webm",
-              ],
-            },
-          },
-        ],
-      },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        navigateFallbackDenylist: [
-          /^\/__/,
-          /\/.*\.(?:mp3|wav|flac|m4a|aac|ogg|opus|webm)$/,
-        ],
-      },
-      devOptions: {
-        enabled: false,
-      },
-    }),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "src"),
+export default defineConfig(({ mode }) => {
+  const __IS_TAURI__ = mode === "tauri";
+  const enableCloudflare =
+    !__IS_TAURI__ && !isProjectPage && process.env.NODE_ENV === "production";
+  const enablePWA = !__IS_TAURI__;
+  return {
+    base,
+    define: {
+      __IS_TAURI__,
     },
-  },
-  build: {
-    rolldownOptions: {
-      output: {
-        chunkFileNames: "assets/[name]-[hash].js",
-        codeSplitting: {
-          groups: [
+    plugins: [
+      vue(),
+      ...(enableCloudflare ? [cloudflare()] : []),
+      // Always register the plugin so `virtual:pwa-register` always resolves.
+      // `disable` makes it a no-op (no SW, no manifest injection, no-op registerSW)
+      // instead of removing it, which would break the import in main.ts.
+      VitePWA({
+        disable: !enablePWA,
+        registerType: "autoUpdate",
+        includeAssets: [
+          "favicon.ico",
+          "favicon.png",
+          "favicon.svg",
+          "icons/apple-touch-icon.png",
+          "icons/icon-32.png",
+          "icons/icon-48.png",
+          "icons/icon-64.png",
+          "icons/icon-192.png",
+          "icons/icon-512.png",
+          "icons/maskable-192.png",
+          "icons/maskable-512.png",
+        ],
+        manifest: {
+          id: base,
+          name: `Local Music${process.env.NODE_ENV === "development" ? " Dev" : ""}`,
+          short_name: "LocalMusic",
+          description:
+            "本地音乐播放器，支持导入本地音乐文件夹并离线安装为桌面应用。",
+          theme_color: "#121212",
+          background_color: "#121212",
+          display_override: ["window-controls-overlay", "standalone"],
+          display: "standalone",
+          orientation: "portrait-primary",
+          start_url: base,
+          scope: base,
+          lang: "zh-CN",
+          icons: [
             {
-              name: "vue",
-              test: /node_modules[\\/]@?vue[\\/]/,
-              priority: 30,
+              src: "icons/icon-192.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "icons/icon-512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "icons/maskable-192.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "maskable",
+            },
+            {
+              src: "icons/maskable-512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
+          ],
+          file_handlers: [
+            {
+              action: base,
+              accept: {
+                "audio/*": [
+                  ".mp3",
+                  ".wav",
+                  ".flac",
+                  ".m4a",
+                  ".aac",
+                  ".ogg",
+                  ".opus",
+                  ".webm",
+                ],
+              },
             },
           ],
         },
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+          navigateFallbackDenylist: [
+            /^\/__/,
+            /\/.*\.(?:mp3|wav|flac|m4a|aac|ogg|opus|webm)$/,
+          ],
+        },
+        devOptions: {
+          enabled: false,
+        },
+      }),
+    ],
+    resolve: {
+      alias: {
+        "@": path.resolve(import.meta.dirname, "src"),
       },
     },
-  },
-  server: {
-    port: 8080,
-  },
+    build: {
+      rolldownOptions: {
+        output: {
+          chunkFileNames: "assets/[name]-[hash].js",
+          codeSplitting: {
+            groups: [
+              {
+                name: "vue",
+                test: /node_modules[\\/]@?vue[\\/]/,
+                priority: 30,
+              },
+            ],
+          },
+        },
+      },
+    },
+    server: {
+      port: 5100,
+    },
+  };
 });

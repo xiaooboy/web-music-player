@@ -301,6 +301,48 @@ input[type="range"].now-playing__volume-slider {
   app-region: no-drag;
 }
 
+.now-playing__window-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 32px;
+  z-index: var(--z-sticky);
+}
+
+/* Tauri 模式下头部高度与标题栏（32px）完全一致，垂直方向严格居中对齐 */
+.now-playing__head--tauri,
+.is-tauri .now-playing__head {
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  padding: 0 0 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.now-playing__head--tauri .icon-btn,
+.is-tauri .now-playing__head .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+}
+
+.now-playing__head--tauri .now-playing__window-controls,
+.is-tauri .now-playing__window-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
 .now-playing__body {
   position: relative;
   z-index: var(--z-base);
