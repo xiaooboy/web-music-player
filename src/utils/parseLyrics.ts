@@ -5,7 +5,7 @@
  *   [00:12.47]Yelling at the sky\thin-space\仰天嘶喊
  *
  * 其中源语言与翻译之间用 U+2009 窄空格（以及其他可能的空白/分隔符）分隔。
- * 元数据行（作词/作曲/编曲/制作人等）会被跳过。
+ * 元数据行（作词/作曲/编曲/制作人等）会正常保留显示。
  */
 
 import { LyricsLine } from "@/types";
@@ -45,7 +45,8 @@ function splitSourceTranslation(content: string): { source: string; translation:
 }
 
 /** 元数据行关键词：作词/作曲/编曲/制作人 等 */
-const META_PATTERN = /^\[?[\d:.]*\]?\s*(作词|作曲|编曲|制作人|作词人|作曲人|混音|母带|录音|和声|OP|SP|词|曲)\s*[:：]/;
+const META_PATTERN =
+  /^\[?[\d:.]*\]?\s*(作词|作曲|编曲|制作人|作词人|作曲人|混音|母带|录音|和声|OP|SP|词|曲|Lyricist|Composer|Arranger|Producer|Written by|Lyrics by)\s*[:：]/i;
 
 /** 主入口 */
 export function parseLyrics(lyricsText: string): LyricsLine[] {
@@ -57,6 +58,7 @@ export function parseLyrics(lyricsText: string): LyricsLine[] {
     .map((line) => line.trim())
     .filter(Boolean);
 
+  const hasAnyTimestamp = lines.some((line) => parseTimestamp(line) !== null);
   const result: LyricsLine[] = [];
 
   for (const raw of lines) {
@@ -64,17 +66,35 @@ export function parseLyrics(lyricsText: string): LyricsLine[] {
     if (!line) continue;
 
     const time = parseTimestamp(line);
-    if (time === null) continue;
+    // 存在时间戳的歌词中，跳过无时间戳的元标签行（如 [ti:...] 等）
+    if (hasAnyTimestamp && time === null) continue;
 
-    const content = stripTags(line);
-    if (!content || META_PATTERN.test(line)) continue;
+    const content = stripTags(line).replace(/\[[a-zA-Z]+:[^\]]*\]/g, '').trim();
+    if (!content) continue;
+
+    const isMeta = META_PATTERN.test(line);
     const lastLine = result.at(-1);
-    // 同时间戳格式的多语言歌词
-    if (lastLine?.time === time) {
+    const lastIsMeta = lastLine ? META_PATTERN.test(lastLine.source) : false;
+
+    // 同时间戳格式的多语言歌词（元数据行不作为翻译合并）
+    if (
+      time !== null &&
+      lastLine?.time === time &&
+      !isMeta &&
+      !lastIsMeta &&
+      !lastLine.translation
+    ) {
       lastLine.translation = content;
       continue;
     }
-    const { source, translation } = splitSourceTranslation(content);
+
+    // 元数据行可能包含多个创作者斜杠分隔（如 Taylor Swift / Max Martin），避免误识别为翻译
+    const { source, translation } = isMeta
+      ? (content.includes('\u2009') || content.includes(' || ')
+          ? splitSourceTranslation(content)
+          : { source: content, translation: '' })
+      : splitSourceTranslation(content);
+
     result.push({ time, source, translation });
   }
 
