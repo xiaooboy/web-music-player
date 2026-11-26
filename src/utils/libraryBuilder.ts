@@ -12,7 +12,7 @@ import {
   type PersistedMusicSource,
 } from "./persistence";
 import {
-  buildLyricsLookup,
+  buildLyricsFileLookup,
   buildTrack,
   collectAudioFiles,
   ensureDirectoryPermission,
@@ -59,16 +59,12 @@ export async function sourcesToEntries(
   sources: RuntimeMusicSource[],
 ): Promise<FileEntry[]> {
   const entries: FileEntry[] = [];
-  const sourcesToBuild = sources.some((s) => s.entries?.length)
-    ? sources.filter((s) => s.entries?.length)
-    : sources;
 
   await Promise.all(
-    sourcesToBuild.map(async (source) => {
-      // webkitdirectory path 携带文件夹前缀
+    sources.map(async (source) => {
+      // webkitdirectory / file-launch 携带内存中的 entries；目录源通过 handle 扫描
       let sourceEntries = source.entries || [];
-      // handle 需要添加文件夹前缀
-      if (source.handle && source.available) {
+      if (!sourceEntries.length && source.handle && source.available) {
         sourceEntries = await collectAudioFiles(source.handle, source.name);
       }
       if (!sourceEntries.length) return;
@@ -134,7 +130,7 @@ export async function entriesToTracks(
   if (!audioEntries.length) return;
   /** tracks 可播放 */
   options?.onProgress?.({ done: 0, total: audioEntries.length });
-  const lyricsLookup = await buildLyricsLookup(entries);
+  const lyricsFiles = buildLyricsFileLookup(entries);
   const revokeOnStale = options?.revokeOnStale ?? true;
 
   const BATCH_SIZE = 8;
@@ -159,22 +155,54 @@ export async function entriesToTracks(
         const cachedTrack = options?.cache?.get(
           generateTrackId(entry.relativePath, entry.file),
         );
-        // 如果缓存存在且文件未修改，且已有封面 key/blob，直接复用缓存；若缺失封面则重新解析以自愈补全
-        const hasCover = Boolean(cachedTrack?.coverKey || cachedTrack?.coverBlob);
+        const lyricsFile = lyricsFiles.get(
+          getLyricsLookupKey(entry.relativePath),
+        );
+
+        // 已解析过（含确认无封面的歌曲 coverChecked）且音频未修改时命中缓存
+        const isCoverResolved = Boolean(
+          cachedTrack?.coverChecked ||
+            cachedTrack?.coverKey ||
+            cachedTrack?.coverBlob,
+        );
         if (
           cachedTrack &&
           entry.file.lastModified === cachedTrack.lastModified &&
-          hasCover
+          isCoverResolved
         ) {
-          return {
-            ...cachedTrack,
-            file: entry.file,
-            isPlayable: true,
-          };
+          const prevLrcTime = cachedTrack.lyricsLastModified;
+          const nextLrcTime = lyricsFile?.lastModified;
+
+          // 外部 .lrc 文件未变化：零 I/O 直接复用缓存
+          if (prevLrcTime === nextLrcTime) {
+            return {
+              ...cachedTrack,
+              file: entry.file,
+              isPlayable: true,
+            };
+          }
+
+          // 仅新增或修改了外部 .lrc：无需重解析音频，仅读取新歌词
+          if (lyricsFile) {
+            const externalLyricsText = await lyricsFile.text().catch(() => "");
+            return {
+              ...cachedTrack,
+              file: entry.file,
+              lyricsText: externalLyricsText || cachedTrack.lyricsText,
+              lyricsLastModified: lyricsFile.lastModified,
+              isPlayable: true,
+            };
+          }
+          // 若原本依赖的外部 .lrc 被删除，则走下方完整重解析以恢复内嵌歌词
         }
+
+        const externalLyricsText = lyricsFile
+          ? await lyricsFile.text().catch(() => "")
+          : "";
         const newTrack = await buildTrack(
           entry,
-          lyricsLookup.get(getLyricsLookupKey(entry.relativePath)) || "",
+          externalLyricsText,
+          lyricsFile?.lastModified,
         );
         newTracks.push(newTrack);
         return newTrack;

@@ -1,3 +1,18 @@
+.tracks__title-row {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.tracks__progress {
+  overflow: hidden;
+  font-size: var(--text-xs);
+  color: var(--color-muted-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tracks__view {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);

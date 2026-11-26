@@ -21,7 +21,11 @@ import {
   includesSource,
 } from "@/utils/libraryBuilder";
 import { libraryWorker } from "@/workers/libraryWorkerClient";
-import { hydrateCovers } from "@/utils/coverStore";
+import {
+  cleanupUnusedCovers,
+  hydrateCovers,
+  inheritMissingAlbumCovers,
+} from "@/utils/coverStore";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
 import { usePlayerStore } from "./playerStore";
@@ -67,26 +71,50 @@ export const useLibraryStore = defineStore("library", () => {
       trackMap.set(track.id, track);
     }
   }
+  /** 调度 OPFS 孤立封面清理（仅当全部持久化源可用且非文件启动模式时安全执行） */
+  function scheduleCoverCleanup(currentTracks: Track[], token: number) {
+    if (isFileLaunch.value) return;
+    if (musicSources.value.some((s) => s.persistent && !s.available)) return;
+    const validKeys = new Set<string>();
+    for (const track of currentTracks) {
+      if (track.coverKey) validKeys.add(track.coverKey);
+    }
+    const run = () => {
+      if (token !== commitToken) return;
+      void cleanupUnusedCovers(validKeys);
+    };
+    if (typeof globalThis.requestIdleCallback === "function") {
+      globalThis.requestIdleCallback(run, { timeout: 3000 });
+    } else {
+      setTimeout(run, 1000);
+    }
+  }
+
   /** 提交 tracks：先展示，缺失封面再后台补齐（不阻塞首屏） */
   function commitTracks(data: Track[], persist?: boolean) {
     const token = ++commitToken;
     setTracks(data, persist);
-    if (!tracks.value.some((track) => track.coverKey && !track.coverBlob)) return;
+    if (!tracks.value.some((track) => track.coverKey && !track.coverBlob)) {
+      return token;
+    }
     void hydrateCovers(tracks.value).then((hydrated) => {
       if (token !== commitToken) return; // 已有更新的提交，丢弃本次补封面
-      setTracks(hydrated, persist);
+      // hydrateCovers 仅补全运行时 coverBlob，不改写持久化结构，避免重复写 IndexedDB
+      setTracks(hydrated, false);
     });
+    return token;
   }
   /**
    * 构建开始：sources -> worker（扫描 + 解析）-> tracks
    */
   function startBuild() {
     loading.value = true;
+    loadingDone.value = 0;
+    loadingTotal.value = 0;
     const cachedTracks = [...trackMap.values()].map(({ file: _, ...rest }) => rest);
 
     libraryWorker.startBuild(musicSources.value, cachedTracks, {
       onProgress: ({ done, total }) => {
-        loading.value = done !== total;
         loadingDone.value = done;
         loadingTotal.value = total;
       },
@@ -95,7 +123,8 @@ export const useLibraryStore = defineStore("library", () => {
         if (!result.length) {
           loadingDone.value = loadingTotal.value = 0;
         }
-        commitTracks(result, true);
+        const token = commitTracks(result, true);
+        scheduleCoverCleanup(tracks.value, token);
       },
       onError: (message) => {
         loading.value = false;
@@ -108,6 +137,9 @@ export const useLibraryStore = defineStore("library", () => {
   function disposeLibrary() {
     commitToken++; // 使进行中的封面补全失效
     libraryWorker.cancelActive();
+    loading.value = false;
+    loadingDone.value = 0;
+    loadingTotal.value = 0;
     setTracks([]);
   }
 
@@ -236,7 +268,7 @@ export const useLibraryStore = defineStore("library", () => {
     // 合并已有曲目的有效资源（如封面 Blob），避免 Worker 重推结果时覆盖已就绪的封面
     const mergedData = data.map((track) => {
       const existing = trackMap.get(track.id);
-      if (!existing) return track;
+      if (!existing || track.lastModified !== existing.lastModified) return track;
       return {
         ...track,
         coverBlob: track.coverBlob || existing.coverBlob,
@@ -244,33 +276,8 @@ export const useLibraryStore = defineStore("library", () => {
       };
     });
 
-    // 同专辑封面互助补齐：如果同专辑中有任意一首有 coverBlob 或 coverKey，为同专辑其他缺失曲目补齐
-    const albumCoverMap = new Map<string, { blob?: Blob; key?: string }>();
-    for (const track of mergedData) {
-      if ((track.coverBlob || track.coverKey) && track.album && track.album !== "未知专辑") {
-        const albumKey = track.album.trim().toLowerCase();
-        const existing = albumCoverMap.get(albumKey);
-        albumCoverMap.set(albumKey, {
-          blob: track.coverBlob || existing?.blob,
-          key: track.coverKey || existing?.key,
-        });
-      }
-    }
-
-    const fullyPatchedData = mergedData.map((track) => {
-      if ((!track.coverBlob || !track.coverKey) && track.album && track.album !== "未知专辑") {
-        const albumKey = track.album.trim().toLowerCase();
-        const shared = albumCoverMap.get(albumKey);
-        if (shared) {
-          return {
-            ...track,
-            coverBlob: track.coverBlob || shared.blob,
-            coverKey: track.coverKey || shared.key,
-          };
-        }
-      }
-      return track;
-    });
+    // 同歌手/同目录同专辑封面安全互助补齐，多平台混杂时优先选体积最大封面
+    const fullyPatchedData = inheritMissingAlbumCovers(mergedData);
 
     const { removed } = diffTracks(tracks.value, fullyPatchedData);
     tracks.value = fullyPatchedData;

@@ -4,8 +4,25 @@ import {
   readUint32,
   decodeVorbisCommentBlock,
   normalizeMimeType,
+  type CoverResult,
 } from "./shared";
 import type { Track } from "../../types";
+
+const FLAC_PREFETCH_SIZE = 32 * 1024;
+const PICTURE_PEEK_SIZE = 512;
+
+/** 从预读缓冲区或按需切片读取指定区间 */
+async function readRange(
+  file: File,
+  prefetch: Uint8Array,
+  start: number,
+  end: number,
+): Promise<Uint8Array> {
+  if (end <= prefetch.length) {
+    return prefetch.subarray(start, end);
+  }
+  return new Uint8Array(await file.slice(start, end).arrayBuffer());
+}
 
 // FLAC 块解析
 
@@ -29,57 +46,65 @@ function parseFlacBlock(
   }
 }
 
-// FLAC PICTURE 块：只读头部，图片数据用 file.slice 零拷贝引用
+// FLAC PICTURE 块：单次预读头部，图片数据用 file.slice 零拷贝引用
 
 async function readFlacPictureFromFile(
   file: File,
+  prefetch: Uint8Array,
   blockDataOffset: number,
   blockLength: number,
-): Promise<{ coverBlob?: Blob }> {
+): Promise<CoverResult> {
   const blockEnd = blockDataOffset + blockLength;
   if (blockLength < 32) return {};
 
-  // 读 8 字节：picture type(4) + mime length(4)
-  const headBytes = new Uint8Array(
-    await file.slice(blockDataOffset, blockDataOffset + 8).arrayBuffer(),
+  const peekEnd = Math.min(blockEnd, blockDataOffset + PICTURE_PEEK_SIZE);
+  let peek = await readRange(file, prefetch, blockDataOffset, peekEnd);
+  if (peek.length < 8) return {};
+
+  const pictureType = readUint32(peek, 0);
+  const mimeLength = readUint32(peek, 4);
+
+  let relOffset = 8;
+  if (relOffset + mimeLength + 4 > peek.length) {
+    const neededEnd = Math.min(blockEnd, blockDataOffset + relOffset + mimeLength + 256);
+    if (neededEnd > peekEnd) {
+      peek = await readRange(file, prefetch, blockDataOffset, neededEnd);
+    }
+  }
+  if (relOffset + mimeLength + 4 > peek.length) return {};
+
+  const mimeType = normalizeMimeType(
+    decodeLatin1(peek.subarray(relOffset, relOffset + mimeLength)),
   );
-  if (headBytes.length < 8) return {};
-  const mimeLength = readUint32(headBytes, 4);
+  relOffset += mimeLength;
 
-  let cursor = blockDataOffset + 8;
+  const descriptionLength = readUint32(peek, relOffset);
+  relOffset += 4 + descriptionLength + 16;
 
-  // 读 mime 字符串（必须在块内）
-  if (cursor + mimeLength > blockEnd) return {};
-  const mimeBytes = new Uint8Array(
-    await file.slice(cursor, cursor + mimeLength).arrayBuffer(),
-  );
-  if (mimeBytes.length < mimeLength) return {};
-  const mimeType = normalizeMimeType(decodeLatin1(mimeBytes));
-  cursor += mimeLength;
+  // 描述过长超出预读窗口时，精确定位 imageLength（4 字节）
+  let imageLength = 0;
+  const imageLenFileOffset = blockDataOffset + relOffset;
+  if (imageLenFileOffset + 4 > blockEnd) return {};
 
-  // 读 description length(4)，随后跳过 description 与 16 字节图片尺寸
-  if (cursor + 4 > blockEnd) return {};
-  const descLenBytes = new Uint8Array(
-    await file.slice(cursor, cursor + 4).arrayBuffer(),
-  );
-  if (descLenBytes.length < 4) return {};
-  const descriptionLength = readUint32(descLenBytes, 0);
-  cursor += 4 + descriptionLength + 16;
+  if (relOffset + 4 <= peek.length) {
+    imageLength = readUint32(peek, relOffset);
+  } else {
+    const lenBytes = await readRange(
+      file,
+      prefetch,
+      imageLenFileOffset,
+      imageLenFileOffset + 4,
+    );
+    if (lenBytes.length < 4) return {};
+    imageLength = readUint32(lenBytes, 0);
+  }
 
-  if (cursor + 4 > blockEnd) return {};
-
-  // 读 image length(4)
-  const imageLenBytes = new Uint8Array(
-    await file.slice(cursor, cursor + 4).arrayBuffer(),
-  );
-  if (imageLenBytes.length < 4) return {};
-  const imageLength = readUint32(imageLenBytes, 0);
-  cursor += 4;
-
-  if (imageLength <= 0 || cursor + imageLength > blockEnd) return {};
+  const imageStart = imageLenFileOffset + 4;
+  if (imageLength <= 0 || imageStart + imageLength > blockEnd) return {};
 
   return {
-    coverBlob: file.slice(cursor, cursor + imageLength, mimeType),
+    coverBlob: file.slice(imageStart, imageStart + imageLength, mimeType),
+    pictureType,
   };
 }
 
@@ -87,47 +112,59 @@ async function readFlacPictureFromFile(
 
 export async function parseFlacMetadata(file: File) {
   const MAX_BLOCK_READ = 10 * 1024 * 1024;
+  const prefetch = new Uint8Array(
+    await file.slice(0, Math.min(file.size, FLAC_PREFETCH_SIZE)).arrayBuffer(),
+  );
 
   // 验证 fLaC 标识
-  const magicBytes = new Uint8Array(await file.slice(0, 4).arrayBuffer());
-  if (magicBytes.length < 4 || decodeLatin1(magicBytes) !== "fLaC") {
+  if (prefetch.length < 4 || decodeLatin1(prefetch.subarray(0, 4)) !== "fLaC") {
     return {};
   }
 
   const metadata: Partial<Track> = {};
   let fileOffset = 4; // 跳过 magic
   let lastBlock = false;
+  let hasFrontCover = false;
 
   while (!lastBlock && fileOffset + 4 <= file.size) {
     // 读取块头（4 字节）
-    const headerBytes = new Uint8Array(
-      await file.slice(fileOffset, fileOffset + 4).arrayBuffer(),
-    );
+    const headerBytes = await readRange(file, prefetch, fileOffset, fileOffset + 4);
     if (headerBytes.length < 4) break;
 
     lastBlock = Boolean(headerBytes[0] & 0x80);
     const blockType = headerBytes[0] & 0x7f;
     const blockLength = readUint24(headerBytes, 1);
     const blockDataOffset = fileOffset + 4;
+    if (blockDataOffset + blockLength > file.size) break;
 
-    // 仅读取需要的块，跳过 PADDING / SEEKTABLE / APPLICATION / CUESHEET 等
+    // 仅读取需要的块；多图时优先选择 Front Cover (type === 3)
     const needRead =
       (blockType === 0 || blockType === 4 || blockType === 6) &&
       blockLength <= MAX_BLOCK_READ &&
-      (blockType !== 6 || !metadata.coverBlob);
+      (blockType !== 6 || !hasFrontCover);
 
     if (needRead) {
       if (blockType === 6) {
-        // PICTURE: 零拷贝，不把整块读入内存
         const cover = await readFlacPictureFromFile(
           file,
+          prefetch,
           blockDataOffset,
           blockLength,
         );
-        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+        if (cover.coverBlob) {
+          if (cover.pictureType === 3) {
+            metadata.coverBlob = cover.coverBlob;
+            hasFrontCover = true;
+          } else if (!metadata.coverBlob) {
+            metadata.coverBlob = cover.coverBlob;
+          }
+        }
       } else {
-        const blockBytes = new Uint8Array(
-          await file.slice(blockDataOffset, blockDataOffset + blockLength).arrayBuffer(),
+        const blockBytes = await readRange(
+          file,
+          prefetch,
+          blockDataOffset,
+          blockDataOffset + blockLength,
         );
         parseFlacBlock(metadata, blockType, blockBytes);
       }

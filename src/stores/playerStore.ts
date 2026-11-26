@@ -337,14 +337,19 @@ export const usePlayerStore = defineStore("player", () => {
   }
 
   function handleLoadedMetadata() {
-    // build 过程已经使用相同的逻辑获取 duration
+    // 缺失时长或仅通过 CBR 估算时，使用浏览器精确解码得到的 audio.duration 进行校准
     const track = currentTrack.value;
-    if (!track || track.duration) return;
-    if (!track.duration && Number.isFinite(audio.duration)) {
+    if (!track) return;
+    if (
+      (!track.duration || track.durationEstimated) &&
+      Number.isFinite(audio.duration) &&
+      audio.duration > 0
+    ) {
       track.duration = audio.duration;
+      track.durationEstimated = false;
+      syncProgress();
+      updateMediaSession(track);
     }
-    syncProgress();
-    updateMediaSession(track);
   }
 
   function handleAudioPlay() {

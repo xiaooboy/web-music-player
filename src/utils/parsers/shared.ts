@@ -4,6 +4,7 @@ import type { Track } from "../../types";
 
 interface CoverResult {
   coverBlob?: Blob;
+  pictureType?: number;
 }
 
 function createCoverBlob(
@@ -14,27 +15,37 @@ function createCoverBlob(
   return { coverBlob: blob };
 }
 
-// 文本解码
+// 文本解码（复用 TextDecoder 实例以减少高频分配）
+
+const utf8Decoder = new TextDecoder("utf-8");
+const win1252Decoder = new TextDecoder("windows-1252");
+const utf16Decoder = new TextDecoder("utf-16");
+const utf16beDecoder = new TextDecoder("utf-16be");
 
 function decodeLatin1(bytes: Uint8Array) {
-  return Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+  let result = "";
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    result += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return result;
 }
 
 function decodeBytes(bytes: Uint8Array, encoding: number) {
   try {
     if (encoding === 0) {
-      return new TextDecoder("windows-1252").decode(bytes);
+      return win1252Decoder.decode(bytes);
     }
 
     if (encoding === 1) {
-      return new TextDecoder("utf-16").decode(bytes);
+      return utf16Decoder.decode(bytes);
     }
 
     if (encoding === 2) {
-      return new TextDecoder("utf-16be").decode(bytes);
+      return utf16beDecoder.decode(bytes);
     }
 
-    return new TextDecoder("utf-8").decode(bytes);
+    return utf8Decoder.decode(bytes);
   } catch {
     return decodeLatin1(bytes);
   }
@@ -213,44 +224,44 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
     offset += 4;
     if (offset + commentLength > blockBytes.length) break;
 
-    const comment = sanitizeText(
-      new TextDecoder("utf-8").decode(
-        blockBytes.slice(offset, offset + commentLength),
-      ),
-    );
+    const commentBytes = blockBytes.subarray(offset, offset + commentLength);
     offset += commentLength;
 
-    const separatorIndex = comment.indexOf("=");
-    if (separatorIndex === -1) continue;
+    const eqPos = commentBytes.indexOf(0x3d); // '='
+    if (eqPos === -1) continue;
 
-    const key = comment.slice(0, separatorIndex).toUpperCase();
-    const value = comment.slice(separatorIndex + 1).trim();
+    const key = decodeLatin1(commentBytes.subarray(0, eqPos)).toUpperCase();
+    const rawValueBytes = commentBytes.subarray(eqPos + 1);
 
-    if (key === "TITLE" && value && !metadata.title) {
+    // OGG/OPUS 通过 Vorbis Comment 中的 base64 编码嵌入封面，跳过文本正则清洗避免大字符串开销
+    if (key === "METADATA_BLOCK_PICTURE") {
+      if (!metadata.coverBlob && rawValueBytes.length > 0) {
+        try {
+          const base64 = decodeLatin1(rawValueBytes).trim();
+          const pictureBytes = base64ToUint8Array(base64);
+          const cover = decodeFlacPictureBlock(pictureBytes);
+          if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
+        } catch {
+          // base64 解码失败时忽略
+        }
+      }
+      continue;
+    }
+
+    const value = sanitizeText(utf8Decoder.decode(rawValueBytes));
+    if (!value) continue;
+
+    if (key === "TITLE" && !metadata.title) {
       metadata.title = value;
-    }
-    if (key === "ARTIST" && value && !metadata.artist) {
+    } else if (key === "ARTIST" && !metadata.artist) {
       metadata.artist = value;
-    }
-    if (key === "ALBUM" && value && !metadata.album) {
+    } else if (key === "ALBUM" && !metadata.album) {
       metadata.album = value;
-    }
-    if (
+    } else if (
       (key === "LYRICS" || key === "UNSYNCEDLYRICS") &&
-      value &&
       !metadata.lyricsText
     ) {
       metadata.lyricsText = value;
-    }
-    // OGG/OPUS 通过 Vorbis Comment 中的 base64 编码嵌入封面
-    if (key === "METADATA_BLOCK_PICTURE" && value && !metadata.coverBlob) {
-      try {
-        const pictureBytes = base64ToUint8Array(value);
-        const cover = decodeFlacPictureBlock(pictureBytes);
-        if (cover.coverBlob) metadata.coverBlob = cover.coverBlob;
-      } catch {
-        // base64 解码失败时忽略
-      }
     }
   }
 
@@ -259,23 +270,24 @@ function decodeVorbisCommentBlock(blockBytes: Uint8Array) {
 
 // FLAC Picture Block 解码
 
-function decodeFlacPictureBlock(blockBytes: Uint8Array) {
+function decodeFlacPictureBlock(blockBytes: Uint8Array): CoverResult {
   let offset = 0;
   if (blockBytes.length < 32) return {};
 
+  const pictureType = readUint32(blockBytes, offset);
   offset += 4;
   const mimeLength = readUint32(blockBytes, offset);
   offset += 4;
   if (offset + mimeLength > blockBytes.length) return {};
 
   const mimeType = normalizeMimeType(
-    decodeLatin1(blockBytes.slice(offset, offset + mimeLength)),
+    decodeLatin1(blockBytes.subarray(offset, offset + mimeLength)),
   );
   offset += mimeLength;
 
+  if (offset + 4 > blockBytes.length) return {};
   const descriptionLength = readUint32(blockBytes, offset);
-  offset += 4 + descriptionLength;
-  offset += 16;
+  offset += 4 + descriptionLength + 16;
 
   if (offset + 4 > blockBytes.length) return {};
 
@@ -286,7 +298,7 @@ function decodeFlacPictureBlock(blockBytes: Uint8Array) {
   const imageBytes = blockBytes.slice(offset, offset + imageLength);
   if (!imageBytes.length) return {};
 
-  return createCoverBlob(imageBytes, mimeType);
+  return { ...createCoverBlob(imageBytes, mimeType), pictureType };
 }
 
 export {

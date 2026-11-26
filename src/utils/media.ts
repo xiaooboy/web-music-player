@@ -160,13 +160,14 @@ export function entriesFromInput(files: FileList | null) {
   }));
 }
 
-export function generateTrackId(path: string, file: File) {
+export function generateTrackId(path: string, _file?: File) {
   return `${normalizeSlashes(path)}`;
 }
 
 export async function buildTrack(
   entry: FileEntry,
   externalLyricsText = "",
+  lyricsLastModified?: number,
 ): Promise<Track> {
   const { file, relativePath } = entry;
   const fallback = inferTrackInfoFromFile(file.name);
@@ -216,9 +217,12 @@ export async function buildTrack(
     artist: metadata.artist || fallback.artist,
     album: metadata.album || fallback.album,
     coverBlob: metadata.coverBlob,
+    coverChecked: true,
     duration,
+    durationEstimated: metadata.durationEstimated,
     format,
     lyricsText: externalLyricsText || metadata.lyricsText || "",
+    lyricsLastModified,
     isPlayable: true,
   };
 }
@@ -263,20 +267,29 @@ export function formatTime(seconds: number) {
   return `${String(minutes).padStart(2, "0")}:${String(remainSeconds).padStart(2, "0")}`;
 }
 
+/** 收集外部 .lrc 歌词文件引用（延迟按需读取文本，避免缓存命中时全量 I/O） */
+export function buildLyricsFileLookup(entries: FileEntry[]): Map<string, File> {
+  const lookup = new Map<string, File>();
+  for (const entry of entries) {
+    if (isLyricsFile(entry.file.name)) {
+      lookup.set(getLyricsLookupKey(entry.relativePath), entry.file);
+    }
+  }
+  return lookup;
+}
+
 export async function buildLyricsLookup(entries: FileEntry[]) {
   const lookup = new Map<string, string>();
+  const fileLookup = buildLyricsFileLookup(entries);
 
   await Promise.all(
-    entries
-      .filter((entry) => isLyricsFile(entry.file.name))
-      .map(async (entry) => {
-        const stem = getLyricsLookupKey(entry.relativePath);
-        try {
-          lookup.set(stem, await entry.file.text());
-        } catch {
-          lookup.set(stem, "");
-        }
-      }),
+    [...fileLookup.entries()].map(async ([stem, file]) => {
+      try {
+        lookup.set(stem, await file.text());
+      } catch {
+        lookup.set(stem, "");
+      }
+    }),
   );
 
   return lookup;

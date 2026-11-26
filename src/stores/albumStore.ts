@@ -45,7 +45,11 @@ export const useAlbumStore = defineStore("album", () => {
           existingAlbum.artistLabel += ` / ${artistName}`;
         }
         existingAlbum.duration += track.duration;
-        if (!existingAlbum.coverBlob && track.coverBlob) {
+        if (
+          track.coverBlob &&
+          (!existingAlbum.coverBlob ||
+            track.coverBlob.size > existingAlbum.coverBlob.size)
+        ) {
           existingAlbum.coverBlob = track.coverBlob;
         }
         existingAlbum.tracks.push(track);

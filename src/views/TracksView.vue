@@ -41,6 +41,23 @@ function handleNavigateToSource() {
 <template>
   <div class="main-panel tracks__view">
     <SectionHeader title="歌曲">
+      <template #title>
+        <div class="tracks__title-row">
+          <h2>歌曲</h2>
+          <span
+            v-if="loading && tracks.length"
+            class="tracks__progress"
+            aria-live="polite"
+          >
+            <template v-if="loadingTotal > 0">
+              正在整理曲库 {{ loadingDone }} / {{ loadingTotal }}
+            </template>
+            <template v-else>
+              正在扫描目录...
+            </template>
+          </span>
+        </div>
+      </template>
       <template #right>
         <label class="search-field">
           <Search :size="16" aria-hidden="true" />
@@ -69,7 +86,12 @@ function handleNavigateToSource() {
     />
     <EmptyState v-else>
       <p v-if="loading">
-        正在整理曲库：已处理 {{ loadingDone }} / {{ loadingTotal }} 首
+        <template v-if="loadingTotal > 0">
+          正在整理曲库：已处理 {{ loadingDone }} / {{ loadingTotal }} 首
+        </template>
+        <template v-else>
+          正在扫描音乐目录...
+        </template>
       </p>
       <p v-else-if="visibleTracks.length === 0 && searchQuery">没有匹配到结果</p>
       <p v-else>

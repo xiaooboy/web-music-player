@@ -48,14 +48,14 @@ async function runBuild(
 
     if (tracks === undefined) return; // 已过期（stale）
 
-    // 封面落盘：hash 去重写 OPFS（分批限流，避免大库全量并发导致内存尖峰）
+    // 封面落盘：按内容 SHA-256 去重写 OPFS（分批限流 + 不在 Worker 内存驻留封面）
     const COVER_SAVE_BATCH = 8;
     for (let start = 0; start < tracks.length; start += COVER_SAVE_BATCH) {
       if (isStale()) return;
       await Promise.all(
         tracks.slice(start, start + COVER_SAVE_BATCH).map(async (track) => {
           if (!track.coverBlob || track.coverKey) return;
-          const key = await saveCover(track.coverBlob);
+          const key = await saveCover(track.coverBlob, false);
           if (key) track.coverKey = key;
         }),
       );
